@@ -7,7 +7,7 @@ export function verifyEvidence(pages: string[], page: number | null | undefined,
   const p = typeof page === "number" && page >= 1 && page <= pages.length ? page : null;
   const ex = excerpt && excerpt.trim() ? excerpt.trim() : null;
   if (p === null || ex === null) return { page: p, excerpt: ex, verified: false };
-  return { page: p, excerpt: ex, verified: normalize(pages[p - 1]).includes(normalize(ex)) };
+  return { page: p, excerpt: ex, verified: normalize(pages[p - 1] ?? "").includes(normalize(ex)) };
 }
 
 /** Unverified evidence caps confidence at 0.3 so it is flagged for review. */
