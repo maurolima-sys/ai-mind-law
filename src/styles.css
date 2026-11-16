@@ -3323,3 +3323,43 @@
   outline: 3px solid #86a7ff;
   outline-offset: 2px;
 }
+
+/* ── Tour narration controls ── */
+.pm-tour-head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.pm-tour-audio-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  color: var(--pm-blue);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+.pm-tour-audio-btn:hover {
+  background: var(--pm-blue-pale);
+}
+.pm-tour-audio-btn.is-muted {
+  color: var(--pm-muted);
+}
+.pm-tour-audio-btn.is-muted:hover {
+  background: var(--pm-line);
+  color: var(--pm-text);
+}
+.pm-tour-audio-btn:focus-visible {
+  outline: 2px solid #86a7ff;
+  outline-offset: 2px;
+}
+@keyframes pm-tour-audio-spin {
+  to { transform: rotate(360deg); }
+}
+.pm-tour-audio-spin {
+  animation: pm-tour-audio-spin 1s linear infinite;
+}
