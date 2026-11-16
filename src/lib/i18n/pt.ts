@@ -207,7 +207,7 @@ export const pt: Translations = {
 
   mode_card_cloud_title: "IA na nuvem",
   mode_card_cloud_badge: "GEMINI",
-  mode_card_cloud_heading: "Analisar com Gemini 2.0 Flash",
+  mode_card_cloud_heading: "Analisar com Gemini 3.8 Flash",
   mode_card_cloud_desc:
     "Envie o texto extraído do PDF para a nuvem da Google através do Firebase AI Logic. Este modo utiliza apenas inferência na nuvem e não recorre ao processamento no dispositivo.",
   mode_card_cloud_p1: "Inferência direta na nuvem",
@@ -218,7 +218,7 @@ export const pt: Translations = {
   mode_card_hybrid_badge: "DISPOSITIVO PRIMEIRO",
   mode_card_hybrid_heading: "Preferir no dispositivo, permitir fallback",
   mode_card_hybrid_desc:
-    "O Firebase AI Logic tenta primeiro o modelo disponível no dispositivo. Se não estiver disponível, o SDK pode enviar o texto extraído para o Gemini 2.0 Flash na nuvem da Google.",
+    "O Firebase AI Logic tenta primeiro o modelo disponível no dispositivo. Se não estiver disponível, o SDK pode enviar o texto extraído para o Gemini 3.8 Flash na nuvem da Google.",
   mode_card_hybrid_p1: "Fonte real mostrada após análise",
   mode_card_hybrid_p2: "Uso da nuvem requer o seu consentimento",
   mode_card_hybrid_p3: "App Check necessário",

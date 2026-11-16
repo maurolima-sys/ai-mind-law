@@ -81,23 +81,49 @@ type ProgressUpdate = {
 
 const MAX_CHUNK_CHARACTERS = 8_000;
 const GENERATE_TIMEOUT_MS = 60_000;
+const RETRY_DELAYS_MS = [3_000, 8_000];
+const TRANSIENT_STATUS_CODES = new Set([429, 500, 502, 503]);
+
+function isTransientError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  return TRANSIENT_STATUS_CODES.has(
+    Number((error.message.match(/\[(\d{3})\]/) ?? [])[1]),
+  );
+}
 
 async function generateWithTimeout(
   model: GenerativeModel,
   prompt: string,
 ): Promise<Awaited<ReturnType<GenerativeModel["generateContent"]>>> {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(
-      () => reject(new Error("Firebase AI Logic request timed out after 60 seconds.")),
-      GENERATE_TIMEOUT_MS,
-    );
-  });
-  try {
-    return await Promise.race([model.generateContent(prompt), timeout]);
-  } finally {
-    clearTimeout(timer);
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+    if (attempt > 0) {
+      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAYS_MS[attempt - 1]));
+    }
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(
+        () => reject(new Error("Firebase AI Logic request timed out after 60 seconds.")),
+        GENERATE_TIMEOUT_MS,
+      );
+    });
+    try {
+      return await Promise.race([model.generateContent(prompt), timeout]);
+    } catch (error) {
+      clearTimeout(timer);
+      lastError = error;
+      if (!isTransientError(error)) break;
+    } finally {
+      clearTimeout(timer);
+    }
   }
+  const detail = lastError instanceof Error ? lastError.message : "Unknown error";
+  if (isTransientError(lastError)) {
+    throw new Error(
+      `Gemini is temporarily busy. We could not complete the cloud analysis after several attempts. Please try again shortly. (${detail})`,
+    );
+  }
+  throw lastError instanceof Error ? lastError : new Error(detail);
 }
 
 function splitPages(pages: string[]): Chunk[] {
@@ -248,7 +274,7 @@ function mergeFindings(
   );
   const modelNames = [
     ...(sources.has("ON_DEVICE") ? ["Chrome on-device model"] : []),
-    ...(sources.has("IN_CLOUD") ? ["Gemini 2.0 Flash"] : []),
+    ...(sources.has("IN_CLOUD") ? ["Gemini 3.8 Flash"] : []),
   ];
   return {
     mode,
