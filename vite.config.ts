@@ -8,11 +8,25 @@
 // hosting already compresses at the edge.
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { execSync } from "child_process";
+
+const commitHash = (() => {
+  try {
+    return execSync("git rev-parse --short HEAD").toString().trim();
+  } catch {
+    return "unknown";
+  }
+})();
 
 export default defineConfig({
   tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
     server: { entry: "server" },
+  },
+  vite: {
+    define: {
+      __APP_VERSION__: JSON.stringify("0.4.0"),
+      __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+      __COMMIT_HASH__: JSON.stringify(commitHash),
+    },
   },
 });

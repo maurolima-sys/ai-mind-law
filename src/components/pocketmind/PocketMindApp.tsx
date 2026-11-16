@@ -42,6 +42,7 @@ import {
 } from "react";
 
 import { buildDemoDocument, DEMO_DOC_ID, DEMO_LABEL } from "@/data/sampleTender";
+import { buildLabel } from "@/lib/buildInfo";
 import { DocumentQaPanel } from "@/components/pocketmind/DocumentQaPanel";
 import { GuidedTour, hasSeenTour } from "@/components/pocketmind/GuidedTour";
 import { LanguageSelector } from "@/components/pocketmind/LanguageSelector";
@@ -679,6 +680,9 @@ export function PocketMindApp() {
             <span>{t("sidebar_user_session")}</span>
           </div>
           <ChevronDown size={16} aria-hidden="true" />
+        </div>
+        <div className="pm-build-info" title={buildLabel()}>
+          {buildLabel()}
         </div>
       </aside>
 

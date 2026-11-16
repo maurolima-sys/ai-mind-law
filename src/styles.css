@@ -3363,3 +3363,21 @@
 .pm-tour-audio-spin {
   animation: pm-tour-audio-spin 1s linear infinite;
 }
+
+/* ── Build info ─────────────────────────────────────────────────────────── */
+.pm-build-info {
+  padding: 6px 16px 10px;
+  font-size: 10px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  color: var(--color-muted-foreground);
+  opacity: 0.55;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
+  user-select: text;
+}
+.pm-build-info:hover {
+  opacity: 0.85;
+}
