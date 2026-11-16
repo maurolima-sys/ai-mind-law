@@ -39,3 +39,7 @@ dist-ssr
 *.pdf
 Impeccable_*.md
 apple-design.md
+
+# Stray root-level source copies (correct files live under src/)
+/firebaseAi.ts
+/model-fallback.test.ts
