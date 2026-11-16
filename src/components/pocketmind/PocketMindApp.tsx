@@ -205,6 +205,17 @@ function modeSourceTone(
   return "neutral";
 }
 
+type TFn = ReturnType<typeof useT>;
+
+function modeLabel(source: Analysis["processingSource"] | undefined, t: TFn): string {
+  if (source === "on-device") return t("mode_on_device");
+  if (source === "cloud") return t("mode_cloud");
+  if (source === "cloud-fallback") return t("mode_cloud_fallback");
+  if (source === "hybrid") return t("mode_hybrid");
+  if (source === "demo") return t("mode_demo");
+  return t("mode_not_analyzed");
+}
+
 function EvidenceStatus({ evidence }: { evidence: Evidence }) {
   const t = useT();
   return evidence.verified ? (
@@ -297,14 +308,6 @@ export function PocketMindApp() {
     { id: "compliance" as Screen, label: t("nav_compliance"), icon: Table2 },
     { id: "processing" as Screen, label: t("nav_processing"), icon: ShieldCheck },
   ];
-  function modeLabel(source: Analysis["processingSource"] | undefined) {
-    if (source === "on-device") return t("mode_on_device");
-    if (source === "cloud") return t("mode_cloud");
-    if (source === "cloud-fallback") return t("mode_cloud_fallback");
-    if (source === "hybrid") return t("mode_hybrid");
-    if (source === "demo") return t("mode_demo");
-    return t("mode_not_analyzed");
-  }
 
   function addPdf(selectedFile: File | undefined) {
     if (!selectedFile) return;
@@ -967,6 +970,7 @@ function OverviewScreen({
                         >
                           {modeLabel(
                             document.analysis ? getProcessingSource(document.analysis) : undefined,
+                            t,
                           )}
                         </Badge>
                       </td>
@@ -1237,7 +1241,7 @@ function AnalysisScreen({
               {formatBytes(document.size)}
             </span>
           </div>
-          <Badge tone={modeSourceTone(processingSource)}>{modeLabel(processingSource)}</Badge>
+          <Badge tone={modeSourceTone(processingSource)}>{modeLabel(processingSource, t)}</Badge>
           {textSource === "llamaparse" && (
             <Badge tone="amber">{t("toolbar_llamaparse_badge")}</Badge>
           )}
@@ -1269,7 +1273,7 @@ function AnalysisScreen({
         <div className="pm-inference-report-heading">
           <strong>{t("inference_title")}</strong>
           <Badge tone={modeSourceTone(processingSource)}>
-            {t("inference_processing_source")} {modeLabel(processingSource)}
+            {t("inference_processing_source")} {modeLabel(processingSource, t)}
           </Badge>
         </div>
         <dl>
@@ -2110,7 +2114,7 @@ function ProcessingScreen({
           <span>{t("runtime_processing_source")}</span>
           <strong>
             {document.analysis
-              ? modeLabel(getProcessingSource(document.analysis))
+              ? modeLabel(getProcessingSource(document.analysis), t)
               : document.source === "demo"
                 ? t("runtime_demo_mode")
                 : t("runtime_not_run")}
