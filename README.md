@@ -53,4 +53,4 @@ bun run build
 
 ## Submission readiness
 
-The live AI feature is only usable after the Firebase and App Check setup above is completed and tested in the deployment. The repository currently has no open-source license file; add and verify an appropriate license before providing a license URL for a submission.
+The live AI feature is only usable after the Firebase and App Check setup above is completed and tested in the deployment. The repository now includes the Apache License 2.0 in the root-level LICENSE file. Use the public GitHub URL when a license link is requested.
