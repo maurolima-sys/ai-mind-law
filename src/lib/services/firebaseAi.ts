@@ -34,8 +34,6 @@ function firebaseConfiguration() {
     VITE_FIREBASE_API_KEY,
     VITE_FIREBASE_AUTH_DOMAIN,
     VITE_FIREBASE_PROJECT_ID,
-    VITE_FIREBASE_STORAGE_BUCKET,
-    VITE_FIREBASE_MESSAGING_SENDER_ID,
     VITE_FIREBASE_APP_ID,
   } = import.meta.env;
   const config = {
@@ -43,16 +41,12 @@ function firebaseConfiguration() {
     authDomain: VITE_FIREBASE_AUTH_DOMAIN,
     appId: VITE_FIREBASE_APP_ID,
     projectId: VITE_FIREBASE_PROJECT_ID,
-    storageBucket: VITE_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: VITE_FIREBASE_MESSAGING_SENDER_ID,
   };
 
   const missing = Object.entries({
     VITE_FIREBASE_API_KEY: config.apiKey,
     VITE_FIREBASE_AUTH_DOMAIN: config.authDomain,
     VITE_FIREBASE_PROJECT_ID: config.projectId,
-    VITE_FIREBASE_STORAGE_BUCKET: config.storageBucket,
-    VITE_FIREBASE_MESSAGING_SENDER_ID: config.messagingSenderId,
     VITE_FIREBASE_APP_ID: config.appId,
   })
     .filter(([, value]) => !value)
@@ -72,8 +66,6 @@ export function isFirebaseConfigured() {
     VITE_FIREBASE_API_KEY,
     VITE_FIREBASE_AUTH_DOMAIN,
     VITE_FIREBASE_PROJECT_ID,
-    VITE_FIREBASE_STORAGE_BUCKET,
-    VITE_FIREBASE_MESSAGING_SENDER_ID,
     VITE_FIREBASE_APP_ID,
   } = import.meta.env;
   const appCheckSiteKey = import.meta.env["VITE_FIREBASE_APPCHECK_RECAPTCHA_SITE_KEY"];
@@ -82,8 +74,6 @@ export function isFirebaseConfigured() {
     VITE_FIREBASE_AUTH_DOMAIN &&
     VITE_FIREBASE_APP_ID &&
     VITE_FIREBASE_PROJECT_ID &&
-    VITE_FIREBASE_STORAGE_BUCKET &&
-    VITE_FIREBASE_MESSAGING_SENDER_ID &&
     (import.meta.env.DEV || appCheckSiteKey),
   );
 }

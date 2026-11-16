@@ -518,22 +518,24 @@ export function PocketMindApp() {
             )}
           </div>
 
-          {selectedDocument?.source === "demo" && screen !== "processing" && (
-            <div className="pm-demo-banner" role="note">
-              <Sparkles size={17} />
-              <div>
-                <strong>Illustrative sample</strong>
-                <span>{DEMO_LABEL}</span>
+          {selectedDocument?.source === "demo" &&
+            selectedDocument.analysis?.mode === "demo" &&
+            screen !== "processing" && (
+              <div className="pm-demo-banner" role="note">
+                <Sparkles size={17} />
+                <div>
+                  <strong>Illustrative sample</strong>
+                  <span>{DEMO_LABEL}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setScreen("processing")}
+                  aria-label="Open processing options"
+                >
+                  <ArrowRight size={17} />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setScreen("processing")}
-                aria-label="Open processing options"
-              >
-                <ArrowRight size={17} />
-              </button>
-            </div>
-          )}
+            )}
 
           {screen === "overview" && (
             <OverviewScreen
