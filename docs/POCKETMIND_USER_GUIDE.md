@@ -105,7 +105,7 @@ This is the most important decision in the workflow. On **Processing & privacy**
 - Firebase App Check required
 
 **3. Hybrid inference** — badge *ON-DEVICE FIRST*
-> “Firebase AI Logic tries the available on-device model first. If unavailable, the SDK may send extracted text to Gemini 3.8 Flash in Google's cloud.”
+> “Firebase AI Logic tries the available on-device model first. If unavailable, the SDK may send extracted text to Gemini 3.8 Flash in Google's cloud. If a cloud request gets a transient 429, 500, 502, or 503, PocketMind retries Gemini 3.8 Flash and then switches to Gemini 3.5 Flash-Lite, with a 60-second maximum per text section.”
 - Actual source shown after analysis
 - Cloud use requires your consent
 - App Check required

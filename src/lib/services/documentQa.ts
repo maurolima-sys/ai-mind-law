@@ -2,7 +2,11 @@ import { z } from "zod";
 
 import { verifyEvidence } from "@/lib/services/evidence";
 import { type LegalResearchSource } from "@/lib/services/legalResearch";
-import { createTenderModel } from "@/lib/services/firebaseAi";
+import {
+  createTenderModel,
+  generateWithModelFallback,
+  geminiModelLabel,
+} from "@/lib/services/firebaseAi";
 import { requireInferenceSource } from "@/lib/services/tenderAnalysis";
 import type { ChatCitation, InferencePreference } from "@/lib/types";
 
@@ -270,9 +274,18 @@ export async function answerDocumentQuestion(
   }
 
   const sources = options.researchSources ?? [];
-  const model = createTenderModel(preference, responseConstraint).model;
-  const result = await model.generateContent(
-    buildQuestionPrompt(question.trim(), relevantPages, options.history ?? [], sources, compact),
+  const prompt = buildQuestionPrompt(
+    question.trim(),
+    relevantPages,
+    options.history ?? [],
+    sources,
+    compact,
+  );
+  const { result, modelName } = await generateWithModelFallback(preference, (candidate, signal) =>
+    createTenderModel(preference, responseConstraint, candidate).model.generateContent(
+      prompt,
+      signal ? { signal } : undefined,
+    ),
   );
   const inferenceSource = requireInferenceSource(result.response.inferenceSource);
   options.onInference?.(inferenceSource);
@@ -293,7 +306,7 @@ export async function answerDocumentQuestion(
     citedResearchSourceIds: [...researchSourceIds].filter((id) =>
       sources.some((source) => source.id === id),
     ),
-    engine: `Firebase AI Logic · ${inferenceSource === "ON_DEVICE" ? "on-device" : "cloud"}`,
+    engine: `Firebase AI Logic · ${inferenceSource === "ON_DEVICE" ? "on-device" : geminiModelLabel(modelName)}`,
     inferenceSource,
   };
 }

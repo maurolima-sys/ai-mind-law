@@ -1,4 +1,4 @@
-import { InferenceSource as FirebaseInferenceSource, type GenerativeModel } from "firebase/ai";
+import { InferenceSource as FirebaseInferenceSource } from "firebase/ai";
 import { z } from "zod";
 
 import { verifyEvidence } from "@/lib/services/evidence";
@@ -13,7 +13,13 @@ import type {
   Specification,
   ProcessingSource,
 } from "@/lib/types";
-import { createTenderModel } from "@/lib/services/firebaseAi";
+import {
+  createTenderModel,
+  generateWithModelFallback,
+  geminiModelLabel,
+  PRIMARY_GEMINI_MODEL,
+  type GeminiModelName,
+} from "@/lib/services/firebaseAi";
 import { scoreConfidence } from "@/lib/services/evidence";
 
 const findingSchema = z.object({
@@ -80,51 +86,7 @@ type ProgressUpdate = {
 };
 
 const MAX_CHUNK_CHARACTERS = 8_000;
-const GENERATE_TIMEOUT_MS = 60_000;
-const RETRY_DELAYS_MS = [3_000, 8_000];
-const TRANSIENT_STATUS_CODES = new Set([429, 500, 502, 503]);
-
-function isTransientError(error: unknown): boolean {
-  if (!(error instanceof Error)) return false;
-  return TRANSIENT_STATUS_CODES.has(
-    Number((error.message.match(/\[(\d{3})\]/) ?? [])[1]),
-  );
-}
-
-async function generateWithTimeout(
-  model: GenerativeModel,
-  prompt: string,
-): Promise<Awaited<ReturnType<GenerativeModel["generateContent"]>>> {
-  let lastError: unknown;
-  for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
-    if (attempt > 0) {
-      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAYS_MS[attempt - 1]));
-    }
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const timeout = new Promise<never>((_, reject) => {
-      timer = setTimeout(
-        () => reject(new Error("Firebase AI Logic request timed out after 60 seconds.")),
-        GENERATE_TIMEOUT_MS,
-      );
-    });
-    try {
-      return await Promise.race([model.generateContent(prompt), timeout]);
-    } catch (error) {
-      clearTimeout(timer);
-      lastError = error;
-      if (!isTransientError(error)) break;
-    } finally {
-      clearTimeout(timer);
-    }
-  }
-  const detail = lastError instanceof Error ? lastError.message : "Unknown error";
-  if (isTransientError(lastError)) {
-    throw new Error(
-      `Gemini is temporarily busy. We could not complete the cloud analysis after several attempts. Please try again shortly. (${detail})`,
-    );
-  }
-  throw lastError instanceof Error ? lastError : new Error(detail);
-}
+import { FALLBACK_GEMINI_MODEL } from "@/lib/services/firebaseAi";
 
 function splitPages(pages: string[]): Chunk[] {
   const units: Array<{ page: number; text: string }> = [];
@@ -194,8 +156,9 @@ export function parseTenderResponse(text: string) {
 export function requireInferenceSource(source: string | undefined): InferenceSource {
   if (source === FirebaseInferenceSource.ON_DEVICE) return "ON_DEVICE";
   if (source === FirebaseInferenceSource.IN_CLOUD) return "IN_CLOUD";
-  // Some SDK versions omit inferenceSource for cloud-only calls — treat as cloud.
-  return "IN_CLOUD";
+  throw new Error(
+    "Firebase AI Logic returned a result without reporting its inference source. Update the Firebase SDK before using this result.",
+  );
 }
 
 export function resolveProcessingSource(
@@ -214,6 +177,7 @@ function mergeFindings(
   pages: string[],
   records: Array<ReturnType<typeof chunkResponseSchema.parse>>,
   sources: Set<InferenceSource>,
+  cloudModelNames: Set<GeminiModelName>,
   preference: InferencePreference,
 ): Analysis {
   const evidence = (page: number, excerpt: string) => verifyEvidence(pages, page, excerpt);
@@ -274,7 +238,7 @@ function mergeFindings(
   );
   const modelNames = [
     ...(sources.has("ON_DEVICE") ? ["Chrome on-device model"] : []),
-    ...(sources.has("IN_CLOUD") ? ["Gemini 3.8 Flash"] : []),
+    ...[...cloudModelNames].map(geminiModelLabel),
   ];
   return {
     mode,
@@ -346,6 +310,10 @@ export async function analyzeTender(
 
   const records: Array<ReturnType<typeof chunkResponseSchema.parse>> = [];
   const sources = new Set<InferenceSource>();
+  const cloudModelNames = new Set<GeminiModelName>();
+  const models = new Map<GeminiModelName, ReturnType<typeof createTenderModel>["model"]>([
+    [PRIMARY_GEMINI_MODEL, model],
+  ]);
   for (const [index, chunk] of chunks.entries()) {
     onProgress({
       phase: "analyzing",
@@ -353,9 +321,32 @@ export async function analyzeTender(
       total: chunks.length,
       detail: `Analyzing text section ${index + 1} of ${chunks.length}`,
     });
-    const result = await generateWithTimeout(model, buildPrompt(chunk));
+    const prompt = buildPrompt(chunk);
+    const { result, modelName } = await generateWithModelFallback(
+      preference,
+      (candidate, signal) => {
+        let currentModel = models.get(candidate);
+        if (!currentModel) {
+          currentModel = createTenderModel(preference, undefined, candidate).model;
+          models.set(candidate, currentModel);
+        }
+        return currentModel.generateContent(prompt, signal ? { signal } : undefined);
+      },
+      {
+        onRetry: ({ modelName: nextModel, status, attempt }) => {
+          const action = nextModel === PRIMARY_GEMINI_MODEL ? "Retrying" : "Switching to fallback";
+          onProgress({
+            phase: "analyzing",
+            completed: index,
+            total: chunks.length,
+            detail: `Gemini returned HTTP ${status}. ${action} ${geminiModelLabel(nextModel)} (${attempt}/3).`,
+          });
+        },
+      },
+    );
     const source = requireInferenceSource(result.response.inferenceSource);
     sources.add(source);
+    if (source === "IN_CLOUD") cloudModelNames.add(modelName);
     onInference(source);
     if (preference === "hybrid" && source === "IN_CLOUD") {
       onProgress({
@@ -378,5 +369,5 @@ export async function analyzeTender(
     total: chunks.length,
     detail: "Verifying cited evidence",
   });
-  return mergeFindings(pages, records, sources, preference);
+  return mergeFindings(pages, records, sources, cloudModelNames, preference);
 }
