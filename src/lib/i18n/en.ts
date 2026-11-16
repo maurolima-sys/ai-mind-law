@@ -376,9 +376,18 @@ export const en = {
   qa_mode_note:
     "Choose on-device, cloud, or hybrid processing before asking. The prepared sample is illustrative and is not a real tender.",
   qa_choose_mode: "Choose a mode",
-  qa_empty_title: "Start with a question about a requirement, rule, or missing detail.",
+  qa_error_no_text: "No extracted document text is available to answer this question.",
+  qa_error_mode: "Choose an AI processing mode before asking.",
+  qa_error_cloud_consent:
+    "Enable cloud consent in Processing & privacy, or choose on-device only.",
+  qa_error_research:
+    "External research is unavailable or incomplete. Turn it off, or provide consent and valid jurisdiction details.",
+  qa_answer_region: "Answer",
+  qa_empty_title: "Your answer will appear here",
   qa_empty_detail:
-    "Answers separate what the PDF says from working hypotheses and questions that still need verification.",
+    "Send a question to see a text response. After an answer arrives, use its speaker button to hear it when your browser supports speech.",
+  qa_voice_output_unavailable:
+    "Voice playback is not supported by this browser. Answers will still appear as text.",
   qa_role_user: "You",
   qa_role_assistant: "PocketMind",
   qa_hypotheses: "Working hypotheses",

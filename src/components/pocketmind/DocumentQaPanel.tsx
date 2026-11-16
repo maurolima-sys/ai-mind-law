@@ -155,6 +155,8 @@ function SuggestedQuestions({
 export function DocumentQaPanel({
   documentName,
   pages,
+  draft,
+  onDraftChange,
   preference,
   cloudConsent,
   paginationVerified,
@@ -164,6 +166,8 @@ export function DocumentQaPanel({
 }: {
   documentName: string;
   pages: string[];
+  draft: string;
+  onDraftChange: (draft: string) => void;
   preference: InferencePreference | null;
   cloudConsent: boolean;
   paginationVerified: boolean;
@@ -173,7 +177,6 @@ export function DocumentQaPanel({
 }) {
   const t = useT();
   const [messages, setMessages] = useState<QaMessage[]>([]);
-  const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [researchEnabled, setResearchEnabled] = useState(false);
@@ -215,17 +218,6 @@ export function DocumentQaPanel({
   }, []);
 
   const needsCloudConsent = preference === "cloud" || preference === "hybrid";
-  const canSend =
-    Boolean(preference) &&
-    pages.some((page) => page.trim()) &&
-    (!needsCloudConsent || cloudConsent) &&
-    (!researchEnabled ||
-      (researchAvailability === "available" &&
-        researchConsent &&
-        draft.trim().length <= 300 &&
-        /^[A-Za-z]{2}$/.test(country.trim()) &&
-        jurisdiction.trim().length >= 2 &&
-        jurisdiction.trim().length <= 150));
 
   function startVoiceInput() {
     if (isListening) {
@@ -248,7 +240,7 @@ export function DocumentQaPanel({
           .join(" ")
           .trim();
         if (transcript) {
-          setDraft((current) => [current.trim(), transcript].filter(Boolean).join(" "));
+          onDraftChange([draft.trim(), transcript].filter(Boolean).join(" "));
           setErrorMessage("");
         }
       };
@@ -296,12 +288,16 @@ export function DocumentQaPanel({
     event.preventDefault();
     const question = draft.trim();
     if (!question || isSending) return;
+    if (!pages.some((page) => page.trim())) {
+      setErrorMessage(t("qa_error_no_text"));
+      return;
+    }
     if (!preference) {
-      setErrorMessage("Choose an AI processing mode before asking a question.");
+      setErrorMessage(t("qa_error_mode"));
       return;
     }
     if (needsCloudConsent && !cloudConsent) {
-      setErrorMessage("Enable cloud consent in Processing & privacy, or choose on-device only.");
+      setErrorMessage(t("qa_error_cloud_consent"));
       return;
     }
     if (
@@ -313,7 +309,7 @@ export function DocumentQaPanel({
         jurisdiction.trim().length < 2 ||
         jurisdiction.trim().length > 150)
     ) {
-      setErrorMessage("Complete the external-research consent and jurisdiction fields first.");
+      setErrorMessage(t("qa_error_research"));
       return;
     }
 
@@ -359,7 +355,7 @@ export function DocumentQaPanel({
           engine: answer.engine,
         },
       ]);
-      setDraft("");
+      onDraftChange("");
     } catch (error) {
       const detail = error instanceof Error ? error.message : "An unexpected error occurred.";
       setErrorMessage(
@@ -403,20 +399,26 @@ export function DocumentQaPanel({
       {/* ── Suggested questions ── */}
       <SuggestedQuestions
         onSelect={(q) => {
-          setDraft(q);
+          onDraftChange(q);
           setErrorMessage("");
         }}
         disabled={isSending}
       />
 
-      {messages.length === 0 ? (
-        <div className="pm-qa-empty">
-          <strong>{t("qa_empty_title")}</strong>
-          <span>{t("qa_empty_detail")}</span>
-        </div>
-      ) : (
-        <div className="pm-qa-messages" role="log" aria-live="polite" aria-relevant="additions">
-          {messages.map((message) => (
+      <div
+        className="pm-qa-messages"
+        role="log"
+        aria-label={t("qa_answer_region")}
+        aria-live="polite"
+        aria-relevant="additions"
+      >
+        {messages.length === 0 ? (
+          <div className="pm-qa-empty">
+            <strong>{t("qa_empty_title")}</strong>
+            <span>{t("qa_empty_detail")}</span>
+          </div>
+        ) : (
+          messages.map((message) => (
             <article className={`pm-qa-message pm-qa-message--${message.role}`} key={message.id}>
               <div className="pm-qa-message-head">
                 <strong>{message.role === "user" ? t("qa_role_user") : t("qa_role_assistant")}</strong>
@@ -514,17 +516,17 @@ export function DocumentQaPanel({
                   <p className="pm-qa-mic-note">{t("qa_research_no_sources")}</p>
                 )}
             </article>
-          ))}
-          {isSending && (
-            <div className="pm-qa-pending" role="status">
-              <LoaderCircle size={16} className="pm-qa-spinner" />
-              <span>
-                {researchEnabled ? t("qa_sending_research") : t("qa_sending_document")}
-              </span>
-            </div>
-          )}
-        </div>
-      )}
+          ))
+        )}
+        {isSending && (
+          <div className="pm-qa-pending" role="status">
+            <LoaderCircle size={16} className="pm-qa-spinner" />
+            <span>
+              {researchEnabled ? t("qa_sending_research") : t("qa_sending_document")}
+            </span>
+          </div>
+        )}
+      </div>
 
       {researchAvailability === "error" && (
         <p className="pm-qa-inline-error" role="status">
@@ -578,7 +580,10 @@ export function DocumentQaPanel({
         <textarea
           id="pm-qa-question"
           value={draft}
-          onChange={(event) => setDraft(event.currentTarget.value)}
+          onChange={(event) => {
+            onDraftChange(event.currentTarget.value);
+            setErrorMessage("");
+          }}
           placeholder={t("qa_composer_placeholder")}
           rows={3}
           maxLength={1500}
@@ -604,7 +609,7 @@ export function DocumentQaPanel({
           <button
             type="submit"
             className="pm-button pm-button--primary"
-            disabled={!canSend || isSending || !draft.trim()}
+            disabled={isSending || !draft.trim()}
           >
             {isSending ? <LoaderCircle size={15} className="pm-qa-spinner" /> : <Send size={15} />}
             {t("qa_send")}
@@ -636,6 +641,9 @@ export function DocumentQaPanel({
         </div>
         {!speechInputAvailable && (
           <p className="pm-qa-mic-note">{t("qa_voice_unavailable")}</p>
+        )}
+        {!speechOutputAvailable && (
+          <p className="pm-qa-mic-note">{t("qa_voice_output_unavailable")}</p>
         )}
       </form>
 

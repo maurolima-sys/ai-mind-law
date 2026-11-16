@@ -32,6 +32,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import {
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -44,7 +45,7 @@ import {
 import { buildDemoDocument, DEMO_DOC_ID, DEMO_LABEL } from "@/data/sampleTender";
 import { buildLabel } from "@/lib/buildInfo";
 import { DocumentQaPanel } from "@/components/pocketmind/DocumentQaPanel";
-import { GuidedTour, hasSeenTour } from "@/components/pocketmind/GuidedTour";
+import { GuidedTour } from "@/components/pocketmind/GuidedTour";
 import { LanguageSelector } from "@/components/pocketmind/LanguageSelector";
 import { complianceCsv, downloadText } from "@/lib/services/csv";
 import { useT } from "@/lib/i18n";
@@ -238,6 +239,9 @@ export function PocketMindApp() {
   const [selectedDocumentId, setSelectedDocumentId] = useState(DEMO_DOC_ID);
   const [screen, setScreen] = useState<Screen>("overview");
   const [search, setSearch] = useState("");
+  const [questionDraftsByDocumentId, setQuestionDraftsByDocumentId] = useState<
+    Record<string, string>
+  >({});
   const [filesByDocumentId, setFilesByDocumentId] = useState<Record<string, File>>({});
   const [processingChoice, setProcessingChoice] = useState<ProcessingChoice>("demo");
   const [cloudConsent, setCloudConsent] = useState(false);
@@ -262,9 +266,16 @@ export function PocketMindApp() {
   const [activePage, setActivePage] = useState(1);
   const [activeFinding, setActiveFinding] = useState("all");
   const [selectedRequirementId, setSelectedRequirementId] = useState<string | null>(null);
-  const [tourActive, setTourActive] = useState(() => !hasSeenTour());
+  const [tourActive, setTourActive] = useState(false);
+  const [tourRequestedByUser, setTourRequestedByUser] = useState(false);
   const tourButtonRef = useRef<HTMLButtonElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (tourActive && !tourRequestedByUser) {
+      setTourActive(false);
+    }
+  }, [tourActive, tourRequestedByUser]);
 
   const selectedDocument =
     documents.find((document) => document.id === selectedDocumentId) ?? documents[0];
@@ -666,7 +677,10 @@ export function PocketMindApp() {
           ref={tourButtonRef}
           type="button"
           className="pm-tour-replay"
-          onClick={() => setTourActive(true)}
+          onClick={() => {
+            setTourRequestedByUser(true);
+            setTourActive(true);
+          }}
         >
           <Compass size={15} aria-hidden="true" />
           {t("sidebar_take_tour")}
@@ -782,6 +796,13 @@ export function PocketMindApp() {
               activePage={activePage}
               pageText={currentPageText}
               search={search}
+              questionDraft={questionDraftsByDocumentId[selectedDocument.id] ?? ""}
+              onQuestionDraftChange={(draft) =>
+                setQuestionDraftsByDocumentId((current) => ({
+                  ...current,
+                  [selectedDocument.id]: draft,
+                }))
+              }
               preference={processingChoice === "demo" ? null : processingChoice}
               cloudConsent={cloudConsent}
               textSource={documentTextSources[selectedDocument.id] ?? null}
@@ -861,7 +882,10 @@ export function PocketMindApp() {
         active={tourActive}
         screen={screen}
         onNavigate={(s) => setScreen(s)}
-        onEnd={() => setTourActive(false)}
+        onEnd={() => {
+          setTourRequestedByUser(false);
+          setTourActive(false);
+        }}
         returnFocusRef={tourButtonRef}
       />
     </div>
@@ -1116,6 +1140,8 @@ function AnalysisScreen({
   activePage,
   pageText,
   search,
+  questionDraft,
+  onQuestionDraftChange,
   preference,
   cloudConsent,
   textSource,
@@ -1134,6 +1160,8 @@ function AnalysisScreen({
   activePage: number;
   pageText: string;
   search: string;
+  questionDraft: string;
+  onQuestionDraftChange: (draft: string) => void;
   preference: InferencePreference | null;
   cloudConsent: boolean;
   textSource: DocumentTextSource | null;
@@ -1233,6 +1261,8 @@ function AnalysisScreen({
               key={document.id}
               documentName={document.name}
               pages={document.pages}
+              draft={questionDraft}
+              onDraftChange={onQuestionDraftChange}
               preference={preference}
               cloudConsent={cloudConsent}
               paginationVerified={paginationVerified}
@@ -1498,6 +1528,8 @@ function AnalysisScreen({
         key={document.id}
         documentName={document.name}
         pages={document.pages}
+        draft={questionDraft}
+        onDraftChange={onQuestionDraftChange}
         preference={preference}
         cloudConsent={cloudConsent}
         paginationVerified={paginationVerified}

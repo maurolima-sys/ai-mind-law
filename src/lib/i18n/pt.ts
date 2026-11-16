@@ -343,9 +343,18 @@ export const pt: Translations = {
   qa_mode_note:
     "Escolha o processamento no dispositivo, na nuvem ou híbrido antes de perguntar. A amostra preparada é ilustrativa e não é um concurso real.",
   qa_choose_mode: "Escolher um modo",
-  qa_empty_title: "Comece com uma pergunta sobre um requisito, regra ou detalhe em falta.",
+  qa_error_no_text: "Não há texto extraído do documento para responder a esta pergunta.",
+  qa_error_mode: "Escolha um modo de processamento de IA antes de perguntar.",
+  qa_error_cloud_consent:
+    "Ative o consentimento de nuvem em Processamento e privacidade, ou escolha apenas no dispositivo.",
+  qa_error_research:
+    "A pesquisa externa está indisponível ou incompleta. Desative-a ou forneça consentimento e dados válidos da jurisdição.",
+  qa_answer_region: "Resposta",
+  qa_voice_output_unavailable:
+    "Este browser não suporta leitura em voz alta. As respostas continuarão a aparecer em texto.",
+  qa_empty_title: "A resposta aparecerá aqui",
   qa_empty_detail:
-    "As respostas separam o que o PDF diz das hipóteses de trabalho e das questões que ainda precisam de verificação.",
+    "Envie uma pergunta para ver a resposta em texto. Quando chegar, use o botão de áudio para ouvi-la se o browser suportar voz.",
   qa_role_user: "Você",
   qa_role_assistant: "PocketMind",
   qa_hypotheses: "Hipóteses de trabalho",
