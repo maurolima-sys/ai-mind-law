@@ -21,6 +21,7 @@ import {
   LoaderCircle,
   LockKeyhole,
   Search,
+  ScrollText,
   Shield,
   ShieldCheck,
   Sparkles,
@@ -50,6 +51,7 @@ import { isFirebaseConfigured } from "@/lib/services/firebaseAi";
 import { markUnpaginatedEvidenceUnverified } from "@/lib/services/ocrEvidence";
 import { shouldOfferExternalOcr } from "@/lib/services/ocrNormalize";
 import { analyzeTender } from "@/lib/services/tenderAnalysis";
+import { Link } from "@tanstack/react-router";
 import {
   CATEGORIES,
   STATUSES,
@@ -650,6 +652,10 @@ export function PocketMindApp() {
             <span>{t("sidebar_privacy_note")}</span>
           </div>
         </div>
+        <Link to="/changelog" className="pm-changelog-link">
+          <ScrollText size={15} aria-hidden="true" />
+          <span>What's new</span>
+        </Link>
         <div className="pm-workspace-user">
           <div className="pm-avatar">PM</div>
           <div>

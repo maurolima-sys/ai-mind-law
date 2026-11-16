@@ -14,6 +14,8 @@ Working tree — not yet committed.
 - `src/components/pocketmind/LanguageSelector.tsx` — flag + `<select>` dropdown in the topbar; locale persisted to `localStorage` under key `pocketmind.locale`.
 - `.pm-lang-selector` CSS appended to `src/styles.css`.
 
+- **Changelog page** — `src/routes/changelog.tsx` + `src/components/pocketmind/ChangelogPage.tsx`. Full timeline at `/changelog` with kind pills (Added/Changed/Fixed/Note), status badges (Unreleased/Latest/Stable), commit links, and responsive layout. `routeTree.gen.ts` updated to register the route. Accessible via a **What's new** link in the sidebar of the main app.
+
 ### Changed
 - `src/routes/__root.tsx` — `<Outlet />` wrapped with `<LocaleProvider>`.
 - `src/components/pocketmind/PocketMindApp.tsx` — all ~180 hardcoded strings replaced with `t()` calls across `PocketMindApp`, `OverviewScreen`, `AnalysisScreen`, `EmptyAnalysis`, `ComplianceScreen`, `ProcessingScreen`, and `EvidenceStatus`.
