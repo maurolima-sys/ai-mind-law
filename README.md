@@ -7,6 +7,7 @@ The web app includes a dashboard, document analysis view, compliance matrix, and
 ## What works
 
 - Upload a PDF up to 20 MB and extract selectable text in the browser with PDF.js.
+- Offer optional LlamaParse OCR for scanned or very sparse PDFs, only after separate per-document consent and when the Lovable connector is enabled.
 - Run Firebase AI Logic analysis in cloud-only, on-device-only, or on-device-first hybrid mode. Cloud processing and fallback require explicit consent.
 - Show the actual inference source reported by Firebase AI Logic, and validate AI citations against extracted page text.
 - Show Firebase AI Logic as connected only after the app receives a real model response; the sample-data workflow does not call Firebase.
@@ -14,7 +15,11 @@ The web app includes a dashboard, document analysis view, compliance matrix, and
 - Review requirements, update review statuses and notes for the current browser session, and export the compliance matrix as CSV.
 - Export a document's analysis as JSON.
 
-Scanned-image OCR, accounts, shared workspaces, and persistent cloud document storage are not implemented. AI findings are suggestions and must be checked by a person against the original PDF; they are not legal advice.
+Accounts, shared workspaces, and persistent cloud document storage are not implemented. AI findings are suggestions and must be checked by a person against the original PDF; they are not legal advice.
+
+### Optional external OCR
+
+When PDF.js finds no or very little selectable text, the processing screen offers LlamaParse as an optional external OCR path. The PDF is not sent until the user separately consents for that document; this consent is required even when Firebase inference is on-device. OCR requests use the server function and the Lovable connector, never a browser-side provider key. If LlamaParse does not return page-level output, the app marks citations as unverified and flags them for human review. A real scanned-PDF runtime test is still required.
 
 ## Firebase setup for live analysis
 
@@ -30,7 +35,7 @@ References: [Firebase AI Logic hybrid inference for Web](https://firebase.google
 
 The Firebase web configuration and reCAPTCHA site key are public client configuration values, not server secrets. Never put service-account keys, private API keys, or App Check debug tokens in this repository. Hybrid fallback can send extracted document text to Google's cloud, so the app requires explicit consent before enabling it.
 
-Firebase AI Logic's web on-device inference uses Chrome's Prompt API and is available only in supported desktop Chrome versions. The SDK reports the inference source but does not let the app pin a particular on-device model version. PDF files are converted to text in the browser before model analysis; direct on-device PDF input and OCR are not supported by this workflow.
+Firebase AI Logic's web on-device inference uses Chrome's Prompt API and is available only in supported desktop Chrome versions. The SDK reports the inference source but does not let the app pin a particular on-device model version. PDF files are converted to text before model analysis; direct on-device PDF input is not supported. Scanned PDFs may use the separately consented external OCR path described above.
 
 The current local checkout has no Firebase web configuration or registered App Check debug token, so a live model response has not yet been verified here. A configured client is not shown as connected until a Firebase AI Logic response is received.
 

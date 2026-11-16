@@ -4,7 +4,18 @@ export interface NormalizedOcr {
   paginated: boolean;
 }
 
-type PageLike = { page_number?: unknown; page?: unknown; text?: unknown; markdown?: unknown; md?: unknown };
+export function shouldOfferExternalOcr(pages: string[]): boolean {
+  const characterCount = pages.reduce((total, page) => total + page.trim().length, 0);
+  return characterCount < 100 || (pages.length >= 5 && characterCount / pages.length < 20);
+}
+
+type PageLike = {
+  page_number?: unknown;
+  page?: unknown;
+  text?: unknown;
+  markdown?: unknown;
+  md?: unknown;
+};
 
 function pageText(p: PageLike): string {
   for (const key of ["text", "markdown", "md"] as const) {
@@ -34,7 +45,9 @@ export function normalizeParseResult(result: unknown): NormalizedOcr {
   const r = (result ?? {}) as Record<string, unknown>;
   const candidates = [r["text"], r["markdown"], r["items"]];
   for (const c of candidates) {
-    const paged = fromPageArray((c as { pages?: unknown } | undefined)?.pages ?? (Array.isArray(c) ? c : undefined));
+    const paged = fromPageArray(
+      (c as { pages?: unknown } | undefined)?.pages ?? (Array.isArray(c) ? c : undefined),
+    );
     if (paged && paged.pages.some((p) => p)) return paged;
   }
   for (const c of [r["text"], r["markdown"]]) {

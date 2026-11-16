@@ -9,10 +9,17 @@ const MAX_BYTES = 20 * 1024 * 1024;
 const inputSchema = z.object({
   consent: z.literal(true),
   fileName: z.string().min(1).max(255),
-  base64: z.string().min(1).max(Math.ceil((MAX_BYTES * 4) / 3) + 8),
+  base64: z
+    .string()
+    .min(1)
+    .max(Math.ceil((MAX_BYTES * 4) / 3) + 8),
 });
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+export const checkExternalOcrAvailability = createServerFn({ method: "GET" }).handler(async () =>
+  Boolean(process.env["LOVABLE_API_KEY"] && process.env["LLAMACLOUD_API_KEY"]),
+);
 
 async function failure(res: Response, step: string): Promise<never> {
   const body = (await res.text()).slice(0, 500);
@@ -21,22 +28,29 @@ async function failure(res: Response, step: string): Promise<never> {
 }
 
 export const extractWithLlamaParse = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => inputSchema.parse(data))
+  .validator((data: unknown) => inputSchema.parse(data))
   .handler(async ({ data }): Promise<NormalizedOcr> => {
     const lovableKey = process.env["LOVABLE_API_KEY"];
     const connKey = process.env["LLAMACLOUD_API_KEY"];
     if (!lovableKey || !connKey) {
-      throw new Error("External OCR is not enabled: the LlamaParse connector is not linked to this project.");
+      throw new Error(
+        "External OCR is not enabled: the LlamaParse connector is not linked to this project.",
+      );
     }
     const bytes = Uint8Array.from(atob(data.base64), (c) => c.charCodeAt(0));
     if (bytes.byteLength > MAX_BYTES) throw new Error("File exceeds the 20 MB limit.");
-    if (new TextDecoder().decode(bytes.slice(0, 5)) !== "%PDF-") throw new Error("Only PDF files are supported.");
+    if (new TextDecoder().decode(bytes.slice(0, 5)) !== "%PDF-")
+      throw new Error("Only PDF files are supported.");
 
     const headers = { Authorization: `Bearer ${lovableKey}`, "X-Connection-Api-Key": connKey };
     const form = new FormData();
     form.append("file", new Blob([bytes], { type: "application/pdf" }), data.fileName);
     form.append("configuration", JSON.stringify({ tier: "fast", version: "latest" }));
-    const up = await fetch(`${GATEWAY_URL}/api/v2/parse/upload`, { method: "POST", headers, body: form });
+    const up = await fetch(`${GATEWAY_URL}/api/v2/parse/upload`, {
+      method: "POST",
+      headers,
+      body: form,
+    });
     if (!up.ok) await failure(up, "upload");
     const { id } = (await up.json()) as { id?: string };
     if (!id) throw new Error("External OCR upload returned no job id.");
@@ -60,7 +74,9 @@ export const extractWithLlamaParse = createServerFn({ method: "POST" })
         }
         delay = 3000;
       }
-      const res = await fetch(`${GATEWAY_URL}/api/v2/parse/${id}?expand=text,markdown`, { headers });
+      const res = await fetch(`${GATEWAY_URL}/api/v2/parse/${id}?expand=text,markdown`, {
+        headers,
+      });
       if (!res.ok) await failure(res, "result fetch");
       const out = normalizeParseResult(await res.json());
       if (!out.pages.some((p) => p.trim())) throw new Error("External OCR returned no text.");

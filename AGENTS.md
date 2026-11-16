@@ -28,3 +28,7 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## External OCR
+
+- LlamaParse OCR must run only through the server function and Lovable connector, after separate explicit consent for the specific document. Never call the provider directly from browser code or log document text or credentials.

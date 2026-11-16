@@ -42,7 +42,10 @@ import {
 import { buildDemoDocument, DEMO_DOC_ID, DEMO_LABEL } from "@/data/sampleTender";
 import { complianceCsv, downloadText } from "@/lib/services/csv";
 import { formatBytes, validatePdf, extractPdfText } from "@/lib/services/documentProcessing";
+import { isExternalOcrAvailable, runExternalOcr } from "@/lib/services/externalOcr";
 import { isFirebaseConfigured } from "@/lib/services/firebaseAi";
+import { markUnpaginatedEvidenceUnverified } from "@/lib/services/ocrEvidence";
+import { shouldOfferExternalOcr } from "@/lib/services/ocrNormalize";
 import { analyzeTender } from "@/lib/services/tenderAnalysis";
 import {
   CATEGORIES,
@@ -58,6 +61,8 @@ import {
 
 type Screen = "overview" | "analysis" | "compliance" | "processing";
 type ProcessingChoice = "demo" | InferencePreference;
+type DocumentTextSource = "pdfjs" | "llamaparse";
+type ExternalOcrAvailability = "checking" | "enabled" | "disabled" | "error";
 type FindingKind = "Requirement" | "Deadline" | "Specification" | "Risk" | "Missing information";
 
 type Finding = {
@@ -244,6 +249,19 @@ export function PocketMindApp() {
   const [filesByDocumentId, setFilesByDocumentId] = useState<Record<string, File>>({});
   const [processingChoice, setProcessingChoice] = useState<ProcessingChoice>("demo");
   const [cloudConsent, setCloudConsent] = useState(false);
+  const [externalOcrConsentDocumentId, setExternalOcrConsentDocumentId] = useState<string | null>(
+    null,
+  );
+  const [scannedDocumentId, setScannedDocumentId] = useState<string | null>(null);
+  const [externalOcrAvailability, setExternalOcrAvailability] =
+    useState<ExternalOcrAvailability>("checking");
+  const [scannedTextByDocumentId, setScannedTextByDocumentId] = useState<Record<string, string[]>>(
+    {},
+  );
+  const [documentTextSources, setDocumentTextSources] = useState<
+    Record<string, DocumentTextSource>
+  >({});
+  const [documentPagination, setDocumentPagination] = useState<Record<string, boolean>>({});
   const [reviews, setReviews] = useState<Record<string, Review>>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [firebaseConnected, setFirebaseConnected] = useState(false);
@@ -313,6 +331,9 @@ export function PocketMindApp() {
     setActivePage(1);
     setProcessingChoice("local");
     setCloudConsent(false);
+    setExternalOcrConsentDocumentId(null);
+    setScannedDocumentId(null);
+    setExternalOcrAvailability("checking");
     setErrorMessage("");
     setScreen("processing");
   }
@@ -340,6 +361,48 @@ export function PocketMindApp() {
     }));
   }
 
+  async function checkExternalOcrStatus() {
+    setExternalOcrAvailability("checking");
+    try {
+      setExternalOcrAvailability((await isExternalOcrAvailable()) ? "enabled" : "disabled");
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : "Unknown status check error.";
+      setExternalOcrAvailability("error");
+      setErrorMessage(`External OCR availability could not be checked. ${detail}`);
+    }
+  }
+
+  async function analyzePages(pages: string[], textSource: DocumentTextSource, paginated: boolean) {
+    if (!selectedDocument) {
+      throw new Error("Choose a document before starting an analysis.");
+    }
+    if (processingChoice === "demo") {
+      throw new Error("Demo mode never runs external OCR or Firebase AI analysis.");
+    }
+    const result = await analyzeTender(
+      pages,
+      processingChoice,
+      ({ detail }) => setProgressDetail(detail),
+      () => setFirebaseConnected(true),
+    );
+    const analysis = paginated ? result : markUnpaginatedEvidenceUnverified(result);
+    const updatedDocument: DocumentRecord = {
+      ...selectedDocument,
+      pages,
+      analysis,
+    };
+    setDocuments((current) =>
+      current.map((document) => (document.id === updatedDocument.id ? updatedDocument : document)),
+    );
+    setDocumentTextSources((current) => ({ ...current, [updatedDocument.id]: textSource }));
+    setDocumentPagination((current) => ({ ...current, [updatedDocument.id]: paginated }));
+    setScannedDocumentId(null);
+    setActivePage(1);
+    setSelectedRequirementId(null);
+    setActiveFinding("all");
+    setScreen("analysis");
+  }
+
   async function runAnalysis() {
     if (!selectedDocument || (!file && selectedDocument.source !== "demo")) {
       setErrorMessage("Choose a PDF before starting an analysis.");
@@ -360,6 +423,8 @@ export function PocketMindApp() {
     setErrorMessage("");
     try {
       let pages: string[];
+      let textSource: DocumentTextSource = "pdfjs";
+      let paginated = true;
       if (selectedDocument.source === "demo") {
         pages = selectedDocument.pages;
         setProgressDetail("Using fictional sample text; no real PDF is uploaded.");
@@ -367,40 +432,113 @@ export function PocketMindApp() {
         if (!file) {
           throw new Error("The selected PDF is no longer available. Choose it again to continue.");
         }
-        setProgressDetail("Reading PDF text in this browser");
-        pages = await extractPdfText(file, (completed, total) => {
-          setProgressDetail(`Extracting text from page ${completed} of ${total}`);
-        });
+        if (
+          documentTextSources[selectedDocument.id] === "llamaparse" &&
+          selectedDocument.pages.length > 0
+        ) {
+          pages = selectedDocument.pages;
+          textSource = "llamaparse";
+          paginated = documentPagination[selectedDocument.id] ?? true;
+        } else {
+          setProgressDetail("Reading PDF text in this browser");
+          pages = await extractPdfText(file, (completed, total) => {
+            setProgressDetail(`Extracting text from page ${completed} of ${total}`);
+          });
+        }
       }
-      if (!pages.some((page) => page.trim())) {
-        throw new Error(
-          "No selectable text was found in this PDF. Scanned-document OCR is not available yet.",
-        );
+      if (
+        selectedDocument.source === "upload" &&
+        textSource === "pdfjs" &&
+        shouldOfferExternalOcr(pages)
+      ) {
+        setScannedDocumentId(selectedDocument.id);
+        setScannedTextByDocumentId((current) => ({ ...current, [selectedDocument.id]: pages }));
+        setExternalOcrConsentDocumentId(null);
+        void checkExternalOcrStatus();
+        return;
       }
-
-      const result = await analyzeTender(
-        pages,
-        processingChoice,
-        ({ detail }) => setProgressDetail(detail),
-        () => setFirebaseConnected(true),
-      );
-      const updatedDocument: DocumentRecord = {
-        ...selectedDocument,
-        pages,
-        analysis: result,
-      };
-      setDocuments((current) =>
-        current.map((document) =>
-          document.id === updatedDocument.id ? updatedDocument : document,
-        ),
-      );
-      setActivePage(1);
-      setSelectedRequirementId(null);
-      setActiveFinding("all");
-      setScreen("analysis");
+      await analyzePages(pages, textSource, paginated);
     } catch (error) {
       const detail = error instanceof Error ? error.message : "An unexpected error occurred.";
       setErrorMessage(`Analysis could not be completed. ${detail}`);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  }
+
+  async function analyzeExtractedTextAnyway() {
+    if (!selectedDocument || processingChoice === "demo") {
+      setErrorMessage("Choose an AI processing mode before analyzing extracted text.");
+      return;
+    }
+    if ((processingChoice === "cloud" || processingChoice === "hybrid") && !cloudConsent) {
+      setErrorMessage("Explicitly allow Firebase cloud processing, or choose on-device only.");
+      return;
+    }
+    const pages = scannedTextByDocumentId[selectedDocument.id];
+    if (!pages?.some((page) => page.trim())) {
+      setErrorMessage("This PDF has no selectable text to analyze. Use external OCR if enabled.");
+      return;
+    }
+
+    setIsAnalyzing(true);
+    setErrorMessage("");
+    try {
+      setProgressDetail("Analyzing the text extracted in this browser");
+      await analyzePages(pages, "pdfjs", true);
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : "An unexpected error occurred.";
+      setErrorMessage(`Analysis could not be completed. ${detail}`);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  }
+
+  async function runLlamaParseOcr() {
+    if (!selectedDocument || selectedDocument.source !== "upload" || !file) {
+      setErrorMessage("Choose a PDF before starting external text extraction.");
+      return;
+    }
+    if (processingChoice === "demo") {
+      setErrorMessage("Demo mode never sends documents to external OCR.");
+      return;
+    }
+    if (externalOcrConsentDocumentId !== selectedDocument.id) {
+      setErrorMessage("Explicitly allow external text extraction for this PDF before continuing.");
+      return;
+    }
+    if (externalOcrAvailability !== "enabled") {
+      setErrorMessage("External OCR is not enabled for this project.");
+      return;
+    }
+    if ((processingChoice === "cloud" || processingChoice === "hybrid") && !cloudConsent) {
+      setErrorMessage("Explicitly allow Firebase cloud processing, or choose on-device only.");
+      return;
+    }
+
+    setIsAnalyzing(true);
+    setErrorMessage("");
+    try {
+      setProgressDetail("Sending the PDF to LlamaParse for external text extraction");
+      const result = await runExternalOcr(file, true);
+      if (!result.pages.some((page) => page.trim())) {
+        throw new Error("LlamaParse returned no text for this PDF.");
+      }
+      setDocuments((current) =>
+        current.map((document) =>
+          document.id === selectedDocument.id ? { ...document, pages: result.pages } : document,
+        ),
+      );
+      setDocumentTextSources((current) => ({ ...current, [selectedDocument.id]: "llamaparse" }));
+      setDocumentPagination((current) => ({
+        ...current,
+        [selectedDocument.id]: result.paginated,
+      }));
+      setProgressDetail("Analyzing extracted text with Firebase AI Logic");
+      await analyzePages(result.pages, "llamaparse", result.paginated);
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : "An unexpected error occurred.";
+      setErrorMessage(`External text extraction could not be completed. ${detail}`);
     } finally {
       setIsAnalyzing(false);
     }
@@ -566,6 +704,8 @@ export function PocketMindApp() {
               activePage={activePage}
               pageText={currentPageText}
               search={search}
+              textSource={documentTextSources[selectedDocument.id] ?? null}
+              paginationVerified={documentPagination[selectedDocument.id] ?? true}
               onSelectFilter={setActiveFinding}
               onSelectPage={setActivePage}
               onOpenProcessing={() => setScreen("processing")}
@@ -597,6 +737,12 @@ export function PocketMindApp() {
               file={file}
               choice={processingChoice}
               cloudConsent={cloudConsent}
+              showExternalOcrPrompt={scannedDocumentId === selectedDocument.id}
+              externalOcrAvailability={externalOcrAvailability}
+              externalOcrConsent={externalOcrConsentDocumentId === selectedDocument.id}
+              hasExtractedText={Boolean(
+                scannedTextByDocumentId[selectedDocument.id]?.some((page) => page.trim()),
+              )}
               firebaseConfigured={firebaseConfigured}
               firebaseConnected={firebaseConnected}
               isAnalyzing={isAnalyzing}
@@ -608,12 +754,20 @@ export function PocketMindApp() {
               onSelectChoice={(choice) => {
                 setProcessingChoice(choice);
                 if (choice === "demo" || choice === "local") setCloudConsent(false);
+                if (choice === "demo") setExternalOcrConsentDocumentId(null);
                 setErrorMessage("");
               }}
               onCloudConsentChange={(checked) => {
                 setCloudConsent(checked);
                 setErrorMessage("");
               }}
+              onExternalOcrConsentChange={(checked) => {
+                setExternalOcrConsentDocumentId(checked ? selectedDocument.id : null);
+                setErrorMessage("");
+              }}
+              onExternalOcr={runLlamaParseOcr}
+              onAnalyzeExtractedText={analyzeExtractedTextAnyway}
+              onCheckExternalOcr={() => void checkExternalOcrStatus()}
               onRunAnalysis={runAnalysis}
               onOpenDemo={openDemo}
               onClearError={() => setErrorMessage("")}
@@ -805,11 +959,11 @@ function OverviewScreen({
               <Upload size={23} />
             </span>
             <strong>Upload a tender</strong>
-            <span>Extract selectable text from a PDF in your browser.</span>
+            <span>Extract text locally, with optional external OCR for scanned PDFs.</span>
             <span className="pm-button pm-button--primary">
               Choose processing mode <ArrowRight size={16} />
             </span>
-            <small>PDF only · maximum 20 MB · OCR not available</small>
+            <small>PDF only · maximum 20 MB · optional external OCR for scanned PDFs</small>
           </button>
 
           <section className="pm-panel pm-review-panel">
@@ -871,6 +1025,8 @@ function AnalysisScreen({
   activePage,
   pageText,
   search,
+  textSource,
+  paginationVerified,
   onSelectFilter,
   onSelectPage,
   onOpenProcessing,
@@ -884,6 +1040,8 @@ function AnalysisScreen({
   activePage: number;
   pageText: string;
   search: string;
+  textSource: DocumentTextSource | null;
+  paginationVerified: boolean;
   onSelectFilter: (filter: string) => void;
   onSelectPage: (page: number) => void;
   onOpenProcessing: () => void;
@@ -918,10 +1076,14 @@ function AnalysisScreen({
             <h2>{document.name}</h2>
             <span>
               {document.source === "demo" ? "Fictional sample" : "PDF document"} ·{" "}
-              {document.pages.length} pages · {formatBytes(document.size)}
+              {paginationVerified ? `${document.pages.length} pages` : "Pagination unverified"} ·{" "}
+              {formatBytes(document.size)}
             </span>
           </div>
           <Badge tone={modeSourceTone(processingSource)}>{modeLabel(processingSource)}</Badge>
+          {textSource === "llamaparse" && (
+            <Badge tone="amber">Text: external OCR (LlamaParse)</Badge>
+          )}
         </div>
         <button className="pm-button pm-button--dark" type="button" onClick={onExport}>
           <ArrowDownToLine size={16} /> Export JSON
@@ -935,6 +1097,16 @@ function AnalysisScreen({
             {analysis.mode === "demo"
               ? "This prepared analysis is simulated and illustrative; it was not generated from the sample text."
               : "This AI analysis uses fictional sample text, not a real procurement document."}
+          </span>
+        </div>
+      )}
+
+      {textSource === "llamaparse" && !paginationVerified && (
+        <div className="pm-inline-warning" role="status">
+          <AlertCircle size={16} />
+          <span>
+            LlamaParse did not provide page numbers. Citations cannot be page-verified; findings are
+            flagged for human review.
           </span>
         </div>
       )}
@@ -1000,36 +1172,48 @@ function AnalysisScreen({
           <div className="pm-panel-heading pm-source-heading">
             <div>
               <h2>Source document</h2>
-              <p>Page text extracted in this browser.</p>
+              <p>
+                {textSource === "llamaparse"
+                  ? paginationVerified
+                    ? "Page text extracted by LlamaParse."
+                    : "LlamaParse text; original page boundaries are unavailable."
+                  : "Page text extracted in this browser."}
+              </p>
             </div>
             <div className="pm-page-controls">
-              <button
-                type="button"
-                className="pm-icon-button"
-                aria-label="Previous page"
-                disabled={activePage <= 1}
-                onClick={() => onSelectPage(activePage - 1)}
-              >
-                <ChevronLeft size={17} />
-              </button>
-              <span>
-                Page <strong>{activePage}</strong> of {document.pages.length}
-              </span>
-              <button
-                type="button"
-                className="pm-icon-button"
-                aria-label="Next page"
-                disabled={activePage >= document.pages.length}
-                onClick={() => onSelectPage(activePage + 1)}
-              >
-                <ChevronRight size={17} />
-              </button>
+              {paginationVerified ? (
+                <>
+                  <button
+                    type="button"
+                    className="pm-icon-button"
+                    aria-label="Previous page"
+                    disabled={activePage <= 1}
+                    onClick={() => onSelectPage(activePage - 1)}
+                  >
+                    <ChevronLeft size={17} />
+                  </button>
+                  <span>
+                    Page <strong>{activePage}</strong> of {document.pages.length}
+                  </span>
+                  <button
+                    type="button"
+                    className="pm-icon-button"
+                    aria-label="Next page"
+                    disabled={activePage >= document.pages.length}
+                    onClick={() => onSelectPage(activePage + 1)}
+                  >
+                    <ChevronRight size={17} />
+                  </button>
+                </>
+              ) : (
+                <span>Page numbers unavailable</span>
+              )}
             </div>
           </div>
           <div className="pm-source-page">
             <div className="pm-source-page-head">
               <span>{document.name}</span>
-              <span>Page {activePage}</span>
+              <span>{paginationVerified ? `Page ${activePage}` : "Pagination unavailable"}</span>
             </div>
             <pre>{pageText || "No text is available for this page."}</pre>
             <div className="pm-source-disclaimer">
@@ -1410,6 +1594,10 @@ function ProcessingScreen({
   file,
   choice,
   cloudConsent,
+  showExternalOcrPrompt,
+  externalOcrAvailability,
+  externalOcrConsent,
+  hasExtractedText,
   firebaseConfigured,
   firebaseConnected,
   isAnalyzing,
@@ -1420,6 +1608,10 @@ function ProcessingScreen({
   onDrop,
   onSelectChoice,
   onCloudConsentChange,
+  onExternalOcrConsentChange,
+  onExternalOcr,
+  onAnalyzeExtractedText,
+  onCheckExternalOcr,
   onRunAnalysis,
   onOpenDemo,
   onClearError,
@@ -1428,6 +1620,10 @@ function ProcessingScreen({
   file: File | null;
   choice: ProcessingChoice;
   cloudConsent: boolean;
+  showExternalOcrPrompt: boolean;
+  externalOcrAvailability: ExternalOcrAvailability;
+  externalOcrConsent: boolean;
+  hasExtractedText: boolean;
   firebaseConfigured: boolean;
   firebaseConnected: boolean;
   isAnalyzing: boolean;
@@ -1438,6 +1634,10 @@ function ProcessingScreen({
   onDrop: (event: DragEvent<HTMLDivElement>) => void;
   onSelectChoice: (choice: ProcessingChoice) => void;
   onCloudConsentChange: (checked: boolean) => void;
+  onExternalOcrConsentChange: (checked: boolean) => void;
+  onExternalOcr: () => void;
+  onAnalyzeExtractedText: () => void;
+  onCheckExternalOcr: () => void;
   onRunAnalysis: () => void;
   onOpenDemo: () => void;
   onClearError: () => void;
@@ -1642,10 +1842,109 @@ function ProcessingScreen({
             >
               <FolderOpen size={15} /> Choose PDF
             </button>
-            <small>PDF only · maximum 20 MB · selectable text required</small>
+            <small>PDF only · maximum 20 MB · scanned PDFs may use optional external OCR</small>
           </div>
         )}
       </div>
+
+      {showExternalOcrPrompt && document.source === "upload" && choice !== "demo" && (
+        <section className="pm-external-ocr-panel" aria-live="polite">
+          <div className="pm-external-ocr-heading">
+            <AlertCircle size={18} />
+            <div>
+              <strong>This looks like a scanned PDF.</strong>
+              <p>
+                You can send this file to LlamaParse for external text extraction. Firebase AI Logic
+                will analyze the extracted text afterward.
+              </p>
+            </div>
+          </div>
+          {hasExtractedText && (
+            <button
+              className="pm-button pm-button--outline"
+              type="button"
+              onClick={onAnalyzeExtractedText}
+              disabled={
+                isAnalyzing || ((choice === "cloud" || choice === "hybrid") && !cloudConsent)
+              }
+            >
+              Analyze the text available in this browser
+            </button>
+          )}
+          {externalOcrAvailability === "checking" && (
+            <div className="pm-external-ocr-status">
+              <LoaderCircle size={15} className="pm-spin" />
+              Checking whether external OCR is enabled...
+            </div>
+          )}
+          {externalOcrAvailability === "disabled" && (
+            <div className="pm-external-ocr-status" role="status">
+              <strong>External OCR is not enabled.</strong> Link the LlamaParse Platform connector
+              to this project in Lovable.
+              <button
+                className="pm-button pm-button--outline"
+                type="button"
+                onClick={onCheckExternalOcr}
+              >
+                Check again
+              </button>
+            </div>
+          )}
+          {externalOcrAvailability === "error" && (
+            <div className="pm-external-ocr-status" role="status">
+              Could not check connector availability.
+              <button
+                className="pm-button pm-button--outline"
+                type="button"
+                onClick={onCheckExternalOcr}
+              >
+                Retry check
+              </button>
+            </div>
+          )}
+          {externalOcrAvailability === "enabled" && (
+            <>
+              <label className="pm-cloud-consent pm-external-ocr-consent">
+                <input
+                  type="checkbox"
+                  checked={externalOcrConsent}
+                  onChange={(event) => onExternalOcrConsentChange(event.currentTarget.checked)}
+                />
+                <span className="pm-consent-check">
+                  <Check size={14} />
+                </span>
+                <span>
+                  <strong>I consent to sending this PDF to LlamaParse for external OCR.</strong>
+                  <small>
+                    This consent is separate from Firebase cloud consent. The PDF is sent to
+                    LlamaParse even when on-device inference is selected.
+                  </small>
+                </span>
+              </label>
+              <button
+                className="pm-button pm-button--primary"
+                type="button"
+                onClick={onExternalOcr}
+                disabled={
+                  isAnalyzing ||
+                  !externalOcrConsent ||
+                  ((choice === "cloud" || choice === "hybrid") && !cloudConsent)
+                }
+              >
+                {isAnalyzing ? (
+                  <>
+                    <LoaderCircle size={16} className="pm-spin" /> Extracting and analyzing...
+                  </>
+                ) : (
+                  <>
+                    Extract with LlamaParse <ArrowRight size={16} />
+                  </>
+                )}
+              </button>
+            </>
+          )}
+        </section>
+      )}
 
       {errorMessage && (
         <div className="pm-error-banner" role="alert">
