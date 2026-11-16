@@ -74,11 +74,18 @@ The Firebase web configuration and reCAPTCHA site key are public client configur
 
 Firebase AI Logic's web on-device inference uses Chrome's Prompt API and is available only in supported desktop Chrome versions. The SDK reports the inference source but does not let the app pin a particular on-device model version. PDF files are converted to text before model analysis; direct on-device PDF input is not supported. Scanned PDFs may use the separately consented external OCR path described above.
 
-The current local checkout has no Firebase web configuration or registered App Check debug token, so a live model response has not yet been verified here. A configured client is not shown as connected until a Firebase AI Logic response is received.
+The current local checkout has no `.env.local` file with Firebase configuration committed (by design — secrets must not be committed). Set up your own Firebase project following the steps above, or use the hosted deployment at **https://ai-mind-law.vercel.app/** where Firebase is configured. A configured client is not shown as connected until a Firebase AI Logic response is received.
 
 ## Development
 
-Requirements: Bun and Node.js.
+Requirements: Node.js (npm) or Bun.
+
+```sh
+npm install
+npm run dev
+```
+
+Or with Bun:
 
 ```sh
 bun install
@@ -88,9 +95,9 @@ bun run dev
 Checks:
 
 ```sh
-bun test
-bun run lint
-bun run build
+npm test
+npm run lint
+npm run build
 ```
 
 ## Submission readiness
