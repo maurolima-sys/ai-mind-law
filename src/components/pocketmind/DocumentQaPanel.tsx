@@ -17,6 +17,7 @@ import {
 } from "@/lib/services/legalResearch.functions";
 import type { LegalResearchSource } from "@/lib/services/legalResearch";
 import type { ChatCitation, InferencePreference } from "@/lib/types";
+import { useT } from "@/lib/i18n";
 
 type SpeechRecognitionEventLike = {
   results: ArrayLike<ArrayLike<{ transcript: string }>>;
@@ -86,6 +87,7 @@ export function DocumentQaPanel({
   onSelectPage: (page: number) => void;
   onModelResponse: () => void;
 }) {
+  const t = useT();
   const [messages, setMessages] = useState<QaMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -290,49 +292,42 @@ export function DocumentQaPanel({
     <section className="pm-panel pm-qa-panel" aria-labelledby="pm-qa-title">
       <div className="pm-panel-heading pm-qa-heading">
         <div>
-          <h2 id="pm-qa-title">Ask this document</h2>
-          <p>Ask follow-up questions and review every answer against its sources.</p>
+          <h2 id="pm-qa-title">{t("qa_title")}</h2>
+          <p>{t("qa_subtitle")}</p>
         </div>
         <span className="pm-qa-document" title={documentName}>
-          <FileText size={14} /> Document-grounded
+          <FileText size={14} /> {t("qa_document_grounded")}
         </span>
       </div>
 
       <div className="pm-qa-privacy">
-        <p>
-          Questions use the selected AI mode. Cloud and hybrid fallback require your existing
-          Firebase consent. The PDF is never sent to Firecrawl.
-        </p>
+        <p>{t("qa_privacy_note")}</p>
         {needsCloudConsent && !cloudConsent && (
           <button type="button" className="pm-text-button" onClick={onOpenProcessing}>
-            Review cloud consent
+            {t("qa_review_consent")}
           </button>
         )}
       </div>
       {!preference && (
         <p className="pm-qa-mode-note">
-          Choose on-device, cloud, or hybrid processing before asking. The prepared sample is
-          illustrative and is not a real tender.
+          {t("qa_mode_note")}
           <button type="button" className="pm-text-button" onClick={onOpenProcessing}>
-            Choose a mode
+            {t("qa_choose_mode")}
           </button>
         </p>
       )}
 
       {messages.length === 0 ? (
         <div className="pm-qa-empty">
-          <strong>Start with a question about a requirement, rule, or missing detail.</strong>
-          <span>
-            Answers separate what the PDF says from working hypotheses and questions that still need
-            verification.
-          </span>
+          <strong>{t("qa_empty_title")}</strong>
+          <span>{t("qa_empty_detail")}</span>
         </div>
       ) : (
         <div className="pm-qa-messages" role="log" aria-live="polite" aria-relevant="additions">
           {messages.map((message) => (
             <article className={`pm-qa-message pm-qa-message--${message.role}`} key={message.id}>
               <div className="pm-qa-message-head">
-                <strong>{message.role === "user" ? "You" : "PocketMind"}</strong>
+                <strong>{message.role === "user" ? t("qa_role_user") : t("qa_role_assistant")}</strong>
                 {message.role === "assistant" && (
                   <>
                     <span>{message.engine}</span>
@@ -342,12 +337,10 @@ export function DocumentQaPanel({
                       onClick={() => toggleAnswerSpeech(message)}
                       disabled={!speechOutputAvailable}
                       aria-label={
-                        speakingMessageId === message.id
-                          ? "Stop reading answer"
-                          : "Read answer aloud"
+                        speakingMessageId === message.id ? t("qa_speak_stop") : t("qa_speak_read")
                       }
                       title={
-                        speakingMessageId === message.id ? "Stop reading" : "Read answer aloud"
+                        speakingMessageId === message.id ? t("qa_speak_stop") : t("qa_speak_read")
                       }
                     >
                       {speakingMessageId === message.id ? (
@@ -362,7 +355,7 @@ export function DocumentQaPanel({
               <p>{message.content}</p>
               {message.role === "assistant" && message.hypotheses.length > 0 && (
                 <div className="pm-qa-followup-list">
-                  <strong>Working hypotheses</strong>
+                  <strong>{t("qa_hypotheses")}</strong>
                   <ul>
                     {message.hypotheses.map((hypothesis, index) => (
                       <li key={`${message.id}-hypothesis-${index}`}>{hypothesis}</li>
@@ -372,7 +365,7 @@ export function DocumentQaPanel({
               )}
               {message.role === "assistant" && message.unresolvedQuestions.length > 0 && (
                 <div className="pm-qa-followup-list">
-                  <strong>Still to verify</strong>
+                  <strong>{t("qa_unresolved")}</strong>
                   <ul>
                     {message.unresolvedQuestions.map((question, index) => (
                       <li key={`${message.id}-unresolved-${index}`}>{question}</li>
@@ -381,8 +374,8 @@ export function DocumentQaPanel({
                 </div>
               )}
               {message.role === "assistant" && message.citations.length > 0 && (
-                <div className="pm-qa-citations" aria-label="Document citations">
-                  <strong>Document evidence</strong>
+                <div className="pm-qa-citations" aria-label={t("qa_citations_title")}>
+                  <strong>{t("qa_citations_title")}</strong>
                   {message.citations.map((citation, index) => (
                     <div className="pm-qa-citation" key={`${message.id}-citation-${index}`}>
                       {citation.page !== null ? (
@@ -394,21 +387,19 @@ export function DocumentQaPanel({
                           Page {citation.page}
                         </button>
                       ) : (
-                        <span className="pm-muted-label">Page reference unavailable</span>
+                        <span className="pm-muted-label">{t("qa_page_unavailable")}</span>
                       )}
                       <blockquote>{citation.excerpt}</blockquote>
                       <span className={citation.verified ? "is-verified" : "is-unverified"}>
-                        {citation.verified
-                          ? "Verified in extracted text"
-                          : "Verify against the PDF"}
+                        {citation.verified ? t("qa_citation_verified") : t("qa_citation_unverified")}
                       </span>
                     </div>
                   ))}
                 </div>
               )}
               {message.role === "assistant" && message.researchSources.length > 0 && (
-                <div className="pm-qa-research-sources" aria-label="External research sources">
-                  <strong>Search results · verify authority and current status</strong>
+                <div className="pm-qa-research-sources" aria-label={t("qa_research_title")}>
+                  <strong>{t("qa_research_title")}</strong>
                   {message.researchSources.map((source) => (
                     <article key={`${message.id}-${source.id}`}>
                       <a href={source.url} target="_blank" rel="noreferrer">
@@ -416,10 +407,10 @@ export function DocumentQaPanel({
                       </a>
                       <span>
                         {message.citedResearchSourceIds.includes(source.id)
-                          ? "Cited in answer"
-                          : "Not cited in answer"}
+                          ? t("qa_research_cited")
+                          : t("qa_research_not_cited")}
                       </span>
-                      <span>{source.publishedDate ?? "Publication date not provided"}</span>
+                      <span>{source.publishedDate ?? t("qa_research_no_date")}</span>
                       {source.description && <p>{source.description}</p>}
                     </article>
                   ))}
@@ -428,9 +419,7 @@ export function DocumentQaPanel({
               {message.role === "assistant" &&
                 message.researchAttempted &&
                 message.researchSources.length === 0 && (
-                  <p className="pm-qa-mic-note">
-                    Firecrawl returned no sources; this answer uses the document only.
-                  </p>
+                  <p className="pm-qa-mic-note">{t("qa_research_no_sources")}</p>
                 )}
             </article>
           ))}
@@ -438,9 +427,7 @@ export function DocumentQaPanel({
             <div className="pm-qa-pending" role="status">
               <LoaderCircle size={16} className="pm-qa-spinner" />
               <span>
-                {researchEnabled
-                  ? "Searching sources and preparing an evidence-based answer…"
-                  : "Checking the document and preparing an answer…"}
+                {researchEnabled ? t("qa_sending_research") : t("qa_sending_document")}
               </span>
             </div>
           )}
@@ -449,37 +436,31 @@ export function DocumentQaPanel({
 
       {researchAvailability === "error" && (
         <p className="pm-qa-inline-error" role="status">
-          External research availability could not be checked. Try reloading or ask from the
-          document only.
+          {t("qa_research_error_msg")}
         </p>
       )}
       {researchEnabled && (
         <div className="pm-qa-research-fields">
-          <label htmlFor="pm-qa-jurisdiction">Research jurisdiction</label>
+          <label htmlFor="pm-qa-jurisdiction">{t("qa_jurisdiction_label")}</label>
           <input
             id="pm-qa-jurisdiction"
             value={jurisdiction}
             maxLength={180}
             onChange={(event) => setJurisdiction(event.currentTarget.value)}
-            placeholder="e.g. Brazil — State of Amazonas; Law 1,762/1986"
+            placeholder={t("qa_jurisdiction_placeholder")}
             disabled={isSending}
           />
-          <label htmlFor="pm-qa-country">Country code</label>
+          <label htmlFor="pm-qa-country">{t("qa_country_label")}</label>
           <input
             id="pm-qa-country"
             value={country}
             maxLength={2}
             onChange={(event) => setCountry(event.currentTarget.value.toUpperCase())}
-            placeholder="BR"
+            placeholder={t("qa_country_placeholder")}
             disabled={isSending}
           />
-          <p>
-            Only your question, country code, and jurisdiction are sent to Firecrawl; the PDF is
-            not.
-          </p>
-          <p>
-            External research accepts questions up to 300 characters and jurisdictions up to 150.
-          </p>
+          <p>{t("qa_research_privacy1")}</p>
+          <p>{t("qa_research_privacy2")}</p>
           <label className="pm-qa-research-consent">
             <input
               type="checkbox"
@@ -487,10 +468,7 @@ export function DocumentQaPanel({
               onChange={(event) => setResearchConsent(event.currentTarget.checked)}
               disabled={isSending || researchAvailability !== "available"}
             />
-            <span>
-              I consent to sending this question, country code, and jurisdiction to Firecrawl for
-              external research.
-            </span>
+            <span>{t("qa_research_consent")}</span>
           </label>
         </div>
       )}
@@ -503,13 +481,13 @@ export function DocumentQaPanel({
 
       <form className="pm-qa-composer" onSubmit={(event) => void submitQuestion(event)}>
         <label className="pm-sr-only" htmlFor="pm-qa-question">
-          Ask a question about this document
+          {t("qa_composer_aria")}
         </label>
         <textarea
           id="pm-qa-question"
           value={draft}
           onChange={(event) => setDraft(event.currentTarget.value)}
-          placeholder="Ask a question about this document…"
+          placeholder={t("qa_composer_placeholder")}
           rows={3}
           maxLength={1500}
           disabled={isSending}
@@ -522,19 +500,13 @@ export function DocumentQaPanel({
               onClick={startVoiceInput}
               disabled={!speechInputAvailable || isSending}
               aria-pressed={isListening}
-              title={
-                speechInputAvailable
-                  ? "Use voice to draft a question"
-                  : "Voice input is not supported by this browser"
-              }
+              title={speechInputAvailable ? t("qa_voice_title") : t("qa_voice_unsupported")}
             >
               {isListening ? <MicOff size={15} /> : <Mic size={15} />}
-              {isListening ? "Stop listening" : "Use microphone"}
+              {isListening ? t("qa_voice_stop") : t("qa_voice_use")}
             </button>
             {speechInputAvailable && (
-              <span className="pm-qa-mic-note">
-                Your browser may use its own speech service. Nothing is sent to AI until you submit.
-              </span>
+              <span className="pm-qa-mic-note">{t("qa_voice_note")}</span>
             )}
           </div>
           <button
@@ -543,7 +515,7 @@ export function DocumentQaPanel({
             disabled={!canSend || isSending || !draft.trim()}
           >
             {isSending ? <LoaderCircle size={15} className="pm-qa-spinner" /> : <Send size={15} />}
-            Send question
+            {t("qa_send")}
           </button>
         </div>
         <div className="pm-qa-research-toggle">
@@ -558,30 +530,25 @@ export function DocumentQaPanel({
               }}
               disabled={isSending || researchAvailability !== "available"}
             />
-            <span>Include external research (Firecrawl)</span>
+            <span>{t("qa_research_toggle")}</span>
           </label>
           <span>
             {researchAvailability === "checking"
-              ? "Checking availability…"
+              ? t("qa_research_checking")
               : researchAvailability === "available"
-                ? "Optional · requires separate consent"
+                ? t("qa_research_available")
                 : researchAvailability === "unavailable"
-                  ? "Not configured on the server"
-                  : "Availability could not be checked"}
+                  ? t("qa_research_unavailable")
+                  : t("qa_research_error_status")}
           </span>
         </div>
         {!speechInputAvailable && (
-          <p className="pm-qa-mic-note">
-            Voice input is unavailable in this browser; you can type.
-          </p>
+          <p className="pm-qa-mic-note">{t("qa_voice_unavailable")}</p>
         )}
       </form>
 
       {!paginationVerified && (
-        <p className="pm-qa-pagination-note">
-          This document has no verified page mapping. Answers may quote extracted text, but page
-          citations are withheld.
-        </p>
+        <p className="pm-qa-pagination-note">{t("qa_pagination_note")}</p>
       )}
     </section>
   );

@@ -41,7 +41,9 @@ import {
 
 import { buildDemoDocument, DEMO_DOC_ID, DEMO_LABEL } from "@/data/sampleTender";
 import { DocumentQaPanel } from "@/components/pocketmind/DocumentQaPanel";
+import { LanguageSelector } from "@/components/pocketmind/LanguageSelector";
 import { complianceCsv, downloadText } from "@/lib/services/csv";
+import { useT } from "@/lib/i18n";
 import { formatBytes, validatePdf, extractPdfText } from "@/lib/services/documentProcessing";
 import { isExternalOcrAvailable, runExternalOcr } from "@/lib/services/externalOcr";
 import { isFirebaseConfigured } from "@/lib/services/firebaseAi";
@@ -79,41 +81,12 @@ type Finding = {
   mandatory?: boolean;
 };
 
-const navigation: Array<{ id: Screen; label: string; icon: LucideIcon }> = [
-  { id: "overview", label: "Dashboard", icon: LayoutDashboard },
-  { id: "analysis", label: "Document analysis", icon: FileText },
-  { id: "compliance", label: "Compliance matrix", icon: Table2 },
-  { id: "processing", label: "Processing & privacy", icon: ShieldCheck },
+const NAVIGATION_IDS: Array<{ id: Screen; icon: LucideIcon }> = [
+  { id: "overview", icon: LayoutDashboard },
+  { id: "analysis", icon: FileText },
+  { id: "compliance", icon: Table2 },
+  { id: "processing", icon: ShieldCheck },
 ];
-
-const screenCopy: Record<Screen, { title: string; subtitle: string }> = {
-  overview: {
-    title: "Your document intelligence workspace",
-    subtitle: "Turn complex tenders into reviewable findings, with source evidence attached.",
-  },
-  analysis: {
-    title: "Document analysis",
-    subtitle: "Review extracted findings beside their source pages.",
-  },
-  compliance: {
-    title: "Compliance matrix",
-    subtitle: "Track each requirement against evidence and your team's review status.",
-  },
-  processing: {
-    title: "Choose how your document is processed",
-    subtitle:
-      "Text is extracted in this browser. You control whether AI may process it in the cloud.",
-  },
-};
-
-function modeLabel(source: Analysis["processingSource"] | undefined) {
-  if (source === "on-device") return "On-device";
-  if (source === "cloud") return "Cloud";
-  if (source === "cloud-fallback") return "Cloud fallback";
-  if (source === "hybrid") return "Hybrid";
-  if (source === "demo") return "Demo mode";
-  return "Not analyzed";
-}
 
 function getProcessingSource(analysis: Analysis): ProcessingSource {
   if (analysis.processingSource) return analysis.processingSource;
@@ -174,7 +147,7 @@ function findAnalysisItems(analysis: Analysis): Finding[] {
       id: item.id,
       kind: "Deadline" as const,
       title: item.description,
-      description: item.date ?? "Date not specified",
+      description: item.date ?? t("finding_date_not_specified"),
       page: item.evidence.page,
       excerpt: item.evidence.excerpt,
       verified: item.evidence.verified,
@@ -231,18 +204,20 @@ function modeSourceTone(
 }
 
 function EvidenceStatus({ evidence }: { evidence: Evidence }) {
+  const t = useT();
   return evidence.verified ? (
     <Badge tone="green">
-      <Check size={12} /> Source verified
+      <Check size={12} /> {t("finding_source_verified")}
     </Badge>
   ) : (
     <Badge tone="amber">
-      <AlertCircle size={12} /> Verify source
+      <AlertCircle size={12} /> {t("finding_verify_source")}
     </Badge>
   );
 }
 
 export function PocketMindApp() {
+  const t = useT();
   const [documents, setDocuments] = useState<DocumentRecord[]>(() => [buildDemoDocument()]);
   const [selectedDocumentId, setSelectedDocumentId] = useState(DEMO_DOC_ID);
   const [screen, setScreen] = useState<Screen>("overview");
@@ -279,10 +254,10 @@ export function PocketMindApp() {
   const analysis = selectedDocument?.analysis;
   const firebaseConfigured = isFirebaseConfigured();
   const firebaseStatusLabel = !firebaseConfigured
-    ? "Firebase setup required"
+    ? t("firebase_not_configured")
     : firebaseConnected
-      ? "Firebase AI Logic: Connected"
-      : "Firebase configured · not yet verified";
+      ? t("firebase_connected")
+      : t("firebase_configured");
   const firebaseStatusTone = !firebaseConfigured
     ? "amber"
     : firebaseConnected
@@ -307,7 +282,27 @@ export function PocketMindApp() {
   const selectedRequirement =
     requirements.find((requirement) => requirement.id === selectedRequirementId) ?? requirements[0];
   const currentPageText = selectedDocument?.pages[activePage - 1] ?? "";
-  const currentScreenCopy = screenCopy[screen];
+  const screenTitles: Record<Screen, { title: string; subtitle: string }> = {
+    overview: { title: t("screen_overview_title"), subtitle: t("screen_overview_subtitle") },
+    analysis: { title: t("screen_analysis_title"), subtitle: t("screen_analysis_subtitle") },
+    compliance: { title: t("screen_compliance_title"), subtitle: t("screen_compliance_subtitle") },
+    processing: { title: t("screen_processing_title"), subtitle: t("screen_processing_subtitle") },
+  };
+  const currentScreenCopy = screenTitles[screen];
+  const navigation = [
+    { id: "overview" as Screen, label: t("nav_dashboard"), icon: LayoutDashboard },
+    { id: "analysis" as Screen, label: t("nav_analysis"), icon: FileText },
+    { id: "compliance" as Screen, label: t("nav_compliance"), icon: Table2 },
+    { id: "processing" as Screen, label: t("nav_processing"), icon: ShieldCheck },
+  ];
+  function modeLabel(source: Analysis["processingSource"] | undefined) {
+    if (source === "on-device") return t("mode_on_device");
+    if (source === "cloud") return t("mode_cloud");
+    if (source === "cloud-fallback") return t("mode_cloud_fallback");
+    if (source === "hybrid") return t("mode_hybrid");
+    if (source === "demo") return t("mode_demo");
+    return t("mode_not_analyzed");
+  }
 
   function addPdf(selectedFile: File | undefined) {
     if (!selectedFile) return;
@@ -631,7 +626,7 @@ export function PocketMindApp() {
           </div>
         </div>
 
-        <div className="pm-side-caption">Workspace</div>
+        <div className="pm-side-caption">{t("sidebar_workspace")}</div>
         <nav className="pm-navigation" aria-label="Main navigation">
           {navigation.map(({ id, label, icon: Icon }) => (
             <button
@@ -651,15 +646,15 @@ export function PocketMindApp() {
         <div className="pm-privacy-note">
           <Shield size={21} strokeWidth={1.8} />
           <div>
-            <strong>Privacy by choice</strong>
-            <span>Cloud use is always explicit.</span>
+            <strong>{t("sidebar_privacy_title")}</strong>
+            <span>{t("sidebar_privacy_note")}</span>
           </div>
         </div>
         <div className="pm-workspace-user">
           <div className="pm-avatar">PM</div>
           <div>
-            <strong>Procurement workspace</strong>
-            <span>Local browser session</span>
+            <strong>{t("sidebar_user_workspace")}</strong>
+            <span>{t("sidebar_user_session")}</span>
           </div>
           <ChevronDown size={16} aria-hidden="true" />
         </div>
@@ -678,16 +673,17 @@ export function PocketMindApp() {
             <input
               value={search}
               onChange={(event) => setSearch(event.currentTarget.value)}
-              placeholder="Search documents, requirements, risks..."
-              aria-label="Search current workspace"
+              placeholder={t("search_placeholder")}
+              aria-label={t("search_aria")}
             />
             {search && (
-              <button type="button" onClick={() => setSearch("")} aria-label="Clear search">
+              <button type="button" onClick={() => setSearch("")} aria-label={t("search_clear")}>
                 <X size={15} />
               </button>
             )}
           </label>
           <div className="pm-topbar-right">
+            <LanguageSelector />
             <Badge tone={firebaseStatusTone}>
               <span className="pm-status-dot" />
               {firebaseStatusLabel}
@@ -708,7 +704,7 @@ export function PocketMindApp() {
                 type="button"
                 onClick={() => setScreen("processing")}
               >
-                <Upload size={16} /> Add a document
+                <Upload size={16} /> {t("btn_add_document")}
               </button>
             )}
           </div>
@@ -719,7 +715,7 @@ export function PocketMindApp() {
               <div className="pm-demo-banner" role="note">
                 <Sparkles size={17} />
                 <div>
-                  <strong>Illustrative sample</strong>
+                  <strong>{t("demo_banner_title")}</strong>
                   <span>{DEMO_LABEL}</span>
                 </div>
                 <button
@@ -786,7 +782,7 @@ export function PocketMindApp() {
                 if (!analysis) return;
                 downloadText(
                   "pocketmind-compliance.csv",
-                  complianceCsv(analysis.requirements, reviews),
+                  complianceCsv(analysis.requirements, reviews, t),
                 );
               }}
               onOpenProcessing={() => setScreen("processing")}
@@ -862,6 +858,7 @@ function OverviewScreen({
   onOpenProcessing: () => void;
   onSelectDocument: (id: string) => void;
 }) {
+  const t = useT();
   const filteredDocuments = documents.filter((document) =>
     document.name.toLowerCase().includes(search.toLowerCase()),
   );
@@ -874,38 +871,38 @@ function OverviewScreen({
       <section className="pm-metrics-grid" aria-label="Workspace summary">
         <Metric
           icon={FileText}
-          label="Documents in workspace"
+          label={t("metric_docs_label")}
           value={documents.length}
-          detail="Files in this browser session"
+          detail={t("metric_docs_detail")}
           tone="blue"
         />
         <Metric
           icon={ClipboardCheck}
           label={
-            selectedDocument.source === "demo" ? "Sample requirements" : "Requirements extracted"
+            selectedDocument.source === "demo" ? t("metric_reqs_label_sample") : t("metric_reqs_label_real")
           }
           value={analysis?.requirements.length ?? 0}
           detail={
             selectedDocument.source === "demo"
               ? analysis?.mode === "demo"
-                ? "Illustrative prepared findings"
-                : "AI findings from fictional text"
-              : `${verifiedRequirements} with source-verified excerpts`
+                ? t("metric_reqs_detail_demo")
+                : t("metric_reqs_detail_ai")
+              : t("metric_reqs_detail_verified", { count: verifiedRequirements })
           }
           tone="purple"
         />
         <Metric
           icon={AlertCircle}
-          label="Critical risks"
+          label={t("metric_risks_label")}
           value={criticalRisks}
-          detail="Flagged for human review"
+          detail={t("metric_risks_detail")}
           tone="amber"
         />
         <Metric
           icon={CheckCircle2}
-          label="Pending reviews"
+          label={t("metric_pending_label")}
           value={pendingReviews}
-          detail="Requirements awaiting a decision"
+          detail={t("metric_pending_detail")}
           tone="green"
         />
       </section>
@@ -926,10 +923,10 @@ function OverviewScreen({
               <table className="pm-table pm-documents-table">
                 <thead>
                   <tr>
-                    <th>Document</th>
-                    <th>Pages</th>
-                    <th>Processing</th>
-                    <th>Status</th>
+                    <th>{t("table_col_document")}</th>
+                    <th>{t("table_col_pages")}</th>
+                    <th>{t("table_col_processing")}</th>
+                    <th>{t("table_col_status")}</th>
                     <th aria-label="Open" />
                   </tr>
                 </thead>
@@ -972,12 +969,12 @@ function OverviewScreen({
                           <Badge tone={document.source === "demo" ? "amber" : "green"}>
                             {document.source === "demo"
                               ? document.analysis.mode === "demo"
-                                ? "Prepared sample"
-                                : "AI-analysed sample"
-                              : "Analyzed"}
+                                ? t("status_prepared_sample")
+                                : t("status_ai_analysed")
+                              : t("status_analyzed")}
                           </Badge>
                         ) : (
-                          <Badge tone="neutral">Not analyzed</Badge>
+                          <Badge tone="neutral">{t("status_not_analyzed")}</Badge>
                         )}
                       </td>
                       <td>
@@ -1001,16 +998,16 @@ function OverviewScreen({
           ) : (
             <div className="pm-empty-state">
               <Search size={22} />
-              <strong>No matching documents</strong>
-              <span>Try a different search term.</span>
+              <strong>{t("docs_empty_title")}</strong>
+              <span>{t("docs_empty_detail")}</span>
             </div>
           )}
           <div className="pm-panel-foot">
             <span>
-              Showing {filteredDocuments.length} of {documents.length} documents
+              {t("docs_showing", { shown: filteredDocuments.length, total: documents.length })}
             </span>
             <button className="pm-text-button" type="button" onClick={onOpenAnalysis}>
-              Open current analysis
+              {t("docs_open_analysis")}
             </button>
           </div>
         </section>
@@ -1020,19 +1017,19 @@ function OverviewScreen({
             <span className="pm-upload-tile-icon">
               <Upload size={23} />
             </span>
-            <strong>Upload a tender</strong>
-            <span>Extract text locally, with optional external OCR for scanned PDFs.</span>
+            <strong>{t("upload_tile_title")}</strong>
+            <span>{t("upload_tile_detail")}</span>
             <span className="pm-button pm-button--primary">
-              Choose processing mode <ArrowRight size={16} />
+              {t("upload_tile_cta")} <ArrowRight size={16} />
             </span>
-            <small>PDF only · maximum 20 MB · optional external OCR for scanned PDFs</small>
+            <small>{t("upload_tile_note")}</small>
           </button>
 
           <section className="pm-panel pm-review-panel">
             <div className="pm-panel-heading">
               <div>
-                <h2>Review queue</h2>
-                <p>Findings that need human attention.</p>
+                <h2>{t("review_queue_title")}</h2>
+                <p>{t("review_queue_subtitle")}</p>
               </div>
               <span className="pm-count-bubble">{pendingReviews}</span>
             </div>
@@ -1055,8 +1052,8 @@ function OverviewScreen({
                         <strong>{item.description}</strong>
                         <small>
                           {item.evidence.verified
-                            ? `Source verified · page ${item.evidence.page}`
-                            : "Evidence needs verification"}
+                            ? t("review_source_verified", { page: item.evidence.page ?? "" })
+                            : t("review_evidence_needs")}
                         </small>
                       </span>
                       <ArrowRight size={15} />
@@ -1064,12 +1061,12 @@ function OverviewScreen({
                   ))}
                 {pendingReviews === 0 && (
                   <div className="pm-empty-inline">
-                    <CheckCircle2 size={17} /> All requirements are reviewed.
+                    <CheckCircle2 size={17} /> {t("review_all_done")}
                   </div>
                 )}
               </div>
             ) : (
-              <div className="pm-empty-inline">Analyze a document to create a review queue.</div>
+              <div className="pm-empty-inline">{t("review_empty")}</div>
             )}
           </section>
         </aside>
@@ -1115,15 +1112,16 @@ function AnalysisScreen({
   onModelResponse: () => void;
   onExport: () => void;
 }) {
+  const t = useT();
   const filterOptions = [
-    { id: "all", label: "All findings", count: totalFindings },
-    { id: "requirement", label: "Requirements", count: analysis?.requirements.length ?? 0 },
-    { id: "deadline", label: "Deadlines", count: analysis?.deadlines.length ?? 0 },
-    { id: "specification", label: "Specifications", count: analysis?.specifications.length ?? 0 },
-    { id: "risk", label: "Risks", count: analysis?.risks.length ?? 0 },
+    { id: "all", label: t("filter_all"), count: totalFindings },
+    { id: "requirement", label: t("filter_requirements"), count: analysis?.requirements.length ?? 0 },
+    { id: "deadline", label: t("filter_deadlines"), count: analysis?.deadlines.length ?? 0 },
+    { id: "specification", label: t("filter_specifications"), count: analysis?.specifications.length ?? 0 },
+    { id: "risk", label: t("filter_risks"), count: analysis?.risks.length ?? 0 },
     {
       id: "missing",
-      label: "Missing & inconsistencies",
+      label: t("filter_missing"),
       count: (analysis?.missing.length ?? 0) + (analysis?.inconsistencies.length ?? 0),
     },
   ];
@@ -1134,31 +1132,28 @@ function AnalysisScreen({
         <div className="pm-analysis-screen">
           <div className="pm-page-heading">
             <div>
-              <h1>Ask about this document</h1>
-              <p>
-                Review the text extracted in your browser and ask a question before running a full
-                analysis.
-              </p>
+              <h1>{t("pre_analysis_title")}</h1>
+              <p>{t("pre_analysis_subtitle")}</p>
             </div>
             <button
               className="pm-button pm-button--primary"
               type="button"
               onClick={onOpenProcessing}
             >
-              Run full analysis <ArrowRight size={16} />
+              {t("pre_analysis_cta")} <ArrowRight size={16} />
             </button>
           </div>
           <div className="pm-analysis-layout">
             <section className="pm-panel pm-source-panel">
               <div className="pm-panel-heading pm-source-heading">
                 <div>
-                  <h2>Extracted source text</h2>
+                  <h2>{t("source_panel_title")}</h2>
                   <p>
                     {textSource === "llamaparse"
                       ? paginationVerified
-                        ? "Text extracted by LlamaParse."
-                        : "LlamaParse text; original page boundaries are unavailable."
-                      : "Text extracted locally in this browser."}
+                        ? t("source_llamaparse_paginated")
+                        : t("source_llamaparse_unpaginated")
+                      : t("source_pdfjs")}
                   </p>
                 </div>
                 <div className="pm-page-controls">
@@ -1167,19 +1162,19 @@ function AnalysisScreen({
                       <button
                         type="button"
                         className="pm-icon-button"
-                        aria-label="Previous page"
+                        aria-label={t("source_prev_page")}
                         disabled={activePage <= 1}
                         onClick={() => onSelectPage(activePage - 1)}
                       >
                         <ChevronLeft size={17} />
                       </button>
                       <span>
-                        Page <strong>{activePage}</strong> of {document.pages.length}
+                        {t("source_page_of", { page: activePage, total: document.pages.length })}
                       </span>
                       <button
                         type="button"
                         className="pm-icon-button"
-                        aria-label="Next page"
+                        aria-label={t("source_next_page")}
                         disabled={activePage >= document.pages.length}
                         onClick={() => onSelectPage(activePage + 1)}
                       >
@@ -1187,7 +1182,7 @@ function AnalysisScreen({
                       </button>
                     </>
                   ) : (
-                    <span>Page numbers unavailable</span>
+                    <span>{t("source_no_page_numbers")}</span>
                   )}
                 </div>
               </div>
@@ -1195,13 +1190,11 @@ function AnalysisScreen({
                 <div className="pm-source-page-head">
                   <span>{document.name}</span>
                   <span>
-                    {paginationVerified ? `Page ${activePage}` : "Pagination unavailable"}
+                    {paginationVerified ? t("source_page_of", { page: activePage, total: document.pages.length }) : t("source_pagination_unavailable")}
                   </span>
                 </div>
-                <pre>{pageText || "No text is available for this page."}</pre>
-                <div className="pm-source-disclaimer">
-                  Extracted text may need manual verification against the original PDF.
-                </div>
+                <pre>{pageText || t("source_no_text")}</pre>
+                <div className="pm-source-disclaimer">{t("source_disclaimer")}</div>
               </div>
             </section>
             <DocumentQaPanel
@@ -1233,18 +1226,18 @@ function AnalysisScreen({
           <div>
             <h2>{document.name}</h2>
             <span>
-              {document.source === "demo" ? "Fictional sample" : "PDF document"} ·{" "}
-              {paginationVerified ? `${document.pages.length} pages` : "Pagination unverified"} ·{" "}
+              {document.source === "demo" ? t("toolbar_fictional_sample") : t("toolbar_pdf_document")} ·{" "}
+              {paginationVerified ? `${document.pages.length} ${t("toolbar_pages")}` : t("toolbar_pagination_unverified")} ·{" "}
               {formatBytes(document.size)}
             </span>
           </div>
           <Badge tone={modeSourceTone(processingSource)}>{modeLabel(processingSource)}</Badge>
           {textSource === "llamaparse" && (
-            <Badge tone="amber">Text: external OCR (LlamaParse)</Badge>
+            <Badge tone="amber">{t("toolbar_llamaparse_badge")}</Badge>
           )}
         </div>
         <button className="pm-button pm-button--dark" type="button" onClick={onExport}>
-          <ArrowDownToLine size={16} /> Export JSON
+          <ArrowDownToLine size={16} /> {t("toolbar_export_json")}
         </button>
       </div>
 
@@ -1253,8 +1246,8 @@ function AnalysisScreen({
           <Sparkles size={16} />
           <span>
             {analysis.mode === "demo"
-              ? "This prepared analysis is simulated and illustrative; it was not generated from the sample text."
-              : "This AI analysis uses fictional sample text, not a real procurement document."}
+              ? t("warning_demo_prepared")
+              : t("warning_demo_ai")}
           </span>
         </div>
       )}
@@ -1262,36 +1255,33 @@ function AnalysisScreen({
       {textSource === "llamaparse" && !paginationVerified && (
         <div className="pm-inline-warning" role="status">
           <AlertCircle size={16} />
-          <span>
-            LlamaParse did not provide page numbers. Citations cannot be page-verified; findings are
-            flagged for human review.
-          </span>
+          <span>{t("warning_llamaparse_no_pages")}</span>
         </div>
       )}
 
       <section className="pm-inference-report" aria-label="Analysis run status">
         <div className="pm-inference-report-heading">
-          <strong>Analysis run</strong>
+          <strong>{t("inference_title")}</strong>
           <Badge tone={modeSourceTone(processingSource)}>
-            Processing source: {modeLabel(processingSource)}
+            {t("inference_processing_source")} {modeLabel(processingSource)}
           </Badge>
         </div>
         <dl>
           <div>
-            <dt>Firebase AI Logic</dt>
-            <dd>{analysis.mode === "demo" ? "Not used" : "Connected · response received"}</dd>
+            <dt>{t("inference_firebase_label")}</dt>
+            <dd>{analysis.mode === "demo" ? t("inference_firebase_not_used") : t("inference_firebase_connected")}</dd>
           </div>
           <div>
-            <dt>Model</dt>
+            <dt>{t("inference_model_label")}</dt>
             <dd>{analysis.model ?? analysis.engine}</dd>
           </div>
           <div>
-            <dt>Evidence mode</dt>
-            <dd>Page-linked excerpts · checked against extracted text</dd>
+            <dt>{t("inference_evidence_label")}</dt>
+            <dd>{t("inference_evidence_value")}</dd>
           </div>
           <div>
-            <dt>Demo data</dt>
-            <dd>{document.source === "demo" ? "Yes" : "No"}</dd>
+            <dt>{t("inference_demo_label")}</dt>
+            <dd>{document.source === "demo" ? t("inference_yes") : t("inference_no")}</dd>
           </div>
         </dl>
       </section>
@@ -1301,7 +1291,7 @@ function AnalysisScreen({
           <Sparkles size={18} />
         </div>
         <div>
-          <strong>Document summary</strong>
+          <strong>{t("summary_title")}</strong>
           <p>{analysis.summary}</p>
         </div>
         <div className="pm-summary-meta">
@@ -1329,13 +1319,13 @@ function AnalysisScreen({
         <section className="pm-panel pm-source-panel">
           <div className="pm-panel-heading pm-source-heading">
             <div>
-              <h2>Source document</h2>
+              <h2>{t("source_panel_title_full")}</h2>
               <p>
                 {textSource === "llamaparse"
                   ? paginationVerified
-                    ? "Page text extracted by LlamaParse."
-                    : "LlamaParse text; original page boundaries are unavailable."
-                  : "Page text extracted in this browser."}
+                    ? t("source_llamaparse_full")
+                    : t("source_llamaparse_unpaginated")
+                  : t("source_pdfjs_full")}
               </p>
             </div>
             <div className="pm-page-controls">
@@ -1344,19 +1334,19 @@ function AnalysisScreen({
                   <button
                     type="button"
                     className="pm-icon-button"
-                    aria-label="Previous page"
+                    aria-label={t("source_prev_page")}
                     disabled={activePage <= 1}
                     onClick={() => onSelectPage(activePage - 1)}
                   >
                     <ChevronLeft size={17} />
                   </button>
                   <span>
-                    Page <strong>{activePage}</strong> of {document.pages.length}
+                    {t("source_page_of", { page: activePage, total: document.pages.length })}
                   </span>
                   <button
                     type="button"
                     className="pm-icon-button"
-                    aria-label="Next page"
+                    aria-label={t("source_next_page")}
                     disabled={activePage >= document.pages.length}
                     onClick={() => onSelectPage(activePage + 1)}
                   >
@@ -1364,32 +1354,28 @@ function AnalysisScreen({
                   </button>
                 </>
               ) : (
-                <span>Page numbers unavailable</span>
+                <span>{t("source_no_page_numbers")}</span>
               )}
             </div>
           </div>
           <div className="pm-source-page">
             <div className="pm-source-page-head">
               <span>{document.name}</span>
-              <span>{paginationVerified ? `Page ${activePage}` : "Pagination unavailable"}</span>
+              <span>{paginationVerified ? t("source_page_of", { page: activePage, total: document.pages.length }) : t("source_pagination_unavailable")}</span>
             </div>
-            <pre>{pageText || "No text is available for this page."}</pre>
-            <div className="pm-source-disclaimer">
-              Extracted text may need manual verification against the original PDF.
-            </div>
+            <pre>{pageText || t("source_no_text")}</pre>
+            <div className="pm-source-disclaimer">{t("source_disclaimer")}</div>
           </div>
         </section>
 
         <section className="pm-findings-panel">
           <div className="pm-findings-heading">
             <div>
-              <h2>Findings</h2>
-              <p>
-                {findings.length} shown · {totalFindings} total
-              </p>
+              <h2>{t("findings_title")}</h2>
+              <p>{t("findings_count", { shown: findings.length, total: totalFindings })}</p>
             </div>
             <Badge tone={analysis.mode === "demo" ? "amber" : "blue"}>
-              {analysis.mode === "demo" ? "Illustrative" : "AI-generated · review required"}
+              {analysis.mode === "demo" ? t("findings_illustrative") : t("findings_ai_generated")}
             </Badge>
           </div>
           <div className="pm-findings-list">
@@ -1446,7 +1432,7 @@ function AnalysisScreen({
                           <FileText size={14} /> Page {finding.page}
                         </button>
                       ) : (
-                        <span className="pm-muted-label">No source page</span>
+                        <span className="pm-muted-label">{t("finding_no_source_page")}</span>
                       )}
                       <EvidenceStatus
                         evidence={{
@@ -1463,17 +1449,15 @@ function AnalysisScreen({
               <div className="pm-empty-state">
                 <Filter size={22} />
                 <strong>
-                  {search ? "No findings match your search" : "No findings in this category"}
+                  {search ? t("findings_empty_search") : t("findings_empty_category")}
                 </strong>
-                <span>Change the filter or search a different term.</span>
+                <span>{t("findings_empty_hint")}</span>
               </div>
             )}
           </div>
           <div className="pm-human-review-note">
             <CircleHelp size={16} />
-            <span>
-              AI findings are suggestions. Verify every cited passage before relying on it.
-            </span>
+            <span>{t("findings_disclaimer")}</span>
           </div>
         </section>
       </div>
@@ -1494,15 +1478,16 @@ function AnalysisScreen({
 }
 
 function EmptyAnalysis({ onOpenProcessing }: { onOpenProcessing: () => void }) {
+  const t = useT();
   return (
     <section className="pm-panel pm-empty-analysis">
       <div className="pm-empty-illustration">
         <FilePlus2 size={30} />
       </div>
-      <h2>No analysis for this document yet</h2>
-      <p>Choose an on-device or hybrid processing mode to extract findings from a PDF.</p>
+      <h2>{t("empty_analysis_title")}</h2>
+      <p>{t("empty_analysis_detail")}</p>
       <button className="pm-button pm-button--primary" type="button" onClick={onOpenProcessing}>
-        Open processing options <ArrowRight size={16} />
+        {t("empty_analysis_cta")} <ArrowRight size={16} />
       </button>
     </section>
   );
@@ -1529,6 +1514,7 @@ function ComplianceScreen({
   onExport: () => void;
   onOpenProcessing: () => void;
 }) {
+  const t = useT();
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const requirements = analysis?.requirements ?? [];
@@ -1558,7 +1544,7 @@ function ComplianceScreen({
         <label className="pm-table-search">
           <Search size={16} />{" "}
           <span aria-label="Search requirements">
-            {search || "Search from the workspace bar..."}
+            {search || t("compliance_search_hint")}
           </span>
         </label>
         <label className="pm-select-wrap">
@@ -1567,7 +1553,7 @@ function ComplianceScreen({
             value={categoryFilter}
             onChange={(event) => setCategoryFilter(event.currentTarget.value)}
           >
-            <option value="all">All categories</option>
+            <option value="all">{t("compliance_all_categories")}</option>
             {CATEGORIES.map((category) => (
               <option key={category} value={category}>
                 {category}
@@ -1582,11 +1568,11 @@ function ComplianceScreen({
             value={statusFilter}
             onChange={(event) => setStatusFilter(event.currentTarget.value)}
           >
-            <option value="all">All statuses</option>
-            <option value="pending">Pending</option>
-            <option value="reviewed">Reviewed</option>
-            <option value="satisfied">Satisfied</option>
-            <option value="unclear">Unclear</option>
+            <option value="all">{t("compliance_all_statuses")}</option>
+            <option value="pending">{t("compliance_status_pending")}</option>
+            <option value="reviewed">{t("compliance_status_reviewed")}</option>
+            <option value="satisfied">{t("compliance_status_satisfied")}</option>
+            <option value="unclear">{t("compliance_status_unclear")}</option>
           </select>
           <ChevronDown size={15} />
         </label>
@@ -1595,7 +1581,7 @@ function ComplianceScreen({
           type="button"
           onClick={onExport}
         >
-          <ArrowDownToLine size={16} /> Export CSV
+          <ArrowDownToLine size={16} /> {t("compliance_export_csv")}
         </button>
       </div>
 
@@ -1603,14 +1589,13 @@ function ComplianceScreen({
         <section className="pm-panel pm-matrix-panel">
           <div className="pm-matrix-summary">
             <span>
-              <strong>{requirements.length}</strong> requirements
+              <strong>{requirements.length}</strong> {t("compliance_summary_reqs", { count: requirements.length })}
             </span>
             <span>
-              <strong>{requirements.filter((item) => item.evidence.verified).length}</strong> with
-              verified evidence
+              <strong>{requirements.filter((item) => item.evidence.verified).length}</strong> {t("compliance_summary_verified")}
             </span>
             <span>
-              <strong>{filteredRequirements.length}</strong> shown
+              <strong>{filteredRequirements.length}</strong> {t("compliance_summary_shown")}
             </span>
           </div>
           {filteredRequirements.length ? (
@@ -1618,12 +1603,12 @@ function ComplianceScreen({
               <table className="pm-table pm-matrix-table">
                 <thead>
                   <tr>
-                    <th>Requirement</th>
-                    <th>Category</th>
-                    <th>Mandatory</th>
-                    <th>Evidence</th>
-                    <th>Page</th>
-                    <th>Review status</th>
+                    <th>{t("compliance_col_requirement")}</th>
+                    <th>{t("compliance_col_category")}</th>
+                    <th>{t("compliance_col_mandatory")}</th>
+                    <th>{t("compliance_col_evidence")}</th>
+                    <th>{t("compliance_col_page")}</th>
+                    <th>{t("compliance_col_review_status")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1651,7 +1636,7 @@ function ComplianceScreen({
                         </td>
                         <td>
                           <Badge tone={requirement.mandatory ? "red" : "neutral"}>
-                            {requirement.mandatory ? "Yes" : "No"}
+                            {requirement.mandatory ? t("compliance_mandatory_yes") : t("compliance_mandatory_no")}
                           </Badge>
                         </td>
                         <td>
@@ -1663,10 +1648,10 @@ function ComplianceScreen({
                                   : "pm-unverified-text"
                               }
                             >
-                              {requirement.evidence.verified ? "Verified" : "Check excerpt"}
+                              {requirement.evidence.verified ? t("compliance_verified") : t("compliance_check_excerpt")}
                             </span>
                           ) : (
-                            <span className="pm-muted-label">Not provided</span>
+                            <span className="pm-muted-label">{t("compliance_not_provided")}</span>
                           )}
                         </td>
                         <td>{requirement.evidence.page ?? "—"}</td>
@@ -1684,10 +1669,10 @@ function ComplianceScreen({
                                 if (status) onUpdateReview(requirement.id, { status });
                               }}
                             >
-                              <option value="pending">Pending</option>
-                              <option value="reviewed">Reviewed</option>
-                              <option value="satisfied">Satisfied</option>
-                              <option value="unclear">Unclear</option>
+                              <option value="pending">{t("compliance_status_pending")}</option>
+                              <option value="reviewed">{t("compliance_status_reviewed")}</option>
+                              <option value="satisfied">{t("compliance_status_satisfied")}</option>
+                              <option value="unclear">{t("compliance_status_unclear")}</option>
                             </select>
                             <ChevronDown size={14} />
                           </label>
@@ -1701,12 +1686,12 @@ function ComplianceScreen({
           ) : (
             <div className="pm-empty-state">
               <Search size={21} />
-              <strong>No requirements match these filters</strong>
-              <span>Adjust the filters or search terms.</span>
+              <strong>{t("compliance_empty_title")}</strong>
+              <span>{t("compliance_empty_detail")}</span>
             </div>
           )}
           <div className="pm-panel-foot">
-            <span>Review status is held in this browser session only.</span>
+            <span>{t("compliance_footer_session")}</span>
             <span>
               {filteredRequirements.length} of {requirements.length}
             </span>
@@ -1716,8 +1701,8 @@ function ComplianceScreen({
         <aside className="pm-panel pm-evidence-panel">
           <div className="pm-panel-heading">
             <div>
-              <h2>Source evidence</h2>
-              <p>Selected requirement</p>
+              <h2>{t("evidence_panel_title")}</h2>
+              <p>{t("evidence_panel_subtitle")}</p>
             </div>
             <FileCheck2 size={18} />
           </div>
@@ -1734,24 +1719,24 @@ function ComplianceScreen({
                 <blockquote>“{selectedRequirement.evidence.excerpt}”</blockquote>
               ) : (
                 <div className="pm-evidence-missing">
-                  No source excerpt was returned. Verify this requirement manually.
+                  {t("evidence_no_excerpt")}
                 </div>
               )}
               <EvidenceStatus evidence={selectedRequirement.evidence} />
               <label className="pm-notes-label">
-                Review notes
+                {t("evidence_notes_label")}
                 <textarea
                   value={reviews[selectedRequirement.id]?.notes ?? ""}
                   onChange={(event) =>
                     onUpdateReview(selectedRequirement.id, { notes: event.currentTarget.value })
                   }
-                  placeholder="Add a note for your review..."
+                  placeholder={t("evidence_notes_placeholder")}
                   rows={4}
                 />
               </label>
             </div>
           ) : (
-            <div className="pm-empty-inline">Select a requirement to inspect its evidence.</div>
+            <div className="pm-empty-inline">{t("evidence_select_hint")}</div>
           )}
         </aside>
       </div>
@@ -1814,18 +1799,19 @@ function ProcessingScreen({
   onOpenDemo: () => void;
   onClearError: () => void;
 }) {
+  const t = useT();
   const hasQuestionText = document.pages.some((page) => page.trim());
 
   return (
     <div className="pm-processing-screen">
       <div className="pm-processing-topline">
-        <span>Processing options</span>
+        <span>{t("processing_topline")}</span>
         <span className="pm-steps">
           <i className="is-current" />
           <i />
           <i />
         </span>
-        <span>01 / 03</span>
+        <span>{t("processing_steps")}</span>
       </div>
       <div className="pm-processing-options">
         <button
@@ -1835,27 +1821,17 @@ function ProcessingScreen({
         >
           <span className="pm-mode-card-top">
             <span className="pm-radio-indicator" />
-            On-device only<Badge tone="green">PRIVATE</Badge>
+            {t("mode_card_local_title")}<Badge tone="green">{t("mode_card_local_badge")}</Badge>
           </span>
           <span className="pm-mode-illustration pm-mode-illustration--local">
             <LockKeyhole size={32} />
           </span>
-          <strong>Keep inference on this device</strong>
-          <span className="pm-mode-description">
-            PDF text is extracted in your browser. Firebase AI Logic asks Chrome's on-device model
-            to analyze it. If that model is unavailable, the request fails instead of moving to
-            cloud.
-          </span>
+          <strong>{t("mode_card_local_heading")}</strong>
+          <span className="pm-mode-description">{t("mode_card_local_desc")}</span>
           <span className="pm-mode-points">
-            <span>
-              <CheckCircle2 size={15} /> No cloud fallback
-            </span>
-            <span>
-              <CheckCircle2 size={15} /> Requires supported desktop Chrome
-            </span>
-            <span>
-              <CheckCircle2 size={15} /> Firebase App Check still applies
-            </span>
+            <span><CheckCircle2 size={15} /> {t("mode_card_local_p1")}</span>
+            <span><CheckCircle2 size={15} /> {t("mode_card_local_p2")}</span>
+            <span><CheckCircle2 size={15} /> {t("mode_card_local_p3")}</span>
           </span>
         </button>
 
@@ -1866,26 +1842,17 @@ function ProcessingScreen({
         >
           <span className="pm-mode-card-top">
             <span className="pm-radio-indicator" />
-            Cloud AI<Badge tone="blue">GEMINI</Badge>
+            {t("mode_card_cloud_title")}<Badge tone="blue">{t("mode_card_cloud_badge")}</Badge>
           </span>
           <span className="pm-mode-illustration pm-mode-illustration--hybrid">
             <Cloud size={34} />
           </span>
-          <strong>Analyze with Gemini 3.8 Flash</strong>
-          <span className="pm-mode-description">
-            Send extracted PDF text to Google's cloud through Firebase AI Logic. This mode uses
-            cloud inference only and does not fall back to on-device processing.
-          </span>
+          <strong>{t("mode_card_cloud_heading")}</strong>
+          <span className="pm-mode-description">{t("mode_card_cloud_desc")}</span>
           <span className="pm-mode-points">
-            <span>
-              <CheckCircle2 size={15} /> Direct cloud inference
-            </span>
-            <span>
-              <CheckCircle2 size={15} /> Requires your explicit consent
-            </span>
-            <span>
-              <CheckCircle2 size={15} /> Firebase App Check required
-            </span>
+            <span><CheckCircle2 size={15} /> {t("mode_card_cloud_p1")}</span>
+            <span><CheckCircle2 size={15} /> {t("mode_card_cloud_p2")}</span>
+            <span><CheckCircle2 size={15} /> {t("mode_card_cloud_p3")}</span>
           </span>
         </button>
 
@@ -1896,27 +1863,18 @@ function ProcessingScreen({
         >
           <span className="pm-mode-card-top">
             <span className="pm-radio-indicator" />
-            Hybrid inference<Badge tone="blue">ON-DEVICE FIRST</Badge>
+            {t("mode_card_hybrid_title")}<Badge tone="blue">{t("mode_card_hybrid_badge")}</Badge>
           </span>
           <span className="pm-mode-illustration pm-mode-illustration--hybrid">
             <Cloud size={34} />
             <Sparkles size={18} />
           </span>
-          <strong>Prefer on-device, allow fallback</strong>
-          <span className="pm-mode-description">
-            Firebase AI Logic tries the available on-device model first. If unavailable, the SDK may
-            send extracted text to Gemini 3.8 Flash in Google's cloud.
-          </span>
+          <strong>{t("mode_card_hybrid_heading")}</strong>
+          <span className="pm-mode-description">{t("mode_card_hybrid_desc")}</span>
           <span className="pm-mode-points">
-            <span>
-              <CheckCircle2 size={15} /> Actual source shown after analysis
-            </span>
-            <span>
-              <CheckCircle2 size={15} /> Cloud use requires your consent
-            </span>
-            <span>
-              <CheckCircle2 size={15} /> App Check required
-            </span>
+            <span><CheckCircle2 size={15} /> {t("mode_card_hybrid_p1")}</span>
+            <span><CheckCircle2 size={15} /> {t("mode_card_hybrid_p2")}</span>
+            <span><CheckCircle2 size={15} /> {t("mode_card_hybrid_p3")}</span>
           </span>
         </button>
 
@@ -1927,26 +1885,17 @@ function ProcessingScreen({
         >
           <span className="pm-mode-card-top">
             <span className="pm-radio-indicator" />
-            Sample data<Badge tone="amber">DEMO</Badge>
+            {t("mode_card_demo_title")}<Badge tone="amber">{t("mode_card_demo_badge")}</Badge>
           </span>
           <span className="pm-mode-illustration pm-mode-illustration--demo">
             <FileText size={35} />
           </span>
-          <strong>Explore prepared findings</strong>
-          <span className="pm-mode-description">
-            View the fictional Northbridge street-lighting tender and its prepared analysis. No
-            upload or model call occurs in this mode.
-          </span>
+          <strong>{t("mode_card_demo_heading")}</strong>
+          <span className="pm-mode-description">{t("mode_card_demo_desc")}</span>
           <span className="pm-mode-points">
-            <span>
-              <CheckCircle2 size={15} /> No Firebase setup needed
-            </span>
-            <span>
-              <CheckCircle2 size={15} /> No real document processed
-            </span>
-            <span>
-              <CheckCircle2 size={15} /> Sample clearly labeled
-            </span>
+            <span><CheckCircle2 size={15} /> {t("mode_card_demo_p1")}</span>
+            <span><CheckCircle2 size={15} /> {t("mode_card_demo_p2")}</span>
+            <span><CheckCircle2 size={15} /> {t("mode_card_demo_p3")}</span>
           </span>
         </button>
       </div>
@@ -1964,13 +1913,13 @@ function ProcessingScreen({
           <span>
             <strong>
               {choice === "cloud"
-                ? "I explicitly allow cloud AI processing for this session."
-                : "I explicitly allow cloud fallback for this session."}
+                ? t("consent_cloud_title")
+                : t("consent_hybrid_title")}
             </strong>
             <small>
               {choice === "cloud"
-                ? "Extracted text from this PDF will be sent to Gemini through Firebase AI Logic. This setting resets when the page is reloaded."
-                : "If the on-device model is unavailable, extracted text from this PDF may be sent to Google's Gemini service through Firebase AI Logic. This setting resets when the page is reloaded."}
+                ? t("consent_cloud_detail")
+                : t("consent_hybrid_detail")}
             </small>
           </span>
         </label>
@@ -1983,7 +1932,7 @@ function ProcessingScreen({
           type="file"
           accept="application/pdf,.pdf"
           onChange={onFileChange}
-          aria-label="Choose a PDF document"
+          aria-label={t("file_input_aria")}
         />
         {file ? (
           <div className="pm-chosen-file">
@@ -1992,14 +1941,14 @@ function ProcessingScreen({
             </span>
             <div>
               <strong>{file.name}</strong>
-              <span>{formatBytes(file.size)} · PDF · stored in this browser session</span>
+              <span>{formatBytes(file.size)} · PDF · {t("file_stored")}</span>
             </div>
             <button
               className="pm-button pm-button--outline"
               type="button"
               onClick={() => inputRef.current?.click()}
             >
-              <FolderOpen size={15} /> Replace
+              <FolderOpen size={15} /> {t("file_replace")}
             </button>
           </div>
         ) : (
@@ -2007,16 +1956,16 @@ function ProcessingScreen({
             <span className="pm-drop-icon">
               <Upload size={22} />
             </span>
-            <strong>Drop a tender PDF here</strong>
-            <span>or select a file from your device</span>
+            <strong>{t("drop_title")}</strong>
+            <span>{t("drop_or")}</span>
             <button
               className="pm-button pm-button--outline"
               type="button"
               onClick={() => inputRef.current?.click()}
             >
-              <FolderOpen size={15} /> Choose PDF
+              <FolderOpen size={15} /> {t("drop_choose")}
             </button>
-            <small>PDF only · maximum 20 MB · scanned PDFs may use optional external OCR</small>
+            <small>{t("drop_note")}</small>
           </div>
         )}
       </div>
@@ -2026,11 +1975,8 @@ function ProcessingScreen({
           <div className="pm-external-ocr-heading">
             <AlertCircle size={18} />
             <div>
-              <strong>This looks like a scanned PDF.</strong>
-              <p>
-                You can send this file to LlamaParse for external text extraction. Firebase AI Logic
-                will analyze the extracted text afterward.
-              </p>
+              <strong>{t("ocr_scanned_title")}</strong>
+              <p>{t("ocr_scanned_desc")}</p>
             </div>
           </div>
           {hasExtractedText && (
@@ -2048,31 +1994,30 @@ function ProcessingScreen({
           {externalOcrAvailability === "checking" && (
             <div className="pm-external-ocr-status">
               <LoaderCircle size={15} className="pm-spin" />
-              Checking whether external OCR is enabled...
+              {t("ocr_checking")}
             </div>
           )}
           {externalOcrAvailability === "disabled" && (
             <div className="pm-external-ocr-status" role="status">
-              <strong>External OCR is not enabled.</strong> Link the LlamaParse Platform connector
-              to this project in Lovable.
+              <strong>{t("ocr_disabled_title")}</strong> {t("ocr_disabled_desc")}
               <button
                 className="pm-button pm-button--outline"
                 type="button"
                 onClick={onCheckExternalOcr}
               >
-                Check again
+                {t("ocr_check_again")}
               </button>
             </div>
           )}
           {externalOcrAvailability === "error" && (
             <div className="pm-external-ocr-status" role="status">
-              Could not check connector availability.
+              {t("ocr_error")}
               <button
                 className="pm-button pm-button--outline"
                 type="button"
                 onClick={onCheckExternalOcr}
               >
-                Retry check
+                {t("ocr_retry")}
               </button>
             </div>
           )}
@@ -2088,11 +2033,8 @@ function ProcessingScreen({
                   <Check size={14} />
                 </span>
                 <span>
-                  <strong>I consent to sending this PDF to LlamaParse for external OCR.</strong>
-                  <small>
-                    This consent is separate from Firebase cloud consent. The PDF is sent to
-                    LlamaParse even when on-device inference is selected.
-                  </small>
+                  <strong>{t("ocr_consent_title")}</strong>
+                  <small>{t("ocr_consent_detail")}</small>
                 </span>
               </label>
               <button
@@ -2107,11 +2049,11 @@ function ProcessingScreen({
               >
                 {isAnalyzing ? (
                   <>
-                    <LoaderCircle size={16} className="pm-spin" /> Extracting and analyzing...
+                    <LoaderCircle size={16} className="pm-spin" /> {t("ocr_extracting")}
                   </>
                 ) : (
                   <>
-                    Extract with LlamaParse <ArrowRight size={16} />
+                    {t("ocr_extract_btn")} <ArrowRight size={16} />
                   </>
                 )}
               </button>
@@ -2124,7 +2066,7 @@ function ProcessingScreen({
         <div className="pm-error-banner" role="alert">
           <AlertCircle size={18} />
           <span>{errorMessage}</span>
-          <button type="button" onClick={onClearError} aria-label="Dismiss error">
+          <button type="button" onClick={onClearError} aria-label={t("error_dismiss")}>
             <X size={16} />
           </button>
         </div>
@@ -2133,7 +2075,7 @@ function ProcessingScreen({
       {isAnalyzing && (
         <div className="pm-progress-status" role="status">
           <LoaderCircle size={17} className="pm-spin" />
-          <span>{progressDetail || "Preparing analysis..."}</span>
+          <span>{progressDetail || t("progress_default")}</span>
         </div>
       )}
 
@@ -2141,65 +2083,62 @@ function ProcessingScreen({
         <div className="pm-setup-notice">
           <AlertCircle size={18} />
           <div>
-            <strong>Firebase setup is needed for live analysis.</strong>
-            <span>
-              Configure a Firebase web app, enable Firebase AI Logic, and set App Check before
-              running a live model call. Follow the setup steps in README.md.
-            </span>
+            <strong>{t("firebase_setup_title")}</strong>
+            <span>{t("firebase_setup_desc")}</span>
           </div>
         </div>
       )}
 
       <section className="pm-runtime-status" aria-label="Firebase AI Logic status">
         <div>
-          <span>Firebase AI Logic</span>
+          <span>{t("runtime_firebase_label")}</span>
           <strong>
             {!firebaseConfigured
-              ? "Not configured"
+              ? t("runtime_not_configured")
               : firebaseConnected
-                ? "Connected · a response was received"
-                : "Configured · no live response yet"}
+                ? t("runtime_connected")
+                : t("runtime_configured_no_response")}
           </strong>
         </div>
         <div>
-          <span>Processing source</span>
+          <span>{t("runtime_processing_source")}</span>
           <strong>
             {document.analysis
               ? modeLabel(getProcessingSource(document.analysis))
               : document.source === "demo"
-                ? "Demo mode · AI not used"
-                : "Not run"}
+                ? t("runtime_demo_mode")
+                : t("runtime_not_run")}
           </strong>
         </div>
         <div>
           <span>Demo data</span>
-          <strong>{document.source === "demo" ? "Yes" : "No"}</strong>
+          <strong>{document.source === "demo" ? t("runtime_demo_data") : t("inference_no")}</strong>
         </div>
       </section>
 
       <div className="pm-processing-footer">
         <div>
-          <span className="pm-footer-label">Selected mode</span>
+          <span className="pm-footer-label">{t("footer_selected_mode")}</span>
           <Badge tone={choice === "demo" ? "amber" : choice === "local" ? "green" : "blue"}>
             {choice === "demo"
-              ? "Sample data"
+              ? t("footer_mode_demo")
               : choice === "local"
-                ? "On-device only"
+                ? t("footer_mode_local")
                 : choice === "cloud"
-                  ? "Cloud AI · consent required"
-                  : "Hybrid · consent required"}
+                  ? t("footer_mode_cloud")
+                  : t("footer_mode_hybrid")}
           </Badge>
         </div>
         <div>
-          <span className="pm-footer-label">Source reporting</span>
+          <span className="pm-footer-label">{t("footer_source_reporting")}</span>
           <span className="pm-footer-value">
-            <ShieldCheck size={17} /> Actual inference source appears with the results
+            <ShieldCheck size={17} /> {t("footer_source_reporting_value")}
           </span>
         </div>
         <div className="pm-footer-actions">
           {choice === "demo" ? (
             <button type="button" className="pm-button pm-button--primary" onClick={onOpenDemo}>
-              Explore sample analysis <ArrowRight size={16} />
+              {t("btn_explore_sample")} <ArrowRight size={16} />
             </button>
           ) : (
             <>
@@ -2211,7 +2150,7 @@ function ProcessingScreen({
                   disabled={isAnalyzing || (!file && !hasQuestionText)}
                 >
                   <FileText size={16} />
-                  {hasQuestionText ? "Ask about this PDF" : "Extract text only"}
+                  {hasQuestionText ? t("btn_ask_pdf") : t("btn_extract_text")}
                 </button>
               )}
               <button
@@ -2226,11 +2165,11 @@ function ProcessingScreen({
               >
                 {isAnalyzing ? (
                   <>
-                    <LoaderCircle size={16} className="pm-spin" /> Processing...
+                    <LoaderCircle size={16} className="pm-spin" /> {t("btn_processing")}
                   </>
                 ) : (
                   <>
-                    {document.source === "demo" ? "Analyze fictional sample" : "Analyze PDF"}{" "}
+                    {document.source === "demo" ? t("btn_analyze_sample") : t("btn_analyze_pdf")}{" "}
                     <ArrowRight size={16} />
                   </>
                 )}
@@ -2239,62 +2178,62 @@ function ProcessingScreen({
           )}
           <span>
             {choice === "demo"
-              ? "No real document is processed."
+              ? t("footer_status_demo")
               : choice === "local"
-                ? "No cloud fallback will be used."
+                ? t("footer_status_local")
                 : choice === "cloud"
                   ? cloudConsent
-                    ? "Cloud processing consent is enabled for this session."
-                    : "Enable cloud consent above to continue."
+                    ? t("footer_status_cloud_ok")
+                    : t("footer_status_cloud_pending")
                   : cloudConsent
-                    ? "Cloud fallback consent is enabled for this session."
-                    : "Enable cloud consent above to continue."}
+                    ? t("footer_status_hybrid_ok")
+                    : t("footer_status_hybrid_pending")}
           </span>
         </div>
       </div>
 
       <section className="pm-process-flow">
         <div>
-          <h2>From document to reviewable findings</h2>
-          <p>Every finding links back to a source excerpt so a person can verify it.</p>
+          <h2>{t("flow_title")}</h2>
+          <p>{t("flow_subtitle")}</p>
         </div>
         <div className="pm-flow-steps">
           <div>
             <span>
               <FilePlus2 size={18} />
             </span>
-            <strong>Choose PDF</strong>
-            <small>File stays in browser</small>
+            <strong>{t("flow_step1_title")}</strong>
+            <small>{t("flow_step1_detail")}</small>
           </div>
           <ArrowRight size={17} />
           <div>
             <span>
               <BrainCircuit size={18} />
             </span>
-            <strong>Process text</strong>
-            <small>Selected mode applies</small>
+            <strong>{t("flow_step2_title")}</strong>
+            <small>{t("flow_step2_detail")}</small>
           </div>
           <ArrowRight size={17} />
           <div>
             <span>
               <ClipboardCheck size={18} />
             </span>
-            <strong>Verify findings</strong>
-            <small>Source excerpts checked</small>
+            <strong>{t("flow_step3_title")}</strong>
+            <small>{t("flow_step3_detail")}</small>
           </div>
           <ArrowRight size={17} />
           <div>
             <span>
               <BadgeCheck size={18} />
             </span>
-            <strong>Human review</strong>
-            <small>Decisions stay yours</small>
+            <strong>{t("flow_step4_title")}</strong>
+            <small>{t("flow_step4_detail")}</small>
           </div>
         </div>
       </section>
       {document.source === "demo" && (
         <p className="pm-current-sample">
-          <Sparkles size={14} /> Current workspace document: {document.name}
+          <Sparkles size={14} /> {t("flow_current_sample")} {document.name}
         </p>
       )}
     </div>

@@ -1,5 +1,34 @@
 # PocketMind AI
 
+> **#BuildHybridAI 2026 submission — Web (Chrome) · Firebase AI Logic hybrid inference**
+
+## What we built
+
+PocketMind AI turns complex tender PDFs into a structured, human-reviewable workspace. A reviewer uploads a procurement document; the app extracts text locally in the browser with PDF.js, then — under the reviewer's explicit consent — sends it to Firebase AI Logic for analysis in cloud-only, on-device-only, or on-device-first hybrid mode. Every finding (requirement, deadline, specification, risk, missing information) links back to the exact page it was extracted from, so a person can verify it against the source before acting on it.
+
+The core problem: tender documents run to dozens of pages of dense prose. The obligations that decide whether a bid is eligible, technically compliant, and commercially sound are buried in that text. Reviewers re-read, cross-reference, and still miss things. PocketMind AI reads the extracted text, organizes what it finds, verifies each excerpt against the page it cited, and surfaces a compliance matrix the team can review, annotate, and export — without ever losing the link to the original document.
+
+## Firebase AI Logic — how it's used at runtime
+
+- **Hybrid inference (on-device-first):** Firebase AI Logic's web hybrid API (`getGenerativeModel` with `InferenceMode.PREFER_ON_DEVICE`) is called in `src/lib/services/firebaseAi.ts`. The app requests on-device inference via Chrome's Prompt API first; if the model is unavailable, the SDK falls back to Gemini in Google's cloud. The actual inference source reported by the SDK (`on-device`, `cloud`, `cloud-fallback`) is surfaced to the user after every analysis.
+- **Cloud-only and on-device-only modes:** selectable from the Processing & privacy screen, both implemented through the same Firebase AI Logic SDK with different `InferenceMode` values.
+- **App Check:** enforced for all Firebase AI Logic calls. The app uses the App Check debug provider for development (token printed to the browser console; not committed). Production deployment requires a reCAPTCHA Enterprise provider.
+- **Document Q&A:** follow-up questions about the extracted PDF text use the same hybrid inference path, separating stated facts, working hypotheses, and unresolved questions in the model response.
+
+## What makes this a non-obvious use of hybrid inference
+
+Most hybrid AI demos run a single prompt against a fixed input. PocketMind AI applies hybrid inference to a *document review workflow* where the inference source matters to the user: sensitive procurement documents may not leave the device; the app surfaces which model actually ran and requires explicit consent before any cloud path is used. The on-device preference is a product feature, not an implementation detail.
+
+## Who it's for
+
+Procurement and tendering teams, consultants, and anyone who reviews public or private tenders. The workflow is: upload → choose processing mode → run analysis → verify every finding against its source page → track compliance status → export CSV or JSON.
+
+## Built during the submission period
+
+The project was started from scratch for this hackathon. Work completed during the submission period includes: Firebase AI Logic hybrid inference integration, App Check setup, PDF.js in-browser text extraction, evidence verification against extracted page text, the compliance matrix with per-requirement review tracking, document Q&A with structured fact/hypothesis/unresolved separation, optional LlamaParse OCR path for scanned PDFs (via Lovable connector), optional Firecrawl external research (server-side only), and the full UI across Dashboard, Document analysis, Compliance matrix, and Processing & privacy screens.
+
+---
+
 PocketMind AI helps procurement teams review tender PDFs by organizing requirements, deadlines, specifications, risks, and source evidence into a human-reviewable workspace.
 
 The web app includes a dashboard, document analysis view, compliance matrix, and processing/privacy controls. The included Northbridge tender and prepared findings are fictional sample data; they are illustrative and are **not** generated from a real procurement document.

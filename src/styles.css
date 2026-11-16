@@ -2953,3 +2953,38 @@
 .pm-tour-replay svg {
   color: var(--primary);
 }
+
+/* ── Language selector ───────────────────────────────────────────────────── */
+.pm-lang-selector {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+  cursor: pointer;
+}
+.pm-lang-flag {
+  font-size: 15px;
+  line-height: 1;
+  pointer-events: none;
+}
+.pm-lang-selector select {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--foreground);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 3px 20px 3px 6px;
+  outline: none;
+}
+.pm-lang-selector select:focus {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ring) 30%, transparent);
+}
+.pm-lang-selector svg {
+  position: absolute;
+  right: 4px;
+  pointer-events: none;
+  color: var(--muted-foreground);
+}

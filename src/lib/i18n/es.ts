@@ -1,0 +1,437 @@
+import type { Translations } from "./en";
+
+export const es: Translations = {
+  nav_dashboard: "Panel",
+  nav_analysis: "Análisis documental",
+  nav_compliance: "Matriz de cumplimiento",
+  nav_processing: "Procesamiento y privacidad",
+
+  screen_overview_title: "Tu espacio de trabajo documental",
+  screen_overview_subtitle:
+    "Convierte licitaciones complejas en hallazgos revisables, con evidencia de origen adjunta.",
+  screen_analysis_title: "Análisis documental",
+  screen_analysis_subtitle: "Revisa los hallazgos extraídos junto a sus páginas de origen.",
+  screen_compliance_title: "Matriz de cumplimiento",
+  screen_compliance_subtitle:
+    "Realiza el seguimiento de cada requisito frente a la evidencia y el estado de revisión de tu equipo.",
+  screen_processing_title: "Elige cómo se procesa tu documento",
+  screen_processing_subtitle:
+    "El texto se extrae en este navegador. Tú controlas si la IA puede procesarlo en la nube.",
+
+  mode_on_device: "En el dispositivo",
+  mode_cloud: "Nube",
+  mode_cloud_fallback: "Fallback a la nube",
+  mode_hybrid: "Híbrido",
+  mode_demo: "Modo demostración",
+  mode_not_analyzed: "No analizado",
+
+  sidebar_workspace: "Espacio de trabajo",
+  sidebar_privacy_title: "Privacidad por elección",
+  sidebar_privacy_note: "El uso de la nube siempre es explícito.",
+  sidebar_user_workspace: "Espacio de contratación pública",
+  sidebar_user_session: "Sesión local del navegador",
+
+  search_placeholder: "Buscar documentos, requisitos, riesgos...",
+  search_aria: "Buscar en el espacio de trabajo",
+  search_clear: "Limpiar búsqueda",
+  firebase_not_configured: "Configuración de Firebase requerida",
+  firebase_connected: "Firebase AI Logic: Conectado",
+  firebase_configured: "Firebase configurado · aún no verificado",
+
+  btn_add_document: "Añadir documento",
+
+  demo_banner_title: "Muestra ilustrativa",
+
+  metric_docs_label: "Documentos en el espacio de trabajo",
+  metric_docs_detail: "Archivos en esta sesión del navegador",
+  metric_reqs_label_sample: "Requisitos de muestra",
+  metric_reqs_label_real: "Requisitos extraídos",
+  metric_reqs_detail_demo: "Hallazgos ilustrativos preparados",
+  metric_reqs_detail_ai: "Hallazgos de IA de texto ficticio",
+  metric_reqs_detail_verified: "con fragmentos verificados en origen",
+  metric_risks_label: "Riesgos críticos",
+  metric_risks_detail: "Marcados para revisión humana",
+  metric_pending_label: "Revisiones pendientes",
+  metric_pending_detail: "Requisitos a la espera de una decisión",
+
+  table_col_document: "Documento",
+  table_col_pages: "Páginas",
+  table_col_processing: "Procesamiento",
+  table_col_status: "Estado",
+  status_prepared_sample: "Muestra preparada",
+  status_ai_analysed: "Muestra analizada por IA",
+  status_analyzed: "Analizado",
+  status_not_analyzed: "No analizado",
+  docs_empty_title: "No se encontraron documentos",
+  docs_empty_detail: "Prueba con un término de búsqueda diferente.",
+  docs_showing: "Mostrando {{shown}} de {{total}} documentos",
+  docs_open_analysis: "Abrir análisis actual",
+
+  upload_tile_title: "Subir licitación",
+  upload_tile_detail:
+    "Extrae texto localmente, con OCR externo opcional para PDFs escaneados.",
+  upload_tile_cta: "Elegir modo de procesamiento",
+  upload_tile_note:
+    "Solo PDF · máximo 20 MB · OCR externo opcional para PDFs escaneados",
+
+  review_queue_title: "Cola de revisión",
+  review_queue_subtitle: "Hallazgos que necesitan atención humana.",
+  review_source_verified: "Origen verificado · página {{page}}",
+  review_evidence_needs: "La evidencia necesita verificación",
+  review_all_done: "Todos los requisitos han sido revisados.",
+  review_empty: "Analiza un documento para crear una cola de revisión.",
+
+  filter_all: "Todos los hallazgos",
+  filter_requirements: "Requisitos",
+  filter_deadlines: "Plazos",
+  filter_specifications: "Especificaciones",
+  filter_risks: "Riesgos",
+  filter_missing: "Faltantes e inconsistencias",
+
+  source_panel_title: "Texto de origen extraído",
+  source_panel_title_full: "Documento de origen",
+  source_llamaparse_paginated: "Texto extraído por LlamaParse.",
+  source_llamaparse_unpaginated:
+    "Texto de LlamaParse; los límites de página originales no están disponibles.",
+  source_pdfjs: "Texto extraído localmente en este navegador.",
+  source_pdfjs_full: "Texto de página extraído en este navegador.",
+  source_llamaparse_full: "Texto de página extraído por LlamaParse.",
+  source_prev_page: "Página anterior",
+  source_next_page: "Página siguiente",
+  source_page_of: "Página {{page}} de {{total}}",
+  source_no_page_numbers: "Números de página no disponibles",
+  source_pagination_unavailable: "Paginación no disponible",
+  source_no_text: "No hay texto disponible para esta página.",
+  source_disclaimer:
+    "El texto extraído puede necesitar verificación manual frente al PDF original.",
+
+  pre_analysis_title: "Pregunta sobre este documento",
+  pre_analysis_subtitle:
+    "Revisa el texto extraído en tu navegador y haz una pregunta antes de ejecutar un análisis completo.",
+  pre_analysis_cta: "Ejecutar análisis completo",
+
+  toolbar_fictional_sample: "Muestra ficticia",
+  toolbar_pdf_document: "Documento PDF",
+  toolbar_pages: "páginas",
+  toolbar_pagination_unverified: "Paginación no verificada",
+  toolbar_llamaparse_badge: "Texto: OCR externo (LlamaParse)",
+  toolbar_export_json: "Exportar JSON",
+
+  warning_demo_prepared:
+    "Este análisis preparado es simulado e ilustrativo; no fue generado a partir del texto de muestra.",
+  warning_demo_ai:
+    "Este análisis de IA utiliza texto de muestra ficticio, no un documento de contratación real.",
+  warning_llamaparse_no_pages:
+    "LlamaParse no proporcionó números de página. Las citas no pueden verificarse por página; los hallazgos están marcados para revisión humana.",
+
+  inference_title: "Ejecución del análisis",
+  inference_processing_source: "Fuente de procesamiento:",
+  inference_firebase_label: "Firebase AI Logic",
+  inference_firebase_not_used: "No utilizado",
+  inference_firebase_connected: "Conectado · respuesta recibida",
+  inference_model_label: "Modelo",
+  inference_evidence_label: "Modo de evidencia",
+  inference_evidence_value: "Fragmentos vinculados a páginas · verificados frente al texto extraído",
+  inference_demo_label: "Datos de demostración",
+  inference_yes: "Sí",
+  inference_no: "No",
+
+  summary_title: "Resumen del documento",
+
+  finding_date_not_specified: "Fecha no especificada",
+  finding_no_source_page: "Sin página de origen",
+  finding_source_verified: "Origen verificado",
+  finding_verify_source: "Verificar origen",
+  finding_confidence: "{{pct}}% de confianza",
+
+  findings_title: "Hallazgos",
+  findings_count: "{{shown}} mostrados · {{total}} en total",
+  findings_illustrative: "Ilustrativo",
+  findings_ai_generated: "Generado por IA · revisión requerida",
+  findings_empty_search: "Ningún hallazgo coincide con la búsqueda",
+  findings_empty_category: "Ningún hallazgo en esta categoría",
+  findings_empty_hint: "Cambia el filtro o busca un término diferente.",
+  findings_disclaimer:
+    "Los hallazgos de IA son sugerencias. Verifica cada pasaje citado antes de utilizarlo.",
+
+  empty_analysis_title: "Aún no hay análisis para este documento",
+  empty_analysis_detail:
+    "Elige un modo de procesamiento en el dispositivo o híbrido para extraer hallazgos de un PDF.",
+  empty_analysis_cta: "Abrir opciones de procesamiento",
+
+  compliance_search_hint: "Buscar desde la barra del espacio de trabajo...",
+  compliance_all_categories: "Todas las categorías",
+  compliance_all_statuses: "Todos los estados",
+  compliance_status_pending: "Pendiente",
+  compliance_status_reviewed: "Revisado",
+  compliance_status_satisfied: "Satisfecho",
+  compliance_status_unclear: "Poco claro",
+  compliance_export_csv: "Exportar CSV",
+
+  compliance_col_requirement: "Requisito",
+  compliance_col_category: "Categoría",
+  compliance_col_mandatory: "Obligatorio",
+  compliance_col_evidence: "Evidencia",
+  compliance_col_page: "Página",
+  compliance_col_review_status: "Estado de revisión",
+  compliance_verified: "Verificado",
+  compliance_check_excerpt: "Verificar fragmento",
+  compliance_not_provided: "No proporcionado",
+  compliance_mandatory_yes: "Sí",
+  compliance_mandatory_no: "No",
+  compliance_summary_reqs: "{{count}} requisitos",
+  compliance_summary_verified: "con evidencia verificada",
+  compliance_summary_shown: "mostrados",
+  compliance_footer_session:
+    "El estado de revisión se guarda solo en esta sesión del navegador.",
+  compliance_empty_title: "Ningún requisito coincide con estos filtros",
+  compliance_empty_detail: "Ajusta los filtros o los términos de búsqueda.",
+  compliance_demo_warning:
+    "Los requisitos de muestra y los resultados de revisión son ficticios e ilustrativos.",
+
+  evidence_panel_title: "Evidencia de origen",
+  evidence_panel_subtitle: "Requisito seleccionado",
+  evidence_no_excerpt:
+    "No se devolvió ningún fragmento de origen. Verifica este requisito manualmente.",
+  evidence_notes_label: "Notas de revisión",
+  evidence_notes_placeholder: "Añade una nota para tu revisión...",
+  evidence_select_hint: "Selecciona un requisito para inspeccionar su evidencia.",
+
+  processing_topline: "Opciones de procesamiento",
+  processing_steps: "01 / 03",
+
+  mode_card_local_title: "Solo en el dispositivo",
+  mode_card_local_badge: "PRIVADO",
+  mode_card_local_heading: "Mantener la inferencia en este dispositivo",
+  mode_card_local_desc:
+    "El texto del PDF se extrae en tu navegador. Firebase AI Logic pide al modelo en el dispositivo de Chrome que lo analice. Si ese modelo no está disponible, la solicitud falla en lugar de pasar a la nube.",
+  mode_card_local_p1: "Sin fallback a la nube",
+  mode_card_local_p2: "Requiere Chrome de escritorio compatible",
+  mode_card_local_p3: "Firebase App Check sigue aplicándose",
+
+  mode_card_cloud_title: "IA en la nube",
+  mode_card_cloud_badge: "GEMINI",
+  mode_card_cloud_heading: "Analizar con Gemini 3.8 Flash",
+  mode_card_cloud_desc:
+    "Envía el texto extraído del PDF a la nube de Google a través de Firebase AI Logic. Este modo utiliza solo inferencia en la nube y no recurre al procesamiento en el dispositivo.",
+  mode_card_cloud_p1: "Inferencia directa en la nube",
+  mode_card_cloud_p2: "Requiere tu consentimiento explícito",
+  mode_card_cloud_p3: "Firebase App Check requerido",
+
+  mode_card_hybrid_title: "Inferencia híbrida",
+  mode_card_hybrid_badge: "DISPOSITIVO PRIMERO",
+  mode_card_hybrid_heading: "Preferir en el dispositivo, permitir fallback",
+  mode_card_hybrid_desc:
+    "Firebase AI Logic intenta primero el modelo disponible en el dispositivo. Si no está disponible, el SDK puede enviar el texto extraído a Gemini 3.8 Flash en la nube de Google.",
+  mode_card_hybrid_p1: "Fuente real mostrada tras el análisis",
+  mode_card_hybrid_p2: "El uso de la nube requiere tu consentimiento",
+  mode_card_hybrid_p3: "App Check requerido",
+
+  mode_card_demo_title: "Datos de muestra",
+  mode_card_demo_badge: "DEMO",
+  mode_card_demo_heading: "Explorar hallazgos preparados",
+  mode_card_demo_desc:
+    "Visualiza la licitación ficticia de iluminación pública de Northbridge y su análisis preparado. No se produce ninguna carga ni llamada al modelo en este modo.",
+  mode_card_demo_p1: "No se necesita configuración de Firebase",
+  mode_card_demo_p2: "Ningún documento real procesado",
+  mode_card_demo_p3: "Muestra claramente identificada",
+
+  consent_cloud_title:
+    "Autorizo explícitamente el procesamiento de IA en la nube para esta sesión.",
+  consent_cloud_detail:
+    "El texto extraído de este PDF se enviará a Gemini a través de Firebase AI Logic. Esta configuración se restablece cuando se recarga la página.",
+  consent_hybrid_title:
+    "Autorizo explícitamente el fallback a la nube para esta sesión.",
+  consent_hybrid_detail:
+    "Si el modelo en el dispositivo no está disponible, el texto extraído de este PDF puede enviarse al servicio Gemini de Google a través de Firebase AI Logic. Esta configuración se restablece cuando se recarga la página.",
+
+  file_input_aria: "Elegir un documento PDF",
+  file_replace: "Reemplazar",
+  file_stored: "guardado en esta sesión del navegador",
+  drop_title: "Suelta aquí un PDF de licitación",
+  drop_or: "o selecciona un archivo de tu dispositivo",
+  drop_choose: "Elegir PDF",
+  drop_note:
+    "Solo PDF · máximo 20 MB · los PDFs escaneados pueden usar OCR externo opcional",
+
+  ocr_scanned_title: "Este parece ser un PDF escaneado.",
+  ocr_scanned_desc:
+    "Puedes enviar este archivo a LlamaParse para extracción de texto externa. Firebase AI Logic analizará el texto extraído a continuación.",
+  ocr_analyze_extracted: "Analizar el texto disponible en este navegador",
+  ocr_checking: "Comprobando si el OCR externo está habilitado...",
+  ocr_disabled_title: "El OCR externo no está habilitado.",
+  ocr_disabled_desc:
+    "Conecta el conector de la Plataforma LlamaParse a este proyecto en Lovable.",
+  ocr_check_again: "Comprobar de nuevo",
+  ocr_error: "No se pudo comprobar la disponibilidad del conector.",
+  ocr_retry: "Reintentar",
+  ocr_consent_title: "Consiento el envío de este PDF a LlamaParse para OCR externo.",
+  ocr_consent_detail:
+    "Este consentimiento es independiente del consentimiento de nube de Firebase. El PDF se envía a LlamaParse incluso cuando se selecciona la inferencia en el dispositivo.",
+  ocr_extract_btn: "Extraer con LlamaParse",
+  ocr_extracting: "Extrayendo y analizando...",
+
+  error_dismiss: "Descartar error",
+  progress_default: "Preparando análisis...",
+
+  firebase_setup_title: "Se necesita configuración de Firebase para el análisis en vivo.",
+  firebase_setup_desc:
+    "Configura una aplicación web de Firebase, habilita Firebase AI Logic y configura App Check antes de ejecutar una llamada al modelo en vivo. Sigue los pasos de configuración en README.md.",
+
+  runtime_firebase_label: "Firebase AI Logic",
+  runtime_not_configured: "No configurado",
+  runtime_connected: "Conectado · se recibió una respuesta",
+  runtime_configured_no_response: "Configurado · aún sin respuesta en vivo",
+  runtime_processing_source: "Fuente de procesamiento",
+  runtime_demo_mode: "Modo demostración · IA no utilizada",
+  runtime_not_run: "No ejecutado",
+  runtime_demo_data: "Datos de demostración",
+
+  footer_selected_mode: "Modo seleccionado",
+  footer_source_reporting: "Reporte de origen",
+  footer_source_reporting_value: "La fuente de inferencia real aparece con los resultados",
+  footer_mode_demo: "Datos de muestra",
+  footer_mode_local: "Solo en el dispositivo",
+  footer_mode_cloud: "IA en la nube · consentimiento requerido",
+  footer_mode_hybrid: "Híbrido · consentimiento requerido",
+  footer_status_demo: "No se procesa ningún documento real.",
+  footer_status_local: "No se utilizará fallback a la nube.",
+  footer_status_cloud_ok: "El consentimiento de procesamiento en la nube está activo para esta sesión.",
+  footer_status_cloud_pending: "Activa el consentimiento de nube arriba para continuar.",
+  footer_status_hybrid_ok: "El consentimiento de fallback a la nube está activo para esta sesión.",
+  footer_status_hybrid_pending: "Activa el consentimiento de nube arriba para continuar.",
+
+  btn_explore_sample: "Explorar análisis de muestra",
+  btn_ask_pdf: "Preguntar sobre este PDF",
+  btn_extract_text: "Extraer solo texto",
+  btn_analyze_sample: "Analizar muestra ficticia",
+  btn_analyze_pdf: "Analizar PDF",
+  btn_processing: "Procesando...",
+
+  flow_title: "Del documento a hallazgos revisables",
+  flow_subtitle:
+    "Cada hallazgo está vinculado a un fragmento de origen para que una persona pueda verificarlo.",
+  flow_step1_title: "Elegir PDF",
+  flow_step1_detail: "Archivo permanece en el navegador",
+  flow_step2_title: "Procesar texto",
+  flow_step2_detail: "Modo seleccionado aplicado",
+  flow_step3_title: "Verificar hallazgos",
+  flow_step3_detail: "Fragmentos de origen verificados",
+  flow_step4_title: "Revisión humana",
+  flow_step4_detail: "Las decisiones son tuyas",
+  flow_current_sample: "Documento actual en el espacio de trabajo:",
+
+  qa_title: "Pregunta a este documento",
+  qa_subtitle:
+    "Haz preguntas de seguimiento y revisa cada respuesta frente a sus fuentes.",
+  qa_document_grounded: "Basado en el documento",
+  qa_privacy_note:
+    "Las preguntas utilizan el modo de IA seleccionado. El fallback de nube e híbrido requiere tu consentimiento de Firebase existente. El PDF nunca se envía a Firecrawl.",
+  qa_review_consent: "Revisar consentimiento de nube",
+  qa_mode_note:
+    "Elige el procesamiento en el dispositivo, en la nube o híbrido antes de preguntar. La muestra preparada es ilustrativa y no es una licitación real.",
+  qa_choose_mode: "Elegir un modo",
+  qa_empty_title: "Comienza con una pregunta sobre un requisito, regla o detalle faltante.",
+  qa_empty_detail:
+    "Las respuestas separan lo que dice el PDF de las hipótesis de trabajo y las preguntas que aún necesitan verificación.",
+  qa_role_user: "Tú",
+  qa_role_assistant: "PocketMind",
+  qa_hypotheses: "Hipótesis de trabajo",
+  qa_unresolved: "Aún por verificar",
+  qa_citations_title: "Evidencia documental",
+  qa_page_unavailable: "Referencia de página no disponible",
+  qa_citation_verified: "Verificado en el texto extraído",
+  qa_citation_unverified: "Verificar frente al PDF",
+  qa_research_title: "Resultados de búsqueda · verificar autoridad y estado actual",
+  qa_research_cited: "Citado en la respuesta",
+  qa_research_not_cited: "No citado en la respuesta",
+  qa_research_no_date: "Fecha de publicación no proporcionada",
+  qa_research_no_sources:
+    "Firecrawl no devolvió fuentes; esta respuesta utiliza solo el documento.",
+  qa_sending_research: "Buscando fuentes y preparando una respuesta basada en evidencias…",
+  qa_sending_document: "Verificando el documento y preparando una respuesta…",
+  qa_research_checking: "Comprobando disponibilidad…",
+  qa_research_available: "Opcional · requiere consentimiento separado",
+  qa_research_unavailable: "No configurado en el servidor",
+  qa_research_error_status: "No se pudo comprobar la disponibilidad",
+  qa_research_error_msg:
+    "No se pudo comprobar la disponibilidad de la investigación externa. Intenta recargar o pregunta solo desde el documento.",
+  qa_jurisdiction_label: "Jurisdicción de investigación",
+  qa_jurisdiction_placeholder: "ej. Brasil — Estado de Amazonas; Ley 1.762/1986",
+  qa_country_label: "Código de país",
+  qa_country_placeholder: "BR",
+  qa_research_privacy1:
+    "Solo tu pregunta, código de país y jurisdicción se envían a Firecrawl; el PDF no se envía.",
+  qa_research_privacy2:
+    "La investigación externa acepta preguntas de hasta 300 caracteres y jurisdicciones de hasta 150.",
+  qa_research_consent:
+    "Consiento el envío de esta pregunta, código de país y jurisdicción a Firecrawl para investigación externa.",
+  qa_composer_aria: "Haz una pregunta sobre este documento",
+  qa_composer_placeholder: "Haz una pregunta sobre este documento…",
+  qa_voice_title: "Usar voz para redactar una pregunta",
+  qa_voice_unsupported: "La entrada de voz no es compatible con este navegador",
+  qa_voice_stop: "Dejar de escuchar",
+  qa_voice_use: "Usar micrófono",
+  qa_speak_stop: "Dejar de leer la respuesta",
+  qa_speak_read: "Leer respuesta en voz alta",
+  qa_voice_note:
+    "Tu navegador puede usar su propio servicio de voz. Nada se envía a la IA hasta que envíes la pregunta.",
+  qa_voice_unavailable:
+    "La entrada de voz no está disponible en este navegador; puedes escribir.",
+  qa_send: "Enviar pregunta",
+  qa_research_toggle: "Incluir investigación externa (Firecrawl)",
+  qa_pagination_note:
+    "Este documento no tiene mapeo de páginas verificado. Las respuestas pueden citar texto extraído, pero las citas de página se omiten.",
+
+  tour_badge_welcome: "Bienvenido",
+  tour_badge_step: "Paso {{step}} de {{total}}",
+  tour_close: "Cerrar visita guiada",
+  tour_skip: "Saltar visita guiada",
+  tour_back_to_app: "Volver a la aplicación",
+  tour_prev: "Paso anterior",
+  tour_start: "Iniciar visita guiada",
+  tour_done: "Hecho",
+  tour_next: "Siguiente",
+
+  tour_step0_title: "Bienvenido a PocketMind AI",
+  tour_step0_body:
+    "Convierte PDFs de licitaciones complejas en hallazgos revisables — con un enlace a la página de origen para cada uno. Esta visita guiada recorre el flujo completo en unos 90 segundos, usando la licitación de muestra precargada. No se necesita configuración.",
+  tour_step1_title: "Cuatro áreas, un espacio de trabajo",
+  tour_step1_body:
+    "Navega entre Panel, Análisis documental, Matriz de cumplimiento y Procesamiento y privacidad desde esta barra lateral.",
+  tour_step2_title: "Tu espacio de trabajo de un vistazo",
+  tour_step2_body:
+    "Documentos en la sesión, requisitos extraídos, riesgos críticos marcados para revisión y revisiones pendientes.",
+  tour_step3_title: "La licitación de muestra está lista",
+  tour_step3_body:
+    "NB-2026-114 Smart LED Street Lighting está precargada e identificada como ilustrativa — no se necesita configuración de Firebase para explorarla.",
+  tour_step4_title: "Elige cómo se procesa",
+  tour_step4_body:
+    "En el dispositivo, Nube, Híbrido o Datos de muestra. Nube e híbrido necesitan tu consentimiento explícito. La visita guiada usa Datos de muestra — sin carga, sin llamada al modelo.",
+  tour_step5_title: "Hallazgos, junto a su origen",
+  tour_step5_body:
+    "Requisitos, plazos, especificaciones, riesgos e información faltante — cada uno cita su fragmento. Haz clic en el enlace Página para saltar al origen. Verde significa verificado frente al texto.",
+  tour_step6_title: "Verificar frente al original",
+  tour_step6_body:
+    "La página de origen está junto a los hallazgos para que puedas confirmar cada fragmento tú mismo. Los hallazgos de IA son sugerencias — verifica antes de utilizarlos.",
+  tour_step7_title: "Realiza el seguimiento de cada requisito",
+  tour_step7_body:
+    "Filtra por categoría, inspecciona la evidencia, establece un estado de revisión (Pendiente → Revisado → Satisfecho, o Poco claro), añade notas y exporta a CSV.",
+  tour_step8_title: "Privacidad por elección. Las decisiones son tuyas.",
+  tour_step8_body:
+    "El texto del PDF se extrae en tu navegador; el uso de la nube es siempre tu elección explícita. Cuando estés listo, elige Datos de muestra y Explorar análisis de muestra para probar el flujo completo.",
+
+  csv_col_requirement: "Requisito",
+  csv_col_category: "Categoría",
+  csv_col_mandatory: "Obligatorio",
+  csv_col_evidence: "Evidencia",
+  csv_col_page: "Página",
+  csv_col_evidence_verified: "Evidencia verificada",
+  csv_col_review_status: "Estado de revisión",
+  csv_col_notes: "Notas",
+  csv_mandatory: "Obligatorio",
+  csv_optional: "Opcional",
+  csv_evidence_na: "Evidencia no disponible",
+  csv_yes: "Sí",
+  csv_no: "No",
+};

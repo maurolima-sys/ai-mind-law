@@ -1,79 +1,68 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import {
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  Compass,
-  Sparkles,
-  X,
-} from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Compass, Sparkles, X } from "lucide-react";
+
+import { useT } from "@/lib/i18n";
 
 type TourScreen = "overview" | "analysis" | "compliance" | "processing";
 
 interface TourStep {
   screen: TourScreen;
-  /** CSS selector for the element to spotlight. null = centered modal. */
   target: string | null;
-  title: string;
-  body: string;
+  titleKey: string;
+  bodyKey: string;
 }
 
 const TOUR_KEY = "pocketmind.tour.completed";
 
 const STEPS: TourStep[] = [
-  {
-    screen: "overview",
-    target: null,
-    title: "Welcome to PocketMind AI",
-    body: "Turn complex tender PDFs into reviewable findings — with a link to the source page for each one. This short tour walks the full flow in about 90 seconds, using the preloaded sample tender. No setup needed.",
-  },
+  { screen: "overview", target: null, titleKey: "tour_step0_title", bodyKey: "tour_step0_body" },
   {
     screen: "overview",
     target: ".pm-navigation",
-    title: "Four areas, one workspace",
-    body: "Move between Dashboard, Document analysis, Compliance matrix, and Processing & privacy from this sidebar.",
+    titleKey: "tour_step1_title",
+    bodyKey: "tour_step1_body",
   },
   {
     screen: "overview",
     target: ".pm-metrics-grid",
-    title: "Your workspace at a glance",
-    body: "Documents in the session, requirements extracted, critical risks flagged for review, and pending reviews.",
+    titleKey: "tour_step2_title",
+    bodyKey: "tour_step2_body",
   },
   {
     screen: "overview",
     target: ".pm-recent-panel",
-    title: "The sample tender is ready",
-    body: "NB-2026-114 Smart LED Street Lighting is preloaded and labeled illustrative — no Firebase setup needed to explore it.",
+    titleKey: "tour_step3_title",
+    bodyKey: "tour_step3_body",
   },
   {
     screen: "processing",
     target: ".pm-processing-options",
-    title: "Choose how it's processed",
-    body: "On-device, Cloud, Hybrid, or Sample data. Cloud and hybrid need your explicit consent. The tour uses Sample data — no upload, no model call.",
+    titleKey: "tour_step4_title",
+    bodyKey: "tour_step4_body",
   },
   {
     screen: "analysis",
     target: ".pm-findings-panel",
-    title: "Findings, beside their source",
-    body: "Requirements, deadlines, specifications, risks, and missing information — each quotes its excerpt. Click the Page link to jump to the source. Green means verified against the text.",
+    titleKey: "tour_step5_title",
+    bodyKey: "tour_step5_body",
   },
   {
     screen: "analysis",
     target: ".pm-source-panel",
-    title: "Verify against the original",
-    body: "The source page sits beside the findings so you can confirm every excerpt yourself. AI findings are suggestions — verify before you rely on them.",
+    titleKey: "tour_step6_title",
+    bodyKey: "tour_step6_body",
   },
   {
     screen: "compliance",
     target: ".pm-matrix-panel",
-    title: "Track every requirement",
-    body: "Filter by category, inspect the evidence, set a review status (Pending → Reviewed → Satisfied, or Unclear), add notes, and export to CSV.",
+    titleKey: "tour_step7_title",
+    bodyKey: "tour_step7_body",
   },
   {
     screen: "overview",
     target: ".pm-privacy-note",
-    title: "Privacy by choice. Decisions stay yours.",
-    body: "PDF text is extracted in your browser; cloud use is always your explicit choice. When you're ready, choose Sample data and Explore sample analysis to try the full flow yourself.",
+    titleKey: "tour_step8_title",
+    bodyKey: "tour_step8_body",
   },
 ];
 
@@ -111,6 +100,7 @@ export function GuidedTour({
   onEnd,
   returnFocusRef,
 }: GuidedTourProps) {
+  const t = useT();
   const [step, setStep] = useState(0);
   const [spotlight, setSpotlight] = useState<Rect | null>(null);
   const [popover, setPopover] = useState<{ left: number; top: number } | null>(null);
@@ -139,12 +129,10 @@ export function GuidedTour({
 
   const back = useCallback(() => setStep((prev) => Math.max(0, prev - 1)), []);
 
-  // Reset to the first step whenever the tour is (re)opened.
   useEffect(() => {
     if (active) setStep(0);
   }, [active]);
 
-  // Keyboard controls.
   useEffect(() => {
     if (!active) return;
     const onKey = (event: KeyboardEvent) => {
@@ -198,7 +186,6 @@ export function GuidedTour({
       let left: number;
       let top: number;
 
-      // Sidebar / left-edge targets read better to the right.
       if (target.left < vw * 0.28 && target.right + gap + pw < vw - margin) {
         left = target.right + gap;
         top = clamp(target.top, margin, vh - ph - margin);
@@ -215,20 +202,18 @@ export function GuidedTour({
     return () => cancelAnimationFrame(raf);
   }, [step]);
 
-  // Drive navigation + measurement on step / screen change.
   useLayoutEffect(() => {
     if (!active) return;
     const current = STEPS[step];
     if (!current) return;
     if (current.screen !== screen) {
       onNavigate(current.screen);
-      return; // re-runs when screen updates
+      return;
     }
     const cleanup = measure();
     return cleanup;
   }, [active, step, screen, onNavigate, measure]);
 
-  // Re-measure on resize / scroll.
   useEffect(() => {
     if (!active) return;
     const handler = () => measure();
@@ -240,12 +225,10 @@ export function GuidedTour({
     };
   }, [active, measure]);
 
-  // Focus the primary action when a step appears.
   useEffect(() => {
     if (active) primaryBtnRef.current?.focus();
   }, [active, step, popover, modalMode]);
 
-  // Restore focus when the tour closes.
   useEffect(() => {
     if (active) return;
     returnFocusRef?.current?.focus?.();
@@ -254,6 +237,7 @@ export function GuidedTour({
   if (!active) return null;
 
   const current = STEPS[step];
+  if (!current) return null;
   const isWelcome = step === 0;
   const isLast = step === STEPS.length - 1;
 
@@ -287,24 +271,26 @@ export function GuidedTour({
         <div className="pm-tour-head">
           <span className="pm-tour-badge">
             {isWelcome ? <Sparkles size={14} /> : <Compass size={14} />}
-            {isWelcome ? "Welcome" : `Step ${step} of ${STEPS.length - 1}`}
+            {isWelcome
+              ? t("tour_badge_welcome")
+              : t("tour_badge_step", { step, total: STEPS.length - 1 })}
           </span>
           <button
             type="button"
             className="pm-tour-close"
             onClick={finish}
-            aria-label="Close tour"
+            aria-label={t("tour_close")}
           >
             <X size={16} />
           </button>
         </div>
         <strong id="pm-tour-title" className="pm-tour-title">
-          {current.title}
+          {t(current.titleKey as Parameters<typeof t>[0])}
         </strong>
-        <p className="pm-tour-body">{current.body}</p>
+        <p className="pm-tour-body">{t(current.bodyKey as Parameters<typeof t>[0])}</p>
         <div className="pm-tour-foot">
           <button type="button" className="pm-tour-skip" onClick={finish}>
-            {isLast ? "Back to app" : "Skip tour"}
+            {isLast ? t("tour_back_to_app") : t("tour_skip")}
           </button>
           <div className="pm-tour-progress">
             {!isWelcome && (
@@ -313,26 +299,21 @@ export function GuidedTour({
                 className="pm-tour-back"
                 onClick={back}
                 disabled={step === 0}
-                aria-label="Previous step"
+                aria-label={t("tour_prev")}
               >
                 <ChevronLeft size={16} />
               </button>
             )}
-            <button
-              ref={primaryBtnRef}
-              type="button"
-              className="pm-tour-next"
-              onClick={next}
-            >
+            <button ref={primaryBtnRef} type="button" className="pm-tour-next" onClick={next}>
               {isWelcome ? (
-                "Start tour"
+                t("tour_start")
               ) : isLast ? (
                 <>
-                  <Check size={15} /> Done
+                  <Check size={15} /> {t("tour_done")}
                 </>
               ) : (
                 <>
-                  Next <ChevronRight size={15} />
+                  {t("tour_next")} <ChevronRight size={15} />
                 </>
               )}
             </button>
