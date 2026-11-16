@@ -394,6 +394,15 @@ export const pt: Translations = {
   qa_pagination_note:
     "Este documento não tem mapeamento de páginas verificado. As respostas podem citar texto extraído, mas as citações de página são omitidas.",
 
+  // ── Perguntas sugeridas ───────────────────────────────────────────────────────
+  qa_suggestions_btn: "Perguntas sugeridas",
+  qa_suggestions_q1: "Quais são os requisitos obrigatórios de elegibilidade para submeter uma proposta?",
+  qa_suggestions_q2: "Quais são os principais prazos de entrega e o que acontece se forem ultrapassados?",
+  qa_suggestions_q3: "Quais especificações técnicas os itens fornecidos devem cumprir?",
+  qa_suggestions_q4: "Que garantias financeiras ou seguros são exigidos?",
+  qa_suggestions_q5: "Que informações ou anexos parecem estar em falta neste documento?",
+  qa_suggestions_q6: "Quais são os riscos de maior gravidade identificados neste concurso?",
+
   tour_badge_welcome: "Bem-vindo",
   tour_badge_step: "Passo {{step}} de {{total}}",
   tour_close: "Fechar visita guiada",

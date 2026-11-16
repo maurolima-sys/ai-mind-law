@@ -1,4 +1,5 @@
 import {
+  ChevronDown,
   ExternalLink,
   FileText,
   LoaderCircle,
@@ -66,6 +67,89 @@ function documentJurisdiction(pages: string[]) {
     };
   }
   return { country: "", jurisdiction: "" };
+}
+
+// ─── Suggested questions dropdown ────────────────────────────────────────────
+
+const SUGGESTION_KEYS = [
+  "qa_suggestions_q1",
+  "qa_suggestions_q2",
+  "qa_suggestions_q3",
+  "qa_suggestions_q4",
+  "qa_suggestions_q5",
+  "qa_suggestions_q6",
+] as const;
+
+function SuggestedQuestions({
+  onSelect,
+  disabled,
+}: {
+  onSelect: (question: string) => void;
+  disabled: boolean;
+}) {
+  const t = useT();
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  // Close on outside click or Escape
+  useEffect(() => {
+    if (!open) return;
+    function onPointerDown(e: PointerEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div className="pm-qa-suggestions" ref={containerRef}>
+      <button
+        type="button"
+        className={`pm-qa-suggestions-btn${open ? " is-open" : ""}`}
+        onClick={() => setOpen((v) => !v)}
+        disabled={disabled}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+      >
+        <ChevronDown size={14} className="pm-qa-suggestions-chevron" aria-hidden="true" />
+        {t("qa_suggestions_btn")}
+      </button>
+
+      {open && (
+        <ul
+          className="pm-qa-suggestions-list"
+          role="listbox"
+          aria-label={t("qa_suggestions_btn")}
+        >
+          {SUGGESTION_KEYS.map((key) => {
+            const question = t(key);
+            return (
+              <li key={key} role="option" aria-selected={false}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelect(question);
+                    setOpen(false);
+                  }}
+                >
+                  {question}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
 }
 
 export function DocumentQaPanel({
@@ -299,7 +383,6 @@ export function DocumentQaPanel({
           <FileText size={14} /> {t("qa_document_grounded")}
         </span>
       </div>
-
       <div className="pm-qa-privacy">
         <p>{t("qa_privacy_note")}</p>
         {needsCloudConsent && !cloudConsent && (
@@ -316,6 +399,15 @@ export function DocumentQaPanel({
           </button>
         </p>
       )}
+
+      {/* ── Suggested questions ── */}
+      <SuggestedQuestions
+        onSelect={(q) => {
+          setDraft(q);
+          setErrorMessage("");
+        }}
+        disabled={isSending}
+      />
 
       {messages.length === 0 ? (
         <div className="pm-qa-empty">

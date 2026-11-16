@@ -427,6 +427,15 @@ export const en = {
   qa_pagination_note:
     "This document has no verified page mapping. Answers may quote extracted text, but page citations are withheld.",
 
+  // ── Suggested questions dropdown ─────────────────────────────────────────────
+  qa_suggestions_btn: "Suggested questions",
+  qa_suggestions_q1: "What are the mandatory eligibility requirements to submit a bid?",
+  qa_suggestions_q2: "What are the key submission deadlines and what happens if they are missed?",
+  qa_suggestions_q3: "What technical specifications must the supplied items meet?",
+  qa_suggestions_q4: "What financial guarantees or insurance are required?",
+  qa_suggestions_q5: "What information or annexes appear to be missing from this document?",
+  qa_suggestions_q6: "What are the highest-severity risks identified in this tender?",
+
   // ── GuidedTour ────────────────────────────────────────────────────────────────
   tour_badge_welcome: "Welcome",
   tour_badge_step: "Step {{step}} of {{total}}",
