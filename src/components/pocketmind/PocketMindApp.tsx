@@ -12,6 +12,7 @@ import {
   CircleHelp,
   ClipboardCheck,
   Cloud,
+  Compass,
   FileCheck2,
   FilePlus2,
   FileText,
@@ -42,6 +43,7 @@ import {
 
 import { buildDemoDocument, DEMO_DOC_ID, DEMO_LABEL } from "@/data/sampleTender";
 import { DocumentQaPanel } from "@/components/pocketmind/DocumentQaPanel";
+import { GuidedTour, hasSeenTour } from "@/components/pocketmind/GuidedTour";
 import { LanguageSelector } from "@/components/pocketmind/LanguageSelector";
 import { complianceCsv, downloadText } from "@/lib/services/csv";
 import { useT } from "@/lib/i18n";
@@ -259,6 +261,8 @@ export function PocketMindApp() {
   const [activePage, setActivePage] = useState(1);
   const [activeFinding, setActiveFinding] = useState("all");
   const [selectedRequirementId, setSelectedRequirementId] = useState<string | null>(null);
+  const [tourActive, setTourActive] = useState(() => !hasSeenTour());
+  const tourButtonRef = useRef<HTMLButtonElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const selectedDocument =
@@ -659,6 +663,15 @@ export function PocketMindApp() {
           <ScrollText size={15} aria-hidden="true" />
           <span>What's new</span>
         </Link>
+        <button
+          ref={tourButtonRef}
+          type="button"
+          className="pm-tour-replay"
+          onClick={() => setTourActive(true)}
+        >
+          <Compass size={15} aria-hidden="true" />
+          Take a tour
+        </button>
         <div className="pm-workspace-user">
           <div className="pm-avatar">PM</div>
           <div>
@@ -842,6 +855,13 @@ export function PocketMindApp() {
           )}
         </main>
       </div>
+      <GuidedTour
+        active={tourActive}
+        screen={screen}
+        onNavigate={(s) => setScreen(s)}
+        onEnd={() => setTourActive(false)}
+        returnFocusRef={tourButtonRef}
+      />
     </div>
   );
 }
