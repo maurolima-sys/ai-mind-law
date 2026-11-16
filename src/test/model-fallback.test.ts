@@ -2,10 +2,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   FALLBACK_GEMINI_MODEL,
+  GEMINI_MODEL_FALLBACK_CHAIN,
   generateWithModelFallback,
   getFirebaseAiHttpStatus,
   isRetryableFirebaseAiError,
   PRIMARY_GEMINI_MODEL,
+  SECONDARY_GEMINI_MODEL,
+  TERTIARY_GEMINI_MODEL,
 } from "@/lib/services/firebaseAi";
 
 afterEach(() => {
@@ -23,13 +26,13 @@ describe("Firebase AI retry policy", () => {
     expect(isRetryableFirebaseAiError(new Error("Network request failed"))).toBe(false);
   });
 
-  it("retries the primary model, then switches to the documented fallback", async () => {
+  it("retries the primary model, then walks the documented fallback chain", async () => {
     vi.useFakeTimers();
     const calls: string[] = [];
 
     const request = generateWithModelFallback("cloud", async (modelName) => {
       calls.push(modelName);
-      if (modelName === PRIMARY_GEMINI_MODEL) {
+      if (modelName !== FALLBACK_GEMINI_MODEL) {
         throw { customErrorData: { status: 500 } };
       }
       return "completed";
@@ -40,7 +43,14 @@ describe("Firebase AI retry policy", () => {
       result: "completed",
       modelName: FALLBACK_GEMINI_MODEL,
     });
-    expect(calls).toEqual([PRIMARY_GEMINI_MODEL, PRIMARY_GEMINI_MODEL, FALLBACK_GEMINI_MODEL]);
+    expect(calls).toEqual([
+      PRIMARY_GEMINI_MODEL,
+      PRIMARY_GEMINI_MODEL,
+      SECONDARY_GEMINI_MODEL,
+      TERTIARY_GEMINI_MODEL,
+      FALLBACK_GEMINI_MODEL,
+    ]);
+    expect([...new Set(calls)]).toEqual([...GEMINI_MODEL_FALLBACK_CHAIN]);
   });
 
   it("does not switch models for permanent errors or local-only requests", async () => {

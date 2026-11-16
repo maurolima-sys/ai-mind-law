@@ -16,9 +16,18 @@ import {
 import type { InferencePreference } from "@/lib/types";
 
 export const PRIMARY_GEMINI_MODEL = "gemini-3.8-flash";
+export const SECONDARY_GEMINI_MODEL = "gemini-3.7-flash";
+export const TERTIARY_GEMINI_MODEL = "gemini-3.6-flash";
 export const FALLBACK_GEMINI_MODEL = "gemini-3.5-flash-lite";
 
-export type GeminiModelName = typeof PRIMARY_GEMINI_MODEL | typeof FALLBACK_GEMINI_MODEL;
+export const GEMINI_MODEL_FALLBACK_CHAIN = [
+  PRIMARY_GEMINI_MODEL,
+  SECONDARY_GEMINI_MODEL,
+  TERTIARY_GEMINI_MODEL,
+  FALLBACK_GEMINI_MODEL,
+] as const;
+
+export type GeminiModelName = (typeof GEMINI_MODEL_FALLBACK_CHAIN)[number];
 
 const RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503]);
 const GENERATION_TIMEOUT_MS = 20_000;
@@ -26,8 +35,12 @@ const TOTAL_GENERATION_BUDGET_MS = 60_000;
 const RETRY_STEPS = [
   { modelName: PRIMARY_GEMINI_MODEL, delayMs: 0, jitterMs: 0 },
   { modelName: PRIMARY_GEMINI_MODEL, delayMs: 2_000, jitterMs: 1_000 },
-  { modelName: FALLBACK_GEMINI_MODEL, delayMs: 5_000, jitterMs: 3_000 },
+  { modelName: SECONDARY_GEMINI_MODEL, delayMs: 5_000, jitterMs: 2_000 },
+  { modelName: TERTIARY_GEMINI_MODEL, delayMs: 8_000, jitterMs: 3_000 },
+  { modelName: FALLBACK_GEMINI_MODEL, delayMs: 12_000, jitterMs: 4_000 },
 ] as const;
+
+export const TOTAL_MODEL_ATTEMPTS = RETRY_STEPS.length;
 
 export function getFirebaseAiHttpStatus(error: unknown): number | undefined {
   if (typeof error !== "object" || error === null) return undefined;
@@ -55,6 +68,10 @@ export function geminiModelLabel(modelName: string): string {
   switch (modelName) {
     case PRIMARY_GEMINI_MODEL:
       return "Gemini 3.8 Flash";
+    case SECONDARY_GEMINI_MODEL:
+      return "Gemini 3.7 Flash";
+    case TERTIARY_GEMINI_MODEL:
+      return "Gemini 3.6 Flash";
     case FALLBACK_GEMINI_MODEL:
       return "Gemini 3.5 Flash-Lite";
     default:
@@ -120,8 +137,11 @@ export async function generateWithModelFallback<T>(
   if (isRetryableFirebaseAiError(lastError)) {
     const detail =
       lastError instanceof Error ? lastError.message : "The model returned a transient error.";
+    const attemptedModels = [
+      ...new Set(RETRY_STEPS.map((step) => geminiModelLabel(step.modelName))),
+    ].join(", ");
     throw new Error(
-      `Gemini remained temporarily unavailable after trying ${geminiModelLabel(PRIMARY_GEMINI_MODEL)} and ${geminiModelLabel(FALLBACK_GEMINI_MODEL)}. Please try again shortly. (${detail})`,
+      `Gemini remained temporarily unavailable after trying ${attemptedModels}. Please try again shortly. (${detail})`,
     );
   }
   throw lastError instanceof Error

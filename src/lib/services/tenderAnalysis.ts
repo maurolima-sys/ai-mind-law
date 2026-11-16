@@ -18,6 +18,7 @@ import {
   generateWithModelFallback,
   geminiModelLabel,
   PRIMARY_GEMINI_MODEL,
+  TOTAL_MODEL_ATTEMPTS,
   type GeminiModelName,
 } from "@/lib/services/firebaseAi";
 import { scoreConfidence } from "@/lib/services/evidence";
@@ -86,7 +87,6 @@ type ProgressUpdate = {
 };
 
 const MAX_CHUNK_CHARACTERS = 8_000;
-import { FALLBACK_GEMINI_MODEL } from "@/lib/services/firebaseAi";
 
 function splitPages(pages: string[]): Chunk[] {
   const units: Array<{ page: number; text: string }> = [];
@@ -339,7 +339,7 @@ export async function analyzeTender(
             phase: "analyzing",
             completed: index,
             total: chunks.length,
-            detail: `Gemini returned HTTP ${status}. ${action} ${geminiModelLabel(nextModel)} (${attempt}/3).`,
+            detail: `Gemini returned HTTP ${status}. ${action} ${geminiModelLabel(nextModel)} (${attempt}/${TOTAL_MODEL_ATTEMPTS}).`,
           });
         },
       },
