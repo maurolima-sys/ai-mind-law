@@ -248,7 +248,7 @@ function mergeFindings(
   );
   const modelNames = [
     ...(sources.has("ON_DEVICE") ? ["Chrome on-device model"] : []),
-    ...(sources.has("IN_CLOUD") ? ["Gemini 3.8 Flash"] : []),
+    ...(sources.has("IN_CLOUD") ? ["Gemini 2.0 Flash"] : []),
   ];
   return {
     mode,

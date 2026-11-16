@@ -230,7 +230,7 @@ export const en = {
 
   mode_card_cloud_title: "Cloud AI",
   mode_card_cloud_badge: "GEMINI",
-  mode_card_cloud_heading: "Analyze with Gemini 3.8 Flash",
+  mode_card_cloud_heading: "Analyze with Gemini 2.0 Flash",
   mode_card_cloud_desc:
     "Send extracted PDF text to Google's cloud through Firebase AI Logic. This mode uses cloud inference only and does not fall back to on-device processing.",
   mode_card_cloud_p1: "Direct cloud inference",
@@ -241,7 +241,7 @@ export const en = {
   mode_card_hybrid_badge: "ON-DEVICE FIRST",
   mode_card_hybrid_heading: "Prefer on-device, allow fallback",
   mode_card_hybrid_desc:
-    "Firebase AI Logic tries the available on-device model first. If unavailable, the SDK may send extracted text to Gemini 3.8 Flash in Google's cloud.",
+    "Firebase AI Logic tries the available on-device model first. If unavailable, the SDK may send extracted text to Gemini 2.0 Flash in Google's cloud.",
   mode_card_hybrid_p1: "Actual source shown after analysis",
   mode_card_hybrid_p2: "Cloud use requires your consent",
   mode_card_hybrid_p3: "App Check required",

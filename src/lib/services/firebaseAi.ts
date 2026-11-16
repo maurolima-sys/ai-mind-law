@@ -138,7 +138,7 @@ export function createTenderModel(
   const model = getGenerativeModel(ai, {
     mode,
     inCloudParams: {
-      model: "gemini-3.8-flash",
+      model: "gemini-2.0-flash",
       generationConfig: { responseMimeType: "application/json" },
     },
     ...(responseConstraint ? { onDeviceParams: { promptOptions: { responseConstraint } } } : {}),
