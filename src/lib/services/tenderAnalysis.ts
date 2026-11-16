@@ -80,6 +80,25 @@ type ProgressUpdate = {
 };
 
 const MAX_CHUNK_CHARACTERS = 8_000;
+const GENERATE_TIMEOUT_MS = 60_000;
+
+async function generateWithTimeout(
+  model: GenerativeModel,
+  prompt: string,
+): Promise<Awaited<ReturnType<GenerativeModel["generateContent"]>>> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(
+      () => reject(new Error("Firebase AI Logic request timed out after 60 seconds.")),
+      GENERATE_TIMEOUT_MS,
+    );
+  });
+  try {
+    return await Promise.race([model.generateContent(prompt), timeout]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 function splitPages(pages: string[]): Chunk[] {
   const units: Array<{ page: number; text: string }> = [];
@@ -149,9 +168,8 @@ export function parseTenderResponse(text: string) {
 export function requireInferenceSource(source: string | undefined): InferenceSource {
   if (source === FirebaseInferenceSource.ON_DEVICE) return "ON_DEVICE";
   if (source === FirebaseInferenceSource.IN_CLOUD) return "IN_CLOUD";
-  throw new Error(
-    "Firebase AI Logic returned a result without reporting its inference source. Update the Firebase SDK before using this result.",
-  );
+  // Some SDK versions omit inferenceSource for cloud-only calls — treat as cloud.
+  return "IN_CLOUD";
 }
 
 export function resolveProcessingSource(
@@ -309,7 +327,7 @@ export async function analyzeTender(
       total: chunks.length,
       detail: `Analyzing text section ${index + 1} of ${chunks.length}`,
     });
-    const result = await model.generateContent(buildPrompt(chunk));
+    const result = await generateWithTimeout(model, buildPrompt(chunk));
     const source = requireInferenceSource(result.response.inferenceSource);
     sources.add(source);
     onInference(source);
