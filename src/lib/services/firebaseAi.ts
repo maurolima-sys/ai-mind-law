@@ -30,16 +30,37 @@ declare global {
 const runtimeWindowKey = "__pocketMindFirebaseRuntime";
 
 function firebaseConfiguration() {
-  const { VITE_FIREBASE_API_KEY, VITE_FIREBASE_APP_ID, VITE_FIREBASE_PROJECT_ID } = import.meta.env;
+  const {
+    VITE_FIREBASE_API_KEY,
+    VITE_FIREBASE_AUTH_DOMAIN,
+    VITE_FIREBASE_PROJECT_ID,
+    VITE_FIREBASE_STORAGE_BUCKET,
+    VITE_FIREBASE_MESSAGING_SENDER_ID,
+    VITE_FIREBASE_APP_ID,
+  } = import.meta.env;
   const config = {
     apiKey: VITE_FIREBASE_API_KEY,
+    authDomain: VITE_FIREBASE_AUTH_DOMAIN,
     appId: VITE_FIREBASE_APP_ID,
     projectId: VITE_FIREBASE_PROJECT_ID,
+    storageBucket: VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: VITE_FIREBASE_MESSAGING_SENDER_ID,
   };
 
-  if (!config.apiKey || !config.appId || !config.projectId) {
+  const missing = Object.entries({
+    VITE_FIREBASE_API_KEY: config.apiKey,
+    VITE_FIREBASE_AUTH_DOMAIN: config.authDomain,
+    VITE_FIREBASE_PROJECT_ID: config.projectId,
+    VITE_FIREBASE_STORAGE_BUCKET: config.storageBucket,
+    VITE_FIREBASE_MESSAGING_SENDER_ID: config.messagingSenderId,
+    VITE_FIREBASE_APP_ID: config.appId,
+  })
+    .filter(([, value]) => !value)
+    .map(([name]) => name);
+
+  if (missing.length > 0) {
     throw new Error(
-      "Firebase is not configured. Copy .env.example to .env.local and add your Firebase web app values.",
+      `Firebase is not configured. Add these values to .env.local: ${missing.join(", ")}.`,
     );
   }
 
@@ -47,12 +68,22 @@ function firebaseConfiguration() {
 }
 
 export function isFirebaseConfigured() {
-  const { VITE_FIREBASE_API_KEY, VITE_FIREBASE_APP_ID, VITE_FIREBASE_PROJECT_ID } = import.meta.env;
+  const {
+    VITE_FIREBASE_API_KEY,
+    VITE_FIREBASE_AUTH_DOMAIN,
+    VITE_FIREBASE_PROJECT_ID,
+    VITE_FIREBASE_STORAGE_BUCKET,
+    VITE_FIREBASE_MESSAGING_SENDER_ID,
+    VITE_FIREBASE_APP_ID,
+  } = import.meta.env;
   const appCheckSiteKey = import.meta.env["VITE_FIREBASE_APPCHECK_RECAPTCHA_SITE_KEY"];
   return Boolean(
     VITE_FIREBASE_API_KEY &&
+    VITE_FIREBASE_AUTH_DOMAIN &&
     VITE_FIREBASE_APP_ID &&
     VITE_FIREBASE_PROJECT_ID &&
+    VITE_FIREBASE_STORAGE_BUCKET &&
+    VITE_FIREBASE_MESSAGING_SENDER_ID &&
     (import.meta.env.DEV || appCheckSiteKey),
   );
 }
