@@ -40,6 +40,7 @@ import {
 } from "react";
 
 import { buildDemoDocument, DEMO_DOC_ID, DEMO_LABEL } from "@/data/sampleTender";
+import { DocumentQaPanel } from "@/components/pocketmind/DocumentQaPanel";
 import { complianceCsv, downloadText } from "@/lib/services/csv";
 import { formatBytes, validatePdf, extractPdfText } from "@/lib/services/documentProcessing";
 import { isExternalOcrAvailable, runExternalOcr } from "@/lib/services/externalOcr";
@@ -348,8 +349,55 @@ export function PocketMindApp() {
     addPdf(event.dataTransfer.files[0]);
   }
 
+  async function extractTextOnly() {
+    if (!selectedDocument || selectedDocument.source !== "upload") {
+      setErrorMessage("Choose a PDF before extracting text.");
+      return;
+    }
+    if (selectedDocument.pages.some((page) => page.trim())) {
+      setScreen("analysis");
+      return;
+    }
+    if (!file) {
+      setErrorMessage("The selected PDF is no longer available. Choose it again to continue.");
+      return;
+    }
+
+    setIsAnalyzing(true);
+    setErrorMessage("");
+    try {
+      const pages = await extractPdfText(file, (completed, total) => {
+        setProgressDetail(`Extracting text from page ${completed} of ${total}`);
+      });
+      setDocuments((current) =>
+        current.map((document) =>
+          document.id === selectedDocument.id ? { ...document, pages } : document,
+        ),
+      );
+      setDocumentTextSources((current) => ({ ...current, [selectedDocument.id]: "pdfjs" }));
+      setDocumentPagination((current) => ({ ...current, [selectedDocument.id]: true }));
+      setActivePage(1);
+
+      if (shouldOfferExternalOcr(pages)) {
+        setScannedDocumentId(selectedDocument.id);
+        setScannedTextByDocumentId((current) => ({ ...current, [selectedDocument.id]: pages }));
+        setExternalOcrConsentDocumentId(null);
+        void checkExternalOcrStatus();
+        return;
+      }
+
+      setScreen("analysis");
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : "An unexpected error occurred.";
+      setErrorMessage(`Text extraction could not be completed. ${detail}`);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  }
+
   function openDemo() {
     setSelectedDocumentId(DEMO_DOC_ID);
+    setCloudConsent(false);
     setErrorMessage("");
     setScreen("analysis");
   }
@@ -456,6 +504,15 @@ export function PocketMindApp() {
         setExternalOcrConsentDocumentId(null);
         void checkExternalOcrStatus();
         return;
+      }
+      if (selectedDocument.source === "upload") {
+        setDocuments((current) =>
+          current.map((document) =>
+            document.id === selectedDocument.id ? { ...document, pages } : document,
+          ),
+        );
+        setDocumentTextSources((current) => ({ ...current, [selectedDocument.id]: textSource }));
+        setDocumentPagination((current) => ({ ...current, [selectedDocument.id]: paginated }));
       }
       await analyzePages(pages, textSource, paginated);
     } catch (error) {
@@ -687,6 +744,7 @@ export function PocketMindApp() {
               onOpenProcessing={() => setScreen("processing")}
               onSelectDocument={(id) => {
                 setSelectedDocumentId(id);
+                setCloudConsent(false);
                 setActivePage(1);
                 setActiveFinding("all");
                 const nextDocument = documents.find((document) => document.id === id);
@@ -704,11 +762,14 @@ export function PocketMindApp() {
               activePage={activePage}
               pageText={currentPageText}
               search={search}
+              preference={processingChoice === "demo" ? null : processingChoice}
+              cloudConsent={cloudConsent}
               textSource={documentTextSources[selectedDocument.id] ?? null}
               paginationVerified={documentPagination[selectedDocument.id] ?? true}
               onSelectFilter={setActiveFinding}
               onSelectPage={setActivePage}
               onOpenProcessing={() => setScreen("processing")}
+              onModelResponse={() => setFirebaseConnected(true)}
               onExport={exportAnalysis}
             />
           )}
@@ -767,6 +828,7 @@ export function PocketMindApp() {
               }}
               onExternalOcr={runLlamaParseOcr}
               onAnalyzeExtractedText={analyzeExtractedTextAnyway}
+              onExtractTextOnly={extractTextOnly}
               onCheckExternalOcr={() => void checkExternalOcrStatus()}
               onRunAnalysis={runAnalysis}
               onOpenDemo={openDemo}
@@ -1025,11 +1087,14 @@ function AnalysisScreen({
   activePage,
   pageText,
   search,
+  preference,
+  cloudConsent,
   textSource,
   paginationVerified,
   onSelectFilter,
   onSelectPage,
   onOpenProcessing,
+  onModelResponse,
   onExport,
 }: {
   document: DocumentRecord;
@@ -1040,11 +1105,14 @@ function AnalysisScreen({
   activePage: number;
   pageText: string;
   search: string;
+  preference: InferencePreference | null;
+  cloudConsent: boolean;
   textSource: DocumentTextSource | null;
   paginationVerified: boolean;
   onSelectFilter: (filter: string) => void;
   onSelectPage: (page: number) => void;
   onOpenProcessing: () => void;
+  onModelResponse: () => void;
   onExport: () => void;
 }) {
   const filterOptions = [
@@ -1061,6 +1129,96 @@ function AnalysisScreen({
   ];
 
   if (!analysis) {
+    if (document.pages.some((page) => page.trim())) {
+      return (
+        <div className="pm-analysis-screen">
+          <div className="pm-page-heading">
+            <div>
+              <h1>Ask about this document</h1>
+              <p>
+                Review the text extracted in your browser and ask a question before running a full
+                analysis.
+              </p>
+            </div>
+            <button
+              className="pm-button pm-button--primary"
+              type="button"
+              onClick={onOpenProcessing}
+            >
+              Run full analysis <ArrowRight size={16} />
+            </button>
+          </div>
+          <div className="pm-analysis-layout">
+            <section className="pm-panel pm-source-panel">
+              <div className="pm-panel-heading pm-source-heading">
+                <div>
+                  <h2>Extracted source text</h2>
+                  <p>
+                    {textSource === "llamaparse"
+                      ? paginationVerified
+                        ? "Text extracted by LlamaParse."
+                        : "LlamaParse text; original page boundaries are unavailable."
+                      : "Text extracted locally in this browser."}
+                  </p>
+                </div>
+                <div className="pm-page-controls">
+                  {paginationVerified ? (
+                    <>
+                      <button
+                        type="button"
+                        className="pm-icon-button"
+                        aria-label="Previous page"
+                        disabled={activePage <= 1}
+                        onClick={() => onSelectPage(activePage - 1)}
+                      >
+                        <ChevronLeft size={17} />
+                      </button>
+                      <span>
+                        Page <strong>{activePage}</strong> of {document.pages.length}
+                      </span>
+                      <button
+                        type="button"
+                        className="pm-icon-button"
+                        aria-label="Next page"
+                        disabled={activePage >= document.pages.length}
+                        onClick={() => onSelectPage(activePage + 1)}
+                      >
+                        <ChevronRight size={17} />
+                      </button>
+                    </>
+                  ) : (
+                    <span>Page numbers unavailable</span>
+                  )}
+                </div>
+              </div>
+              <div className="pm-source-page">
+                <div className="pm-source-page-head">
+                  <span>{document.name}</span>
+                  <span>
+                    {paginationVerified ? `Page ${activePage}` : "Pagination unavailable"}
+                  </span>
+                </div>
+                <pre>{pageText || "No text is available for this page."}</pre>
+                <div className="pm-source-disclaimer">
+                  Extracted text may need manual verification against the original PDF.
+                </div>
+              </div>
+            </section>
+            <DocumentQaPanel
+              key={document.id}
+              documentName={document.name}
+              pages={document.pages}
+              preference={preference}
+              cloudConsent={cloudConsent}
+              paginationVerified={paginationVerified}
+              onOpenProcessing={onOpenProcessing}
+              onSelectPage={onSelectPage}
+              onModelResponse={onModelResponse}
+            />
+          </div>
+        </div>
+      );
+    }
     return <EmptyAnalysis onOpenProcessing={onOpenProcessing} />;
   }
   const processingSource = getProcessingSource(analysis);
@@ -1319,6 +1477,18 @@ function AnalysisScreen({
           </div>
         </section>
       </div>
+
+      <DocumentQaPanel
+        key={document.id}
+        documentName={document.name}
+        pages={document.pages}
+        preference={preference}
+        cloudConsent={cloudConsent}
+        paginationVerified={paginationVerified}
+        onOpenProcessing={onOpenProcessing}
+        onSelectPage={onSelectPage}
+        onModelResponse={onModelResponse}
+      />
     </div>
   );
 }
@@ -1611,6 +1781,7 @@ function ProcessingScreen({
   onExternalOcrConsentChange,
   onExternalOcr,
   onAnalyzeExtractedText,
+  onExtractTextOnly,
   onCheckExternalOcr,
   onRunAnalysis,
   onOpenDemo,
@@ -1637,11 +1808,14 @@ function ProcessingScreen({
   onExternalOcrConsentChange: (checked: boolean) => void;
   onExternalOcr: () => void;
   onAnalyzeExtractedText: () => void;
+  onExtractTextOnly: () => void;
   onCheckExternalOcr: () => void;
   onRunAnalysis: () => void;
   onOpenDemo: () => void;
   onClearError: () => void;
 }) {
+  const hasQuestionText = document.pages.some((page) => page.trim());
+
   return (
     <div className="pm-processing-screen">
       <div className="pm-processing-topline">
@@ -2028,27 +2202,40 @@ function ProcessingScreen({
               Explore sample analysis <ArrowRight size={16} />
             </button>
           ) : (
-            <button
-              type="button"
-              className="pm-button pm-button--primary"
-              onClick={onRunAnalysis}
-              disabled={
-                isAnalyzing ||
-                (!file && document.source !== "demo") ||
-                ((choice === "cloud" || choice === "hybrid") && !cloudConsent)
-              }
-            >
-              {isAnalyzing ? (
-                <>
-                  <LoaderCircle size={16} className="pm-spin" /> Processing...
-                </>
-              ) : (
-                <>
-                  {document.source === "demo" ? "Analyze fictional sample" : "Analyze PDF"}{" "}
-                  <ArrowRight size={16} />
-                </>
+            <>
+              {document.source === "upload" && (
+                <button
+                  type="button"
+                  className="pm-button pm-button--outline"
+                  onClick={onExtractTextOnly}
+                  disabled={isAnalyzing || (!file && !hasQuestionText)}
+                >
+                  <FileText size={16} />
+                  {hasQuestionText ? "Ask about this PDF" : "Extract text only"}
+                </button>
               )}
-            </button>
+              <button
+                type="button"
+                className="pm-button pm-button--primary"
+                onClick={onRunAnalysis}
+                disabled={
+                  isAnalyzing ||
+                  (!file && document.source !== "demo") ||
+                  ((choice === "cloud" || choice === "hybrid") && !cloudConsent)
+                }
+              >
+                {isAnalyzing ? (
+                  <>
+                    <LoaderCircle size={16} className="pm-spin" /> Processing...
+                  </>
+                ) : (
+                  <>
+                    {document.source === "demo" ? "Analyze fictional sample" : "Analyze PDF"}{" "}
+                    <ArrowRight size={16} />
+                  </>
+                )}
+              </button>
+            </>
           )}
           <span>
             {choice === "demo"

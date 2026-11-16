@@ -94,7 +94,7 @@ export interface Review {
   notes: string;
 }
 export interface ChatCitation {
-  page: number;
+  page: number | null;
   excerpt: string;
   verified: boolean;
 }

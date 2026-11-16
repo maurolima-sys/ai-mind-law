@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import {
   parseTenderResponse,
+  requireInferenceSource,
   resolveProcessingSource,
   type InferenceSource,
 } from "@/lib/services/tenderAnalysis";
+import { InferenceSource as FirebaseInferenceSource } from "firebase/ai";
 
 describe("parseTenderResponse", () => {
   it("accepts a complete JSON response wrapped in a code fence", () => {
@@ -44,5 +46,15 @@ describe("resolveProcessingSource", () => {
   it("reports on-device and mixed-source analyses from Firebase's response sources", () => {
     expect(resolveProcessingSource(sourceSet("ON_DEVICE"), "hybrid")).toBe("on-device");
     expect(resolveProcessingSource(sourceSet("ON_DEVICE", "IN_CLOUD"), "hybrid")).toBe("hybrid");
+  });
+});
+
+describe("requireInferenceSource", () => {
+  it("normalizes the Firebase SDK's source values for analysis reporting", () => {
+    expect(requireInferenceSource(FirebaseInferenceSource.ON_DEVICE)).toBe("ON_DEVICE");
+    expect(requireInferenceSource(FirebaseInferenceSource.IN_CLOUD)).toBe("IN_CLOUD");
+    expect(() => requireInferenceSource(undefined)).toThrow(
+      "Firebase AI Logic returned a result without reporting its inference source.",
+    );
   });
 });

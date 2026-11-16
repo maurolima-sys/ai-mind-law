@@ -1,4 +1,4 @@
-import type { GenerativeModel } from "firebase/ai";
+import { InferenceSource as FirebaseInferenceSource, type GenerativeModel } from "firebase/ai";
 import { z } from "zod";
 
 import { verifyEvidence } from "@/lib/services/evidence";
@@ -146,13 +146,12 @@ export function parseTenderResponse(text: string) {
   return result.data;
 }
 
-function requireInferenceSource(source: string | undefined): InferenceSource {
-  if (source !== "ON_DEVICE" && source !== "IN_CLOUD") {
-    throw new Error(
-      "Firebase AI Logic returned a result without reporting its inference source. Update the Firebase SDK before using this analysis.",
-    );
-  }
-  return source;
+export function requireInferenceSource(source: string | undefined): InferenceSource {
+  if (source === FirebaseInferenceSource.ON_DEVICE) return "ON_DEVICE";
+  if (source === FirebaseInferenceSource.IN_CLOUD) return "IN_CLOUD";
+  throw new Error(
+    "Firebase AI Logic returned a result without reporting its inference source. Update the Firebase SDK before using this result.",
+  );
 }
 
 export function resolveProcessingSource(

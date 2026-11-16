@@ -31,6 +31,9 @@ Users upload or select a tender PDF, review extracted requirements, dates, speci
 - The app supports prepared fictional demo findings, PDF text extraction, cloud-only and on-device-only analysis, and consent-gated hybrid inference through Firebase AI Logic.
 - Users can run a live model call on the built-in fictional tender text without uploading a real procurement document; results remain labeled as demo content.
 - Analysis results display the inference source reported by Firebase AI Logic, and cited excerpts are checked against extracted page text.
+- Users can ask follow-up questions about extracted PDF text, dictate questions with browser speech recognition, and optionally listen to answers with browser speech synthesis.
+- Document answers distinguish stated facts, conditional hypotheses, and unresolved questions. Page excerpts are verified against extracted text; page citations are withheld when OCR pagination is unverified.
+- Optional Firecrawl research is off by default and requires separate consent. Only the user's question, country code, and jurisdiction are sent to its server-side integration; PDF text is never sent to Firecrawl. External results require human verification and do not constitute legal advice.
 - Review statuses and notes are held in the current browser session; persistent accounts and cloud document storage are not implemented.
 - Sample tender details are fictional and must remain clearly labeled as illustrative.
 - AI findings require human review and verifiable evidence; the product must not imply that generated procurement analysis is authoritative legal advice.

@@ -121,7 +121,10 @@ function getFirebaseRuntime(): FirebaseRuntime {
   return runtime;
 }
 
-export function createTenderModel(preference: InferencePreference): {
+export function createTenderModel(
+  preference: InferencePreference,
+  responseConstraint?: object,
+): {
   model: GenerativeModel;
   appCheck: AppCheck;
 } {
@@ -134,8 +137,11 @@ export function createTenderModel(preference: InferencePreference): {
         : InferenceMode.PREFER_ON_DEVICE;
   const model = getGenerativeModel(ai, {
     mode,
-    inCloudParams: { model: "gemini-3.8-flash" },
-    generationConfig: { responseMimeType: "application/json" },
+    inCloudParams: {
+      model: "gemini-3.8-flash",
+      generationConfig: { responseMimeType: "application/json" },
+    },
+    ...(responseConstraint ? { onDeviceParams: { promptOptions: { responseConstraint } } } : {}),
   });
   return { model, appCheck };
 }

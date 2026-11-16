@@ -12,6 +12,8 @@ The web app includes a dashboard, document analysis view, compliance matrix, and
 - Show the actual inference source reported by Firebase AI Logic, and validate AI citations against extracted page text.
 - Show Firebase AI Logic as connected only after the app receives a real model response; the sample-data workflow does not call Firebase.
 - Test a live model call with the built-in fictional tender text without uploading a real procurement PDF; the result remains labeled as demo data.
+- Ask follow-up questions about extracted PDF text, with exact-text-checked page citations, working hypotheses, browser speech input, and optional browser text-to-speech.
+- Optionally search external legal sources through Firecrawl after separate consent. Only the question and jurisdiction are sent to Firecrawl; the PDF is not. Configure `FIRECRAWL_API_KEY` on the server, never in a `VITE_*` variable.
 - Review requirements, update review statuses and notes for the current browser session, and export the compliance matrix as CSV.
 - Export a document's analysis as JSON.
 
@@ -20,6 +22,12 @@ Accounts, shared workspaces, and persistent cloud document storage are not imple
 ### Optional external OCR
 
 When PDF.js finds no or very little selectable text, the processing screen offers LlamaParse as an optional external OCR path. The PDF is not sent until the user separately consents for that document; this consent is required even when Firebase inference is on-device. OCR requests use the server function and the Lovable connector, never a browser-side provider key. If LlamaParse does not return page-level output, the app marks citations as unverified and flags them for human review. A real scanned-PDF runtime test is still required.
+
+### Document questions and optional legal research
+
+Document questions use the selected Firebase AI Logic mode. Cloud inference and hybrid cloud fallback require the existing explicit cloud consent. Answers distinguish document facts from hypotheses, verify quoted excerpts against extracted text, and withhold page numbers when OCR did not preserve page mapping. Browser speech input is optional; the browser may use its own speech service, and transcription is not submitted until the user sends the question.
+
+External research is off by default and requires a separate checkbox consent. It sends only the question, country code, and jurisdiction to Firecrawl; it does not send the PDF or extracted document text. Set `FIRECRAWL_API_KEY` as a server-side environment variable. Search results and publication dates can be incomplete or outdated and must be checked against the issuing authority. This feature supports legal research and hypotheses; it does not provide legal advice.
 
 ## Firebase setup for live analysis
 
