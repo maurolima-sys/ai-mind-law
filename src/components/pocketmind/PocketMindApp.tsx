@@ -135,13 +135,13 @@ function Metric({
   );
 }
 
-function findAnalysisItems(analysis: Analysis): Finding[] {
+function findAnalysisItems(analysis: Analysis, t: TFn): Finding[] {
   return [
     ...analysis.requirements.map((item) => ({
       id: item.id,
       kind: "Requirement" as const,
       title: item.description,
-      description: `${item.category} · ${item.mandatory ? "Mandatory" : "Optional"}`,
+      description: `${item.category} · ${item.mandatory ? t("finding_mandatory") : t("finding_optional")}`,
       page: item.evidence.page,
       excerpt: item.evidence.excerpt,
       verified: item.evidence.verified,
@@ -180,7 +180,7 @@ function findAnalysisItems(analysis: Analysis): Finding[] {
       id: `missing-${index}`,
       kind: "Missing information" as const,
       title: item,
-      description: "Referenced or expected information was not found in the analyzed text.",
+      description: t("finding_missing_desc"),
       page: null,
       excerpt: null,
       verified: false,
@@ -188,7 +188,7 @@ function findAnalysisItems(analysis: Analysis): Finding[] {
     ...analysis.inconsistencies.map((item, index) => ({
       id: `inconsistency-${index}`,
       kind: "Missing information" as const,
-      title: "Potential inconsistency",
+      title: t("finding_inconsistency_title"),
       description: item,
       page: null,
       excerpt: null,
@@ -281,7 +281,7 @@ export function PocketMindApp() {
     : firebaseConnected
       ? "green"
       : "neutral";
-  const allFindings = useMemo(() => (analysis ? findAnalysisItems(analysis) : []), [analysis]);
+  const allFindings = useMemo(() => (analysis ? findAnalysisItems(analysis, t) : []), [analysis, t]);
   const visibleFindings = allFindings.filter((finding) => {
     const matchesTab =
       activeFinding === "all" || finding.kind.toLowerCase().startsWith(activeFinding);
@@ -617,9 +617,7 @@ export function PocketMindApp() {
 
   if (!selectedDocument) {
     return (
-      <main className="pm-empty-analysis">
-        The workspace has no selected document. Refresh the page to restore the sample workspace.
-      </main>
+      <main className="pm-empty-analysis">{t("workspace_no_document")}</main>
     );
   }
 
@@ -662,7 +660,7 @@ export function PocketMindApp() {
         </div>
         <Link to="/changelog" className="pm-changelog-link">
           <ScrollText size={15} aria-hidden="true" />
-          <span>What's new</span>
+          <span>{t("sidebar_whats_new")}</span>
         </Link>
         <button
           ref={tourButtonRef}
@@ -671,7 +669,7 @@ export function PocketMindApp() {
           onClick={() => setTourActive(true)}
         >
           <Compass size={15} aria-hidden="true" />
-          Take a tour
+          {t("sidebar_take_tour")}
         </button>
         <div className="pm-workspace-user">
           <div className="pm-avatar">PM</div>
@@ -747,7 +745,7 @@ export function PocketMindApp() {
                 <button
                   type="button"
                   onClick={() => setScreen("processing")}
-                  aria-label="Open processing options"
+                  aria-label={t("open_processing_aria")}
                 >
                   <ArrowRight size={17} />
                 </button>
@@ -944,11 +942,11 @@ function OverviewScreen({
         <section className="pm-panel pm-recent-panel">
           <div className="pm-panel-heading">
             <div>
-              <h2>Recent tender documents</h2>
-              <p>Files currently available in this browser session.</p>
+              <h2>{t("overview_recent_title")}</h2>
+              <p>{t("overview_recent_subtitle")}</p>
             </div>
             <button className="pm-link-button" type="button" onClick={onOpenProcessing}>
-              Add document <ArrowRight size={15} />
+              {t("overview_add_document")} <ArrowRight size={15} />
             </button>
           </div>
           {filteredDocuments.length > 0 ? (
@@ -1463,7 +1461,7 @@ function AnalysisScreen({
                             if (finding.page !== null) onSelectPage(finding.page);
                           }}
                         >
-                          <FileText size={14} /> Page {finding.page}
+                          <FileText size={14} /> {t("finding_page", { page: finding.page })}
                         </button>
                       ) : (
                         <span className="pm-muted-label">{t("finding_no_source_page")}</span>
@@ -1571,7 +1569,7 @@ function ComplianceScreen({
       {analysis.mode === "demo" && (
         <div className="pm-inline-warning">
           <Sparkles size={16} />
-          <span>Sample requirements and review results are fictional and illustrative.</span>
+          <span>{t("compliance_demo_inline")}</span>
         </div>
       )}
       <div className="pm-compliance-toolbar">
@@ -1582,7 +1580,7 @@ function ComplianceScreen({
           </span>
         </label>
         <label className="pm-select-wrap">
-          <span className="sr-only">Category filter</span>
+          <span className="sr-only">{t("compliance_category_filter_sr")}</span>
           <select
             value={categoryFilter}
             onChange={(event) => setCategoryFilter(event.currentTarget.value)}
@@ -1597,7 +1595,7 @@ function ComplianceScreen({
           <ChevronDown size={15} />
         </label>
         <label className="pm-select-wrap">
-          <span className="sr-only">Review status filter</span>
+          <span className="sr-only">{t("compliance_status_filter_sr")}</span>
           <select
             value={statusFilter}
             onChange={(event) => setStatusFilter(event.currentTarget.value)}
@@ -1692,7 +1690,7 @@ function ComplianceScreen({
                         <td>
                           <label className="pm-status-select">
                             <span className="sr-only">
-                              Review status for {requirement.description}
+                              {t("review_status_sr", { description: requirement.description })}
                             </span>
                             <select
                               value={review.status}
@@ -1727,7 +1725,7 @@ function ComplianceScreen({
           <div className="pm-panel-foot">
             <span>{t("compliance_footer_session")}</span>
             <span>
-              {filteredRequirements.length} of {requirements.length}
+              {filteredRequirements.length} {t("compliance_count_of")} {requirements.length}
             </span>
           </div>
         </section>
@@ -1746,7 +1744,7 @@ function ComplianceScreen({
               <div className="pm-evidence-meta">
                 <Badge tone="purple">{selectedRequirement.category}</Badge>
                 {selectedRequirement.evidence.page && (
-                  <Badge tone="blue">Page {selectedRequirement.evidence.page}</Badge>
+                  <Badge tone="blue">{t("evidence_page_badge", { page: selectedRequirement.evidence.page })}</Badge>
                 )}
               </div>
               {selectedRequirement.evidence.excerpt ? (
@@ -2022,7 +2020,7 @@ function ProcessingScreen({
                 isAnalyzing || ((choice === "cloud" || choice === "hybrid") && !cloudConsent)
               }
             >
-              Analyze the text available in this browser
+              {t("ocr_analyze_browser")}
             </button>
           )}
           {externalOcrAvailability === "checking" && (
@@ -2145,7 +2143,7 @@ function ProcessingScreen({
           </strong>
         </div>
         <div>
-          <span>Demo data</span>
+          <span>{t("runtime_demo_data_label")}</span>
           <strong>{document.source === "demo" ? t("runtime_demo_data") : t("inference_no")}</strong>
         </div>
       </section>

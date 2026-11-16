@@ -344,6 +344,28 @@ export const en = {
   flow_step4_detail: "Decisions stay yours",
   flow_current_sample: "Current workspace document:",
 
+  // ── Hardcoded strings (previously missed) ────────────────────────────────────
+  overview_recent_title: "Recent tender documents",
+  overview_recent_subtitle: "Files currently available in this browser session.",
+  overview_add_document: "Add document",
+  sidebar_whats_new: "What's new",
+  sidebar_take_tour: "Take a tour",
+  compliance_demo_inline: "Sample requirements and review results are fictional and illustrative.",
+  compliance_category_filter_sr: "Category filter",
+  compliance_status_filter_sr: "Review status filter",
+  compliance_count_of: "of",
+  finding_page: "Page {{page}}",
+  finding_mandatory: "Mandatory",
+  finding_optional: "Optional",
+  finding_missing_desc: "Referenced or expected information was not found in the analyzed text.",
+  finding_inconsistency_title: "Potential inconsistency",
+  evidence_page_badge: "Page {{page}}",
+  review_status_sr: "Review status for {{description}}",
+  workspace_no_document: "The workspace has no selected document. Refresh the page to restore the sample workspace.",
+  runtime_demo_data_label: "Demo data",
+  open_processing_aria: "Open processing options",
+  ocr_analyze_browser: "Analyze the text available in this browser",
+
   // ── DocumentQaPanel ───────────────────────────────────────────────────────────
   qa_title: "Ask this document",
   qa_subtitle: "Ask follow-up questions and review every answer against its sources.",
