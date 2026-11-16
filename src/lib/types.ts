@@ -1,4 +1,6 @@
 export type ProcessingMode = "demo" | "local" | "cloud" | "hybrid";
+export type InferencePreference = "local" | "cloud" | "hybrid";
+export type ProcessingSource = "demo" | "on-device" | "cloud" | "cloud-fallback" | "hybrid";
 export type ReviewStatus = "pending" | "reviewed" | "satisfied" | "unclear";
 export type Category =
   | "Technical"
@@ -64,7 +66,9 @@ export interface Risk {
 
 export interface Analysis {
   mode: ProcessingMode;
+  processingSource?: ProcessingSource;
   engine: string;
+  model?: string;
   summary: string;
   requirements: Requirement[];
   deadlines: Deadline[];

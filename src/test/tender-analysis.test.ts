@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { parseTenderResponse } from "@/lib/services/tenderAnalysis";
+import {
+  parseTenderResponse,
+  resolveProcessingSource,
+  type InferenceSource,
+} from "@/lib/services/tenderAnalysis";
 
 describe("parseTenderResponse", () => {
   it("accepts a complete JSON response wrapped in a code fence", () => {
@@ -26,5 +30,19 @@ describe("parseTenderResponse", () => {
     expect(() => parseTenderResponse('{"summary":"incomplete"}')).toThrow(
       "The AI response did not match the required analysis format",
     );
+  });
+});
+
+describe("resolveProcessingSource", () => {
+  const sourceSet = (...sources: InferenceSource[]) => new Set(sources);
+
+  it("reports direct cloud inference separately from cloud fallback", () => {
+    expect(resolveProcessingSource(sourceSet("IN_CLOUD"), "cloud")).toBe("cloud");
+    expect(resolveProcessingSource(sourceSet("IN_CLOUD"), "hybrid")).toBe("cloud-fallback");
+  });
+
+  it("reports on-device and mixed-source analyses from Firebase's response sources", () => {
+    expect(resolveProcessingSource(sourceSet("ON_DEVICE"), "hybrid")).toBe("on-device");
+    expect(resolveProcessingSource(sourceSet("ON_DEVICE", "IN_CLOUD"), "hybrid")).toBe("hybrid");
   });
 });

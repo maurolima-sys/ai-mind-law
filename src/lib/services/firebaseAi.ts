@@ -13,6 +13,7 @@ import {
   type AI,
   type GenerativeModel,
 } from "firebase/ai";
+import type { InferencePreference } from "@/lib/types";
 
 type FirebaseRuntime = {
   app: FirebaseApp;
@@ -99,14 +100,21 @@ function getFirebaseRuntime(): FirebaseRuntime {
   return runtime;
 }
 
-export function createTenderModel(allowCloudFallback: boolean): {
+export function createTenderModel(preference: InferencePreference): {
   model: GenerativeModel;
   appCheck: AppCheck;
 } {
   const { ai, appCheck } = getFirebaseRuntime();
+  const mode =
+    preference === "local"
+      ? InferenceMode.ONLY_ON_DEVICE
+      : preference === "cloud"
+        ? InferenceMode.ONLY_IN_CLOUD
+        : InferenceMode.PREFER_ON_DEVICE;
   const model = getGenerativeModel(ai, {
-    mode: allowCloudFallback ? InferenceMode.PREFER_ON_DEVICE : InferenceMode.ONLY_ON_DEVICE,
+    mode,
     inCloudParams: { model: "gemini-3.8-flash" },
+    generationConfig: { responseMimeType: "application/json" },
   });
   return { model, appCheck };
 }

@@ -6,10 +6,12 @@ import type {
   Analysis,
   Category,
   Deadline,
+  InferencePreference,
   Requirement,
   Risk,
   Severity,
   Specification,
+  ProcessingSource,
 } from "@/lib/types";
 import { createTenderModel } from "@/lib/services/firebaseAi";
 import { scoreConfidence } from "@/lib/services/evidence";
@@ -69,7 +71,7 @@ const chunkResponseSchema = z.object({
 });
 
 type Chunk = { pages: Array<{ page: number; text: string }> };
-type InferenceSource = "ON_DEVICE" | "IN_CLOUD";
+export type InferenceSource = "ON_DEVICE" | "IN_CLOUD";
 type ProgressUpdate = {
   phase: "preparing" | "analyzing";
   completed: number;
@@ -153,10 +155,23 @@ function requireInferenceSource(source: string | undefined): InferenceSource {
   return source;
 }
 
+export function resolveProcessingSource(
+  sources: ReadonlySet<InferenceSource>,
+  preference: InferencePreference,
+): ProcessingSource {
+  const usedOnDevice = sources.has("ON_DEVICE");
+  const usedCloud = sources.has("IN_CLOUD");
+  if (usedOnDevice && usedCloud) return "hybrid";
+  if (usedOnDevice) return "on-device";
+  if (preference === "hybrid" && usedCloud) return "cloud-fallback";
+  return "cloud";
+}
+
 function mergeFindings(
   pages: string[],
   records: Array<ReturnType<typeof chunkResponseSchema.parse>>,
   sources: Set<InferenceSource>,
+  preference: InferencePreference,
 ): Analysis {
   const evidence = (page: number, excerpt: string) => verifyEvidence(pages, page, excerpt);
   const requirements: Requirement[] = [];
@@ -208,13 +223,21 @@ function mergeFindings(
     });
   });
 
-  const mode = sources.size > 1 ? "hybrid" : sources.has("ON_DEVICE") ? "local" : "cloud";
+  const processingSource = resolveProcessingSource(sources, preference);
+  const mode =
+    processingSource === "on-device" ? "local" : processingSource === "hybrid" ? "hybrid" : "cloud";
   const sourceNames = [...sources].map((source) =>
     source === "ON_DEVICE" ? "on-device" : "cloud",
   );
+  const modelNames = [
+    ...(sources.has("ON_DEVICE") ? ["Chrome on-device model"] : []),
+    ...(sources.has("IN_CLOUD") ? ["Gemini 3.8 Flash"] : []),
+  ];
   return {
     mode,
+    processingSource,
     engine: `Firebase AI Logic · ${sourceNames.join(" + ")}`,
+    model: modelNames.join(" + "),
     summary: records.map((record) => record.summary).join(" "),
     requirements,
     deadlines,
@@ -228,8 +251,9 @@ function mergeFindings(
 
 export async function analyzeTender(
   pages: string[],
-  allowCloudFallback: boolean,
+  preference: InferencePreference,
   onProgress: (progress: ProgressUpdate) => void,
+  onInference: (source: InferenceSource) => void = () => {},
 ): Promise<Analysis> {
   const chunks = splitPages(pages);
   if (chunks.length === 0) {
@@ -238,35 +262,43 @@ export async function analyzeTender(
     );
   }
 
-  const { model } = createTenderModel(allowCloudFallback);
-  onProgress({
-    phase: "preparing",
-    completed: 0,
-    total: chunks.length,
-    detail: "Preparing the on-device model",
-  });
-  const preparation = model.initializeDeviceModel((progress) => {
+  const { model } = createTenderModel(preference);
+  if (preference === "cloud") {
     onProgress({
       phase: "preparing",
-      completed: Math.round(progress * 100),
-      total: 100,
-      detail: `Downloading the on-device model (${Math.round(progress * 100)}%)`,
+      completed: 0,
+      total: chunks.length,
+      detail: "Preparing Firebase AI Logic cloud analysis",
     });
-  });
-
-  if (allowCloudFallback) {
-    void preparation.catch((error: unknown) => {
+  } else {
+    onProgress({
+      phase: "preparing",
+      completed: 0,
+      total: chunks.length,
+      detail: "Preparing the on-device model",
+    });
+    try {
+      await model.initializeDeviceModel((progress) => {
+        onProgress({
+          phase: "preparing",
+          completed: Math.round(progress * 100),
+          total: 100,
+          detail: `Downloading the on-device model (${Math.round(progress * 100)}%)`,
+        });
+      });
+    } catch (error) {
       const detail =
         error instanceof Error ? error.message : "On-device model initialization failed";
+      if (preference === "local") {
+        throw new Error(`On-device inference is unavailable. ${detail}`);
+      }
       onProgress({
         phase: "preparing",
         completed: 0,
         total: chunks.length,
-        detail: `On-device model unavailable; cloud fallback may be used. ${detail}`,
+        detail: `On-device unavailable; Firebase AI Logic will try cloud fallback. ${detail}`,
       });
-    });
-  } else {
-    await preparation;
+    }
   }
 
   const records: Array<ReturnType<typeof chunkResponseSchema.parse>> = [];
@@ -279,7 +311,17 @@ export async function analyzeTender(
       detail: `Analyzing text section ${index + 1} of ${chunks.length}`,
     });
     const result = await model.generateContent(buildPrompt(chunk));
-    sources.add(requireInferenceSource(result.response.inferenceSource));
+    const source = requireInferenceSource(result.response.inferenceSource);
+    sources.add(source);
+    onInference(source);
+    if (preference === "hybrid" && source === "IN_CLOUD") {
+      onProgress({
+        phase: "analyzing",
+        completed: index,
+        total: chunks.length,
+        detail: `On-device unavailable; using cloud fallback for section ${index + 1}`,
+      });
+    }
     records.push(parseTenderResponse(result.response.text()));
   }
 
@@ -293,5 +335,5 @@ export async function analyzeTender(
     total: chunks.length,
     detail: "Verifying cited evidence",
   });
-  return mergeFindings(pages, records, sources);
+  return mergeFindings(pages, records, sources, preference);
 }

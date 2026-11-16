@@ -52,10 +52,12 @@ import {
   type Evidence,
   type Review,
   type ReviewStatus,
+  type InferencePreference,
+  type ProcessingSource,
 } from "@/lib/types";
 
 type Screen = "overview" | "analysis" | "compliance" | "processing";
-type ProcessingChoice = "demo" | "local" | "hybrid";
+type ProcessingChoice = "demo" | InferencePreference;
 type FindingKind = "Requirement" | "Deadline" | "Specification" | "Risk" | "Missing information";
 
 type Finding = {
@@ -93,16 +95,23 @@ const screenCopy: Record<Screen, { title: string; subtitle: string }> = {
   },
   processing: {
     title: "Choose how your document is processed",
-    subtitle: "Your file is read in this browser. You control whether AI may use cloud fallback.",
+    subtitle:
+      "Text is extracted in this browser. You control whether AI may process it in the cloud.",
   },
 };
 
-function modeLabel(mode: Analysis["mode"] | undefined) {
-  if (mode === "local") return "On-device";
-  if (mode === "cloud") return "Cloud";
-  if (mode === "hybrid") return "Hybrid";
-  if (mode === "demo") return "Illustrative demo";
+function modeLabel(source: Analysis["processingSource"] | undefined) {
+  if (source === "on-device") return "On-device";
+  if (source === "cloud") return "Cloud";
+  if (source === "cloud-fallback") return "Cloud fallback";
+  if (source === "hybrid") return "Hybrid";
+  if (source === "demo") return "Demo mode";
   return "Not analyzed";
+}
+
+function getProcessingSource(analysis: Analysis): ProcessingSource {
+  if (analysis.processingSource) return analysis.processingSource;
+  return analysis.mode === "local" ? "on-device" : analysis.mode;
 }
 
 function Badge({
@@ -205,12 +214,13 @@ function findAnalysisItems(analysis: Analysis): Finding[] {
 }
 
 function modeSourceTone(
-  mode: Analysis["mode"] | undefined,
+  source: Analysis["processingSource"] | undefined,
 ): "green" | "blue" | "amber" | "purple" | "neutral" {
-  if (mode === "local") return "green";
-  if (mode === "cloud") return "blue";
-  if (mode === "hybrid") return "purple";
-  if (mode === "demo") return "amber";
+  if (source === "on-device") return "green";
+  if (source === "cloud") return "blue";
+  if (source === "cloud-fallback") return "amber";
+  if (source === "hybrid") return "purple";
+  if (source === "demo") return "amber";
   return "neutral";
 }
 
@@ -236,6 +246,7 @@ export function PocketMindApp() {
   const [cloudConsent, setCloudConsent] = useState(false);
   const [reviews, setReviews] = useState<Record<string, Review>>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [firebaseConnected, setFirebaseConnected] = useState(false);
   const [progressDetail, setProgressDetail] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [activePage, setActivePage] = useState(1);
@@ -248,6 +259,16 @@ export function PocketMindApp() {
   const file = filesByDocumentId[selectedDocumentId] ?? null;
   const analysis = selectedDocument?.analysis;
   const firebaseConfigured = isFirebaseConfigured();
+  const firebaseStatusLabel = !firebaseConfigured
+    ? "Firebase setup required"
+    : firebaseConnected
+      ? "Firebase AI Logic: Connected"
+      : "Firebase configured · not yet verified";
+  const firebaseStatusTone = !firebaseConfigured
+    ? "amber"
+    : firebaseConnected
+      ? "green"
+      : "neutral";
   const allFindings = useMemo(() => (analysis ? findAnalysisItems(analysis) : []), [analysis]);
   const visibleFindings = allFindings.filter((finding) => {
     const matchesTab =
@@ -320,37 +341,49 @@ export function PocketMindApp() {
   }
 
   async function runAnalysis() {
-    if (!file || !selectedDocument) {
+    if (!selectedDocument || (!file && selectedDocument.source !== "demo")) {
       setErrorMessage("Choose a PDF before starting an analysis.");
       return;
     }
     if (processingChoice === "demo") {
       setErrorMessage(
-        "Demo mode uses only the fictional sample tender. Choose on-device or hybrid processing to analyze your PDF.",
+        "Demo mode uses only the fictional sample tender. Choose on-device, cloud, or hybrid processing to analyze your PDF.",
       );
       return;
     }
-    if (processingChoice === "hybrid" && !cloudConsent) {
-      setErrorMessage("Allow cloud fallback explicitly, or choose on-device only.");
+    if ((processingChoice === "cloud" || processingChoice === "hybrid") && !cloudConsent) {
+      setErrorMessage("Explicitly allow cloud processing, or choose on-device only.");
       return;
     }
 
     setIsAnalyzing(true);
     setErrorMessage("");
-    setProgressDetail("Reading PDF text in this browser");
     try {
-      const pages = await extractPdfText(file, (completed, total) => {
-        setProgressDetail(`Extracting text from page ${completed} of ${total}`);
-      });
+      let pages: string[];
+      if (selectedDocument.source === "demo") {
+        pages = selectedDocument.pages;
+        setProgressDetail("Using fictional sample text; no real PDF is uploaded.");
+      } else {
+        if (!file) {
+          throw new Error("The selected PDF is no longer available. Choose it again to continue.");
+        }
+        setProgressDetail("Reading PDF text in this browser");
+        pages = await extractPdfText(file, (completed, total) => {
+          setProgressDetail(`Extracting text from page ${completed} of ${total}`);
+        });
+      }
       if (!pages.some((page) => page.trim())) {
         throw new Error(
           "No selectable text was found in this PDF. Scanned-document OCR is not available yet.",
         );
       }
 
-      const result = await analyzeTender(pages, processingChoice === "hybrid", ({ detail }) => {
-        setProgressDetail(detail);
-      });
+      const result = await analyzeTender(
+        pages,
+        processingChoice,
+        ({ detail }) => setProgressDetail(detail),
+        () => setFirebaseConnected(true),
+      );
       const updatedDocument: DocumentRecord = {
         ...selectedDocument,
         pages,
@@ -460,9 +493,9 @@ export function PocketMindApp() {
             )}
           </label>
           <div className="pm-topbar-right">
-            <Badge tone={firebaseConfigured ? "green" : "amber"}>
+            <Badge tone={firebaseStatusTone}>
               <span className="pm-status-dot" />
-              {firebaseConfigured ? "Client config present" : "Demo workspace"}
+              {firebaseStatusLabel}
             </Badge>
             <div className="pm-avatar pm-avatar--small">PM</div>
           </div>
@@ -563,6 +596,7 @@ export function PocketMindApp() {
               choice={processingChoice}
               cloudConsent={cloudConsent}
               firebaseConfigured={firebaseConfigured}
+              firebaseConnected={firebaseConnected}
               isAnalyzing={isAnalyzing}
               progressDetail={progressDetail}
               errorMessage={errorMessage}
@@ -571,6 +605,7 @@ export function PocketMindApp() {
               onDrop={handleDrop}
               onSelectChoice={(choice) => {
                 setProcessingChoice(choice);
+                if (choice === "demo" || choice === "local") setCloudConsent(false);
                 setErrorMessage("");
               }}
               onCloudConsentChange={(checked) => {
@@ -629,12 +664,14 @@ function OverviewScreen({
         <Metric
           icon={ClipboardCheck}
           label={
-            analysis?.mode === "demo" ? "Prepared sample requirements" : "Requirements extracted"
+            selectedDocument.source === "demo" ? "Sample requirements" : "Requirements extracted"
           }
           value={analysis?.requirements.length ?? 0}
           detail={
-            analysis?.mode === "demo"
-              ? "Illustrative prepared findings"
+            selectedDocument.source === "demo"
+              ? analysis?.mode === "demo"
+                ? "Illustrative prepared findings"
+                : "AI findings from fictional text"
               : `${verifiedRequirements} with source-verified excerpts`
           }
           tone="purple"
@@ -703,21 +740,23 @@ function OverviewScreen({
                       <td>{document.pages.length || "—"}</td>
                       <td>
                         <Badge
-                          tone={
-                            document.analysis?.mode === "local"
-                              ? "green"
-                              : document.analysis?.mode === "demo"
-                                ? "amber"
-                                : "blue"
-                          }
+                          tone={modeSourceTone(
+                            document.analysis ? getProcessingSource(document.analysis) : undefined,
+                          )}
                         >
-                          {modeLabel(document.analysis?.mode)}
+                          {modeLabel(
+                            document.analysis ? getProcessingSource(document.analysis) : undefined,
+                          )}
                         </Badge>
                       </td>
                       <td>
                         {document.analysis ? (
-                          <Badge tone={document.analysis.mode === "demo" ? "amber" : "green"}>
-                            {document.analysis.mode === "demo" ? "Sample analysis" : "Analyzed"}
+                          <Badge tone={document.source === "demo" ? "amber" : "green"}>
+                            {document.source === "demo"
+                              ? document.analysis.mode === "demo"
+                                ? "Prepared sample"
+                                : "AI-analysed sample"
+                              : "Analyzed"}
                           </Badge>
                         ) : (
                           <Badge tone="neutral">Not analyzed</Badge>
@@ -864,6 +903,7 @@ function AnalysisScreen({
   if (!analysis) {
     return <EmptyAnalysis onOpenProcessing={onOpenProcessing} />;
   }
+  const processingSource = getProcessingSource(analysis);
 
   return (
     <div className="pm-analysis-screen">
@@ -879,24 +919,50 @@ function AnalysisScreen({
               {document.pages.length} pages · {formatBytes(document.size)}
             </span>
           </div>
-          <Badge tone={analysis.mode === "demo" ? "amber" : modeSourceTone(analysis.mode)}>
-            {modeLabel(analysis.mode)}
-          </Badge>
+          <Badge tone={modeSourceTone(processingSource)}>{modeLabel(processingSource)}</Badge>
         </div>
         <button className="pm-button pm-button--dark" type="button" onClick={onExport}>
           <ArrowDownToLine size={16} /> Export JSON
         </button>
       </div>
 
-      {analysis.mode === "demo" && (
+      {document.source === "demo" && (
         <div className="pm-inline-warning">
           <Sparkles size={16} />
           <span>
-            This prepared analysis is simulated and illustrative; it was not generated from the
-            sample PDF.
+            {analysis.mode === "demo"
+              ? "This prepared analysis is simulated and illustrative; it was not generated from the sample text."
+              : "This AI analysis uses fictional sample text, not a real procurement document."}
           </span>
         </div>
       )}
+
+      <section className="pm-inference-report" aria-label="Analysis run status">
+        <div className="pm-inference-report-heading">
+          <strong>Analysis run</strong>
+          <Badge tone={modeSourceTone(processingSource)}>
+            Processing source: {modeLabel(processingSource)}
+          </Badge>
+        </div>
+        <dl>
+          <div>
+            <dt>Firebase AI Logic</dt>
+            <dd>{analysis.mode === "demo" ? "Not used" : "Connected · response received"}</dd>
+          </div>
+          <div>
+            <dt>Model</dt>
+            <dd>{analysis.model ?? analysis.engine}</dd>
+          </div>
+          <div>
+            <dt>Evidence mode</dt>
+            <dd>Page-linked excerpts · checked against extracted text</dd>
+          </div>
+          <div>
+            <dt>Demo data</dt>
+            <dd>{document.source === "demo" ? "Yes" : "No"}</dd>
+          </div>
+        </dl>
+      </section>
 
       <section className="pm-summary-strip">
         <div className="pm-summary-icon">
@@ -1343,6 +1409,7 @@ function ProcessingScreen({
   choice,
   cloudConsent,
   firebaseConfigured,
+  firebaseConnected,
   isAnalyzing,
   progressDetail,
   errorMessage,
@@ -1360,6 +1427,7 @@ function ProcessingScreen({
   choice: ProcessingChoice;
   cloudConsent: boolean;
   firebaseConfigured: boolean;
+  firebaseConnected: boolean;
   isAnalyzing: boolean;
   progressDetail: string;
   errorMessage: string;
@@ -1417,6 +1485,36 @@ function ProcessingScreen({
 
         <button
           type="button"
+          className={`pm-mode-card${choice === "cloud" ? " is-selected" : ""}`}
+          onClick={() => onSelectChoice("cloud")}
+        >
+          <span className="pm-mode-card-top">
+            <span className="pm-radio-indicator" />
+            Cloud AI<Badge tone="blue">GEMINI</Badge>
+          </span>
+          <span className="pm-mode-illustration pm-mode-illustration--hybrid">
+            <Cloud size={34} />
+          </span>
+          <strong>Analyze with Gemini 3.8 Flash</strong>
+          <span className="pm-mode-description">
+            Send extracted PDF text to Google's cloud through Firebase AI Logic. This mode uses
+            cloud inference only and does not fall back to on-device processing.
+          </span>
+          <span className="pm-mode-points">
+            <span>
+              <CheckCircle2 size={15} /> Direct cloud inference
+            </span>
+            <span>
+              <CheckCircle2 size={15} /> Requires your explicit consent
+            </span>
+            <span>
+              <CheckCircle2 size={15} /> Firebase App Check required
+            </span>
+          </span>
+        </button>
+
+        <button
+          type="button"
           className={`pm-mode-card${choice === "hybrid" ? " is-selected" : ""}`}
           onClick={() => onSelectChoice("hybrid")}
         >
@@ -1430,8 +1528,8 @@ function ProcessingScreen({
           </span>
           <strong>Prefer on-device, allow fallback</strong>
           <span className="pm-mode-description">
-            Firebase AI Logic uses the available on-device model first. If unavailable, it may send
-            extracted text to Gemini 3.8 Flash in Google's cloud.
+            Firebase AI Logic tries the available on-device model first. If unavailable, the SDK may
+            send extracted text to Gemini 3.8 Flash in Google's cloud.
           </span>
           <span className="pm-mode-points">
             <span>
@@ -1477,7 +1575,7 @@ function ProcessingScreen({
         </button>
       </div>
 
-      {choice === "hybrid" && (
+      {(choice === "cloud" || choice === "hybrid") && (
         <label className="pm-cloud-consent">
           <input
             type="checkbox"
@@ -1488,11 +1586,15 @@ function ProcessingScreen({
             <Check size={14} />
           </span>
           <span>
-            <strong>I explicitly allow cloud fallback for this session.</strong>
+            <strong>
+              {choice === "cloud"
+                ? "I explicitly allow cloud AI processing for this session."
+                : "I explicitly allow cloud fallback for this session."}
+            </strong>
             <small>
-              If the on-device model is unavailable, extracted text from this PDF may be sent to
-              Google's Gemini service through Firebase AI Logic. This setting resets when the page
-              is reloaded.
+              {choice === "cloud"
+                ? "Extracted text from this PDF will be sent to Gemini through Firebase AI Logic. This setting resets when the page is reloaded."
+                : "If the on-device model is unavailable, extracted text from this PDF may be sent to Google's Gemini service through Firebase AI Logic. This setting resets when the page is reloaded."}
             </small>
           </span>
         </label>
@@ -1567,11 +1669,38 @@ function ProcessingScreen({
             <strong>Firebase setup is needed for live analysis.</strong>
             <span>
               Configure a Firebase web app, enable Firebase AI Logic, and set App Check before
-              analyzing real documents. Follow the setup steps in README.md.
+              running a live model call. Follow the setup steps in README.md.
             </span>
           </div>
         </div>
       )}
+
+      <section className="pm-runtime-status" aria-label="Firebase AI Logic status">
+        <div>
+          <span>Firebase AI Logic</span>
+          <strong>
+            {!firebaseConfigured
+              ? "Not configured"
+              : firebaseConnected
+                ? "Connected · a response was received"
+                : "Configured · no live response yet"}
+          </strong>
+        </div>
+        <div>
+          <span>Processing source</span>
+          <strong>
+            {document.analysis
+              ? modeLabel(getProcessingSource(document.analysis))
+              : document.source === "demo"
+                ? "Demo mode · AI not used"
+                : "Not run"}
+          </strong>
+        </div>
+        <div>
+          <span>Demo data</span>
+          <strong>{document.source === "demo" ? "Yes" : "No"}</strong>
+        </div>
+      </section>
 
       <div className="pm-processing-footer">
         <div>
@@ -1581,7 +1710,9 @@ function ProcessingScreen({
               ? "Sample data"
               : choice === "local"
                 ? "On-device only"
-                : "Hybrid · consent required"}
+                : choice === "cloud"
+                  ? "Cloud AI · consent required"
+                  : "Hybrid · consent required"}
           </Badge>
         </div>
         <div>
@@ -1600,7 +1731,11 @@ function ProcessingScreen({
               type="button"
               className="pm-button pm-button--primary"
               onClick={onRunAnalysis}
-              disabled={isAnalyzing || !file || (choice === "hybrid" && !cloudConsent)}
+              disabled={
+                isAnalyzing ||
+                (!file && document.source !== "demo") ||
+                ((choice === "cloud" || choice === "hybrid") && !cloudConsent)
+              }
             >
               {isAnalyzing ? (
                 <>
@@ -1608,7 +1743,8 @@ function ProcessingScreen({
                 </>
               ) : (
                 <>
-                  Analyze PDF <ArrowRight size={16} />
+                  {document.source === "demo" ? "Analyze fictional sample" : "Analyze PDF"}{" "}
+                  <ArrowRight size={16} />
                 </>
               )}
             </button>
@@ -1618,9 +1754,13 @@ function ProcessingScreen({
               ? "No real document is processed."
               : choice === "local"
                 ? "No cloud fallback will be used."
-                : cloudConsent
-                  ? "Cloud fallback consent is enabled for this session."
-                  : "Enable cloud consent above to continue."}
+                : choice === "cloud"
+                  ? cloudConsent
+                    ? "Cloud processing consent is enabled for this session."
+                    : "Enable cloud consent above to continue."
+                  : cloudConsent
+                    ? "Cloud fallback consent is enabled for this session."
+                    : "Enable cloud consent above to continue."}
           </span>
         </div>
       </div>
