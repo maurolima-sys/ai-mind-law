@@ -694,6 +694,15 @@ export function PocketMindApp() {
           <ChevronDown size={16} aria-hidden="true" />
         </div>
         <div className="pm-build-info" title={buildLabel()}>
+          <a
+            href="https://github.com/maurolima-sys/ai-mind-law"
+            target="_blank"
+            rel="noreferrer"
+            className="pm-build-info-link"
+          >
+            GitHub ↗
+          </a>
+          <span>·</span>
           {buildLabel()}
         </div>
       </aside>

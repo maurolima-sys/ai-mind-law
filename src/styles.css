@@ -3366,6 +3366,9 @@
 
 /* ── Build info ─────────────────────────────────────────────────────────── */
 .pm-build-info {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   padding: 6px 16px 10px;
   font-size: 10px;
   font-family: var(--font-mono, ui-monospace, monospace);
@@ -3380,6 +3383,20 @@
 }
 .pm-build-info:hover {
   opacity: 0.85;
+}
+.pm-build-info-link {
+  color: var(--pm-blue);
+  text-decoration: none;
+  font-weight: 600;
+  flex: 0 0 auto;
+}
+.pm-build-info-link:hover {
+  text-decoration: underline;
+}
+.pm-build-info-link:focus-visible {
+  outline: 2px solid #86a7ff;
+  outline-offset: 1px;
+  border-radius: 2px;
 }
 
 /* ── Suggested questions dropdown ── */
