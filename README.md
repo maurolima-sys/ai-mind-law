@@ -2,6 +2,8 @@
 
 > **#BuildHybridAI 2026 submission — Web (Chrome) · Firebase AI Logic hybrid inference**
 
+**Live demo:** [ai-mind-law.vercel.app](https://ai-mind-law.vercel.app/) · **Source:** [maurolima-sys/ai-mind-law](https://github.com/maurolima-sys/ai-mind-law)
+
 ## What we built
 
 PocketMind AI turns complex tender PDFs into a structured, human-reviewable workspace. A reviewer uploads a procurement document; the app extracts text locally in the browser with PDF.js, then — under the reviewer's explicit consent — sends it to Firebase AI Logic for analysis in cloud-only, on-device-only, or on-device-first hybrid mode. Every finding (requirement, deadline, specification, risk, missing information) links back to the exact page it was extracted from, so a person can verify it against the source before acting on it.
@@ -72,7 +74,7 @@ The sample dashboard works without Firebase. Live model analysis requires a Fire
 4. Copy `.env.example` to `.env.local` and fill in the Firebase web app configuration and production App Check site key when applicable.
 5. Start the app and open it in desktop Chrome. To verify a live call without uploading a real tender, keep the fictional sample document selected, choose **Cloud AI**, accept the consent, and click **Analyze fictional sample**. On-device inference depends on Chrome's available model and hardware; the app reports on-device, cloud, cloud-fallback, or mixed results from Firebase's response.
 
-References: [Firebase AI Logic hybrid inference for Web](https://firebase.google.com/docs/ai-logic/hybrid/web/get-started), [App Check debug provider](https://firebase.google.com/docs/app-check/web/debug-provider), and [App Check reCAPTCHA Enterprise](https://firebase.google.com/docs/app-check/web/recaptcha-enterprise-provider).
+References: [Firebase AI Logic hybrid inference for Web](https://firebase.google.com/docs/ai-logic/hybrid/web/get-started), [Firebase AI Logic supported models](https://firebase.google.com/docs/ai-logic/models), [App Check debug provider](https://firebase.google.com/docs/app-check/web/debug-provider), and [App Check reCAPTCHA Enterprise](https://firebase.google.com/docs/app-check/web/recaptcha-enterprise-provider).
 
 The Firebase web configuration and reCAPTCHA site key are public client configuration values, not server secrets. Never put service-account keys, private API keys, or App Check debug tokens in this repository. Hybrid fallback can send extracted document text to Google's cloud, so the app requires explicit consent before enabling it.
 
@@ -104,10 +106,12 @@ npm run lint
 npm run build
 ```
 
-GitHub Actions runs the full test suite and production build, plus targeted ESLint checks for integration files. It does not currently lint every source file; the full local lint command may report existing formatting debt outside those checks.
+GitHub Actions runs the full test suite and production build, plus targeted ESLint checks for integration files, the structured-output schema, and its analysis test. It does not currently lint every source file; the full local lint command may report existing formatting debt outside those checks.
 
 ## Verification notes
 
 The sample-data workflow does not call Firebase. A live test must select Cloud AI or hybrid mode, grant the explicit cloud consent, and run the fictional sample analysis. The most recent reported cloud retest received a model response but the analysis failed structured-output validation; the response-schema correction is in the code, but a successful live analysis after that change has not yet been verified. A “connected” status means a response was received, not that the analysis passed validation.
+
+The cloud fallback uses model IDs listed in Firebase AI Logic's current catalog. `gemini-3.7-flash` was removed because the Gemini Developer API routes it to `gemini-3.8-flash`, so it was not a distinct fallback. This static catalog check does not confirm the Firebase project's live availability or a successful analysis.
 
 A real scanned-PDF OCR test and responsive checks for longer Portuguese and Spanish text on small screens are still pending. Optional Firecrawl research also requires `FIRECRAWL_API_KEY` in the server-side deployment environment. The repository includes the Apache License 2.0 in the root-level `LICENSE` file.

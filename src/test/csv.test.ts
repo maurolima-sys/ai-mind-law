@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest";
 import { complianceCsv } from "@/lib/services/csv";
 import type { TranslationKey } from "@/lib/i18n/en";
 import type { Requirement } from "@/lib/types";
-import type { TranslationKey } from "@/lib/i18n/en";
 
 // Minimal t() that returns the key — sufficient to test CSV escaping logic.
 const t = (key: TranslationKey) => key;

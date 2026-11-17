@@ -8,7 +8,6 @@ import {
   isRetryableFirebaseAiError,
   PRIMARY_GEMINI_MODEL,
   SECONDARY_GEMINI_MODEL,
-  TERTIARY_GEMINI_MODEL,
 } from "@/lib/services/firebaseAi";
 
 afterEach(() => {
@@ -47,7 +46,6 @@ describe("Firebase AI retry policy", () => {
       PRIMARY_GEMINI_MODEL,
       PRIMARY_GEMINI_MODEL,
       SECONDARY_GEMINI_MODEL,
-      TERTIARY_GEMINI_MODEL,
       FALLBACK_GEMINI_MODEL,
     ]);
     expect([...new Set(calls)]).toEqual([...GEMINI_MODEL_FALLBACK_CHAIN]);

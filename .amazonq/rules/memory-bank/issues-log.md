@@ -66,7 +66,7 @@
 - **Commit**: `4f88d44`
 - **Sintoma**: Se `gemini-3.8-flash` falhasse, análise terminava em erro sem tentar alternativas.
 - **Causa**: Sem cadeia de fallback de modelos.
-- **Fix**: Cadeia `gemini-3.8-flash` (×2) → `gemini-3.7-flash` → `gemini-3.6-flash` → `gemini-3.5-flash-lite`.
+- **Fix**: Cadeia `gemini-3.8-flash` (×2) → `gemini-3.6-flash` → `gemini-3.5-flash-lite`. A documentação atual do Firebase informa que o Gemini Developer API encaminha `gemini-3.7-flash` para `gemini-3.8-flash`, por isso foi removido como alternativa redundante.
 
 ---
 
@@ -110,11 +110,10 @@
 
 ---
 
-### 14. App Check debug token não registado / Firebase não conectado
-- **Contexto**: Identificado durante sessão de trabalho (não tem commit único).
-- **Sintoma**: Firebase AI Logic mostrava "not connected"; análise cloud falhava silenciosamente.
-- **Causa**: Token `[REDACTED - ROTATED]` presente no `.env` mas não registado na Firebase Console.
-- **Fix**: O token de debug (`[REDACTED - ROTATED]` no `.env`) deve ser registado manualmente na Firebase Console → App Check → Debug tokens. Nunca commitar o valor do token.
+### 14. Token de debug do App Check exposto num registo de issues
+- **Contexto**: Identificado durante uma sessão de trabalho; sem commit único.
+- **Sintoma**: Um valor de token foi registado em texto no issues log.
+- **Fix**: O valor foi removido do HEAD e o proprietário informou que o token foi substituído. A revogação no Firebase Console não foi verificada independentemente nesta revisão. Nunca commitar o valor do token.
 
 ---
 
@@ -122,7 +121,38 @@
 - **Commit**: `006a685` (script criado)
 - **Sintoma**: Produção em `ai-mind-law.vercel.app` não tinha as variáveis Firebase/API configuradas.
 - **Causa**: `.env.local` nunca sincronizado com Vercel.
-- **Fix**: Script `scripts/set-vercel-vars.ps1` que lê `.env` e sincroniza via Vercel CLI (`vercel env rm` + `vercel env add`). 15 vars sincronizadas.
+- **Estado atual**: Uma verificação anterior encontrou as variáveis essenciais de Firebase e Firecrawl no Vercel Production. Não executar o script de sincronização sem revisão: ele remove e recria variáveis em vários ambientes.
+
+---
+
+### 16. Metadados sociais ainda identificavam o projeto como Lovable
+- **Sintoma**: O HTML de produção tinha `og:title`, `og:description`, `author` e `twitter:site` com valores de placeholder Lovable.
+- **Fix**: Atualizados os metadados genéricos para PocketMind AI; removidos os campos de autoria e perfil social sem titular confirmado.
+
+---
+
+### 17. Fallback Gemini redundante
+- **Sintoma**: `gemini-3.7-flash` aparecia como alternativa distinta na cadeia.
+- **Causa**: O Gemini Developer API encaminha esse ID para `gemini-3.8-flash`.
+- **Fix**: Removido da cadeia; mantidos os modelos distintos `gemini-3.6-flash` e `gemini-3.5-flash-lite`, ambos listados na documentação do Firebase AI Logic.
+
+---
+
+### 18. Lint de CI não cobria schema e teste da análise
+- **Sintoma**: O workflow não aplicava ESLint a `tenderAnalysisSchema.ts` nem a `tender-analysis.test.ts`.
+- **Fix**: Ambos foram adicionados à etapa de lint direcionado.
+
+---
+
+### 19. Estado da credencial App Check de desenvolvimento
+- **Estado**: O proprietário informou que o token antigo foi substituído. O HEAD atual contém apenas o marcador redigido no issues log; a revogação no Firebase Console não foi verificada independentemente nesta revisão. Nenhum valor de token deve ser incluído no log ou no repositório.
+
+---
+
+### 20. Teste CSV não compilava por import de tipo duplicado
+- **Sintoma**: A suíte completa do Vitest falhava ao transformar `src/test/csv.test.ts`.
+- **Causa**: `TranslationKey` era importado duas vezes no mesmo módulo.
+- **Fix**: Removida a importação duplicada, sem alterar a lógica do teste.
 
 ---
 
@@ -130,13 +160,13 @@
 
 | # | Problema | Risco | Próximo passo |
 |---|----------|-------|---------------|
-| A | App Check em produção usa debug provider | Alto — não deve ir a produção com debug provider | Configurar reCAPTCHA Enterprise para `ai-mind-law.vercel.app` |
+| A | App Check em produção está configurado no código com reCAPTCHA Enterprise, mas o sucesso de uma chamada real ainda não foi verificado | Alto — configuração presente não comprova validação do provider no runtime | Fazer uma chamada live consentida e confirmar a resposta |
 | B | On-device inference depende de Chrome + hardware disponível | Médio — utilizadores sem suporte veem fallback cloud sem aviso claro | Verificar mensagem de fallback na UI |
 | C | LlamaParse OCR sem teste real com PDF digitalizado | Médio — fluxo OCR não validado end-to-end | Testar com PDF real sem texto selecionável |
-| D | `FIRECRAWL_API_KEY` como variável server-side — nunca em `VITE_*` | Alto — exposição de chave se colocada no lado cliente | Confirmar que está apenas em variável server-side no Vercel |
+| D | `FIRECRAWL_API_KEY` deve permanecer server-side | Alto — exposição se colocada em `VITE_*` | Variável encontrada no Vercel Production numa verificação anterior; validar a função quando o recurso for testado |
 | E | Contas, workspaces partilhados e armazenamento cloud não implementados | Baixo (v1 scope) | Roadmap pós-hackathon |
 | F | i18n: textos PT/ES mais longos podem quebrar layout em ecrãs pequenos | Baixo | Testar responsividade com PT/ES após gate técnico Firebase |
 
 ---
 
-*Última atualização: HEAD `df4ab3f`*
+*Estado base desta atualização: HEAD `049fe17`; ver limitações de verificação live acima.*

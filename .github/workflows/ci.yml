@@ -33,8 +33,10 @@ jobs:
           vitest.config.ts
           src/lib/services/firebaseAi.ts
           src/lib/services/tenderAnalysis.ts
+          src/lib/services/tenderAnalysisSchema.ts
           src/test/model-fallback.test.ts
           src/test/csv.test.ts
+          src/test/tender-analysis.test.ts
 
       - name: Build application
         run: bun run build

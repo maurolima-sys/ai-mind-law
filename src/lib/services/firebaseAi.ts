@@ -17,14 +17,12 @@ import type { InferencePreference } from "@/lib/types";
 import { TENDER_ANALYSIS_RESPONSE_SCHEMA } from "@/lib/services/tenderAnalysisSchema";
 
 export const PRIMARY_GEMINI_MODEL = "gemini-3.8-flash";
-export const SECONDARY_GEMINI_MODEL = "gemini-3.7-flash";
-export const TERTIARY_GEMINI_MODEL = "gemini-3.6-flash";
+export const SECONDARY_GEMINI_MODEL = "gemini-3.6-flash";
 export const FALLBACK_GEMINI_MODEL = "gemini-3.5-flash-lite";
 
 export const GEMINI_MODEL_FALLBACK_CHAIN = [
   PRIMARY_GEMINI_MODEL,
   SECONDARY_GEMINI_MODEL,
-  TERTIARY_GEMINI_MODEL,
   FALLBACK_GEMINI_MODEL,
 ] as const;
 
@@ -38,7 +36,6 @@ const RETRY_STEPS = [
   { modelName: PRIMARY_GEMINI_MODEL, delayMs: 0, jitterMs: 0 },
   { modelName: PRIMARY_GEMINI_MODEL, delayMs: 3_000, jitterMs: 2_000 },
   { modelName: SECONDARY_GEMINI_MODEL, delayMs: 6_000, jitterMs: 3_000 },
-  { modelName: TERTIARY_GEMINI_MODEL, delayMs: 10_000, jitterMs: 4_000 },
   { modelName: FALLBACK_GEMINI_MODEL, delayMs: 15_000, jitterMs: 5_000 },
 ] as const;
 
@@ -79,8 +76,6 @@ export function geminiModelLabel(modelName: string): string {
     case PRIMARY_GEMINI_MODEL:
       return "Gemini 3.8 Flash";
     case SECONDARY_GEMINI_MODEL:
-      return "Gemini 3.7 Flash";
-    case TERTIARY_GEMINI_MODEL:
       return "Gemini 3.6 Flash";
     case FALLBACK_GEMINI_MODEL:
       return "Gemini 3.5 Flash-Lite";
