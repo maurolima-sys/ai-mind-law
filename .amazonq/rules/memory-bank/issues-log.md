@@ -113,8 +113,8 @@
 ### 14. App Check debug token não registado / Firebase não conectado
 - **Contexto**: Identificado durante sessão de trabalho (não tem commit único).
 - **Sintoma**: Firebase AI Logic mostrava "not connected"; análise cloud falhava silenciosamente.
-- **Causa**: Token `VITE_FIREBASE_APPCHECK_DEBUG_TOKEN` presente no `.env` mas não registado na Firebase Console.
-- **Fix**: O token de debug (`VITE_FIREBASE_APPCHECK_DEBUG_TOKEN` no `.env`) deve ser registado manualmente na Firebase Console → App Check → Debug tokens. Nunca commitar o valor do token.
+- **Causa**: Token `[REDACTED - ROTATED]` presente no `.env` mas não registado na Firebase Console.
+- **Fix**: O token de debug (`[REDACTED - ROTATED]` no `.env`) deve ser registado manualmente na Firebase Console → App Check → Debug tokens. Nunca commitar o valor do token.
 
 ---
 
