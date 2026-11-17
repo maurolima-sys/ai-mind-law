@@ -25,9 +25,14 @@ describe("Firebase AI retry policy", () => {
     expect(isRetryableFirebaseAiError(new Error("Network request failed"))).toBe(false);
   });
 
-  it("retries the primary model, then walks the documented fallback chain", async () => {
+  it("walks the documented fallback chain after retryable failures", async () => {
     vi.useFakeTimers();
     const calls: string[] = [];
+    expect(GEMINI_MODEL_FALLBACK_CHAIN).toEqual([
+      "gemini-3.5-flash-lite",
+      "gemini-3.5-flash",
+      "gemini-3.8-flash",
+    ]);
 
     const request = generateWithModelFallback("cloud", async (modelName) => {
       calls.push(modelName);
