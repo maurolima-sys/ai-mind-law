@@ -1,0 +1,197 @@
+# Evaluator Walkthrough — PocketMind AI
+### #BuildHybridAI 2026 · Web (Chrome) · Firebase AI Logic
+
+> This guide is written for hackathon judges. It covers what to look at, in what order, and what to expect at each step. Everything runs free of charge in a browser — no account, no install.
+
+---
+
+## 1. What the judges are scoring
+
+| Criterion | Weight | What to look for in PocketMind AI |
+|---|---|---|
+| Technological Implementation | 25 % | Firebase AI Logic hybrid inference called at runtime; App Check enforced; model fallback chain; on-device vs cloud source reported |
+| Design | 25 % | Complete document-review workflow, not a demo prompt box; consent-gated cloud; source-linked findings |
+| Potential Impact | 25 % | Concrete professional problem (tender review); compliance matrix; CSV/JSON export |
+| Quality of the Idea | 25 % | Processing mode as a product feature; inference source surfaced to the user; privacy-by-choice architecture |
+
+---
+
+## 2. Quick-start (2 minutes)
+
+1. Open **https://ai-mind-law.vercel.app/** in **desktop Chrome** (required for on-device inference).
+2. The dashboard loads with a fictional sample tender already selected — no upload needed.
+3. Click **Processing & privacy** in the left sidebar.
+4. Select **Cloud AI**, read and accept the cloud consent checkbox.
+5. Click **Analyze fictional sample**.
+6. Watch the progress bar. When complete, the badge reads **Connected · a response was received** and the inference source (**cloud** or **cloud-fallback**) appears next to the model name.
+7. Navigate to **Document analysis** to inspect findings, then **Compliance matrix** to see the review workflow.
+
+> If the badge shows **Configured · no live response yet**, the App Check debug token for the local environment is not in scope for the hosted deployment — the production deployment uses reCAPTCHA Enterprise. The fictional-sample path exercises the full Firebase AI Logic call.
+
+---
+
+## 3. Verifying Firebase AI Logic is called at runtime
+
+The requirement is that Firebase AI Logic is **imported and actually called**, not just named in the README.
+
+| Where to look | What you will find |
+|---|---|
+| `src/lib/services/firebaseAi.ts` | `getGenerativeModel` called with `InferenceMode.PREFER_ON_DEVICE` / `ONLY_IN_CLOUD` / `ONLY_ON_DEVICE` |
+| `src/lib/services/tenderAnalysis.ts` | `generateWithModelFallback` orchestrates chunked analysis; calls `model.generateContent` |
+| `src/lib/services/documentQa.ts` | Same hybrid path for follow-up questions |
+| Browser DevTools → Network | Outbound requests to `firebaseapp.com` / `generativelanguage.googleapis.com` during analysis |
+| UI after analysis | Inference source badge: **on-device**, **cloud**, or **cloud-fallback** |
+
+App Check is enforced: `initializeAppCheck` is called in `firebaseAi.ts` before any model call. The production deployment uses `ReCaptchaEnterpriseProvider`.
+
+---
+
+## 4. Exploring hybrid inference modes
+
+Navigate to **Processing & privacy** and try each mode:
+
+### Cloud AI
+- Sends extracted text to Gemini via Firebase AI Logic.
+- Requires explicit consent checkbox — cloud processing is never silent.
+- Badge after analysis: **cloud** or **cloud-fallback**.
+- Model fallback chain: `gemini-3.8-flash` → `gemini-3.7-flash` → `gemini-3.6-flash` → `gemini-3.5-flash-lite`.
+
+### On-device only
+- Uses Chrome's Prompt API (Gemini Nano 4).
+- Requires a supported desktop Chrome version with the model downloaded.
+- If unavailable, the app reports **on-device inference unavailable** — it does not silently fall back.
+- Badge: **on-device**.
+
+### Hybrid (on-device first)
+- Tries on-device first; falls back to cloud if the model is unavailable or times out.
+- Badge: **on-device**, **cloud-fallback**, or **mixed** depending on what Firebase AI Logic reports.
+- This is the non-obvious product feature: the inference source is surfaced to the user because it matters for document privacy.
+
+### Sample data (Demo)
+- No Firebase call. Loads a pre-written fictional analysis.
+- Clearly labelled **DEMO DATA** throughout the UI.
+- Useful for exploring the compliance matrix and export without a live model call.
+
+---
+
+## 5. Document analysis screen
+
+After running analysis, open **Document analysis**:
+
+- **Findings panel** (left): filter by Requirements, Deadlines, Specifications, Risks, Missing & inconsistencies.
+- **Source panel** (right): extracted page text. Every finding card shows a **Source verified** or **Verify source** badge — the app checks each AI-cited excerpt against the extracted text.
+- **Confidence score**: shown per requirement (0–100 %).
+- **Export JSON**: top-right toolbar — downloads the full analysis object.
+
+---
+
+## 6. Compliance matrix screen
+
+Open **Compliance matrix**:
+
+- Lists every extracted requirement with category, mandatory flag, evidence excerpt, and page number.
+- Each row has a **Review status** dropdown: Pending → Reviewed → Satisfied → Unclear.
+- Add review notes per requirement.
+- **Export CSV**: downloads the matrix with all statuses and notes.
+- Status is held in the browser session (no cloud storage — intentional for v1 privacy scope).
+
+---
+
+## 7. Document Q&A
+
+In **Document analysis**, the Q&A panel is available after text extraction:
+
+- Ask a follow-up question about the document in any language (EN, PT, ES).
+- The answer separates **stated facts**, **working hypotheses**, and **unresolved questions**.
+- Each citation is checked against extracted page text and labelled **Verified** or **Verify against the PDF**.
+- Uses the same hybrid inference path as the main analysis.
+- Optional: enable **Include external research (Firecrawl)** for legal source search (requires server-side `FIRECRAWL_API_KEY` — not configured in the public demo).
+
+---
+
+## 8. Privacy and consent model
+
+This is the core product differentiator:
+
+- PDF text is extracted **locally in the browser** with PDF.js — the file never leaves the device unless the user explicitly consents.
+- Cloud inference requires a **visible consent checkbox** on the Processing screen. The checkbox cannot be bypassed.
+- The inference source reported by Firebase AI Logic (`on-device`, `cloud`, `cloud-fallback`) is shown in the UI after every analysis — users know where their document was processed.
+- `FIRECRAWL_API_KEY` is server-side only — never in a `VITE_*` variable.
+
+---
+
+## 9. Repository structure (for code review)
+
+```
+src/lib/services/
+  firebaseAi.ts          ← Firebase init, App Check, model creation, retry/fallback
+  tenderAnalysis.ts      ← chunking, prompts, analysis orchestration
+  tenderAnalysisSchema.ts ← Zod schemas + Firebase responseSchema for cloud
+  documentQa.ts          ← Q&A prompt building and response parsing
+  evidence.ts            ← excerpt verification against extracted pages
+```
+
+Key implementation details:
+- `generateWithModelFallback()` — retry with exponential backoff; timeout errors advance the model chain.
+- `TENDER_ANALYSIS_RESPONSE_SCHEMA` — Firebase `Schema` object passed as `responseSchema` for cloud calls, constraining the model output before it reaches Zod validation.
+- `parseTenderResponse()` — Zod `.safeParse()` with field-path error reporting (e.g. `requirements[0].excerpt`).
+- On-device path: no `responseConstraint` (Chrome Prompt API does not support it); Zod coerces numeric `quantity`/`unit` fields to string.
+
+---
+
+## 10. What is not yet verified
+
+The submission is honest about its current state:
+
+| Item | Status |
+|---|---|
+| Cloud AI analysis with structured-output validation passing end-to-end | Pending live retest after schema fix (`50217e4`) |
+| On-device inference (Chrome Prompt API) | Depends on Chrome version and hardware; fallback to cloud is automatic |
+| LlamaParse OCR with a real scanned PDF | Not yet tested end-to-end |
+| App Check in production | Uses reCAPTCHA Enterprise on `ai-mind-law.vercel.app`; debug provider for local dev only |
+| Responsive layout with PT/ES longer strings on small screens | Not yet validated |
+
+The **Connected · a response was received** badge confirms a Firebase AI Logic response arrived. A successful structured-output analysis (findings displayed) confirms full validation passed.
+
+---
+
+## 11. Running locally (optional)
+
+```sh
+git clone https://github.com/maurolima-sys/ai-mind-law
+cd ai-mind-law
+cp .env.example .env.local
+# Fill in Firebase web config and App Check debug token
+npm install
+npm run dev
+```
+
+Open in desktop Chrome. Register the App Check debug token (printed in the browser console) in Firebase Console → App Check → Debug tokens.
+
+```sh
+npm test       # 11 tests
+npm run lint
+npm run build
+```
+
+CI runs automatically on every push via `.github/workflows/ci.yml`.
+
+---
+
+## 12. Submission checklist
+
+| Requirement | Status |
+|---|---|
+| Firebase AI Logic imported and called at runtime | ✅ `firebaseAi.ts` |
+| App Check enforced | ✅ `initializeAppCheck` before every model call |
+| Web (Chrome) platform | ✅ |
+| Public GitHub repository | ✅ https://github.com/maurolima-sys/ai-mind-law |
+| Open source license | ✅ Apache 2.0 (`LICENSE`) |
+| Hosted demo | ✅ https://ai-mind-law.vercel.app/ |
+| Demo video (YouTube, ≤ 3 min, English) | ⏳ To be submitted |
+| Built / significantly updated during submission period | ✅ See commit history from `ab25e1a` onward |
+| No production secrets in repository | ✅ `.env` is gitignored; no keys committed |
+
+---
+
+*Last updated: HEAD `a486be7` — 13 days remaining in submission period.*
