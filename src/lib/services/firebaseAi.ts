@@ -14,6 +14,7 @@ import {
   type GenerativeModel,
 } from "firebase/ai";
 import type { InferencePreference } from "@/lib/types";
+import { TENDER_ANALYSIS_RESPONSE_SCHEMA } from "@/lib/services/tenderAnalysisSchema";
 
 export const PRIMARY_GEMINI_MODEL = "gemini-3.8-flash";
 export const SECONDARY_GEMINI_MODEL = "gemini-3.7-flash";
@@ -283,7 +284,10 @@ export function createTenderModel(
     mode,
     inCloudParams: {
       model: modelName,
-      generationConfig: { responseMimeType: "application/json" },
+      generationConfig: {
+        responseMimeType: "application/json",
+        responseSchema: TENDER_ANALYSIS_RESPONSE_SCHEMA,
+      },
     },
     // responseConstraint is not passed to on-device — Chrome's Prompt API ignores it
     // and some versions throw on unknown fields. The parser handles free-form output.

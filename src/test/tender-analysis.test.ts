@@ -33,6 +33,59 @@ describe("parseTenderResponse", () => {
       "The AI response did not match the required analysis format",
     );
   });
+
+  it("reports the path of a nested field that violates the response schema", () => {
+    const response = {
+      summary: "One tender requirement was identified.",
+      requirements: [
+        {
+          description: "Submit a signed declaration.",
+          category: "Administrative",
+          mandatory: true,
+          confidence: 0.85,
+          page: 1,
+          excerpt: null,
+        },
+      ],
+      deadlines: [],
+      specifications: [],
+      risks: [],
+      missing: [],
+      inconsistencies: [],
+    };
+
+    expect(() => parseTenderResponse(JSON.stringify(response))).toThrow(
+      "requirements[0].excerpt: Expected string, received null",
+    );
+  });
+
+  it("normalizes null specification notes while preserving nullable quantities", () => {
+    const response = {
+      summary: "One specification was identified.",
+      requirements: [],
+      deadlines: [],
+      specifications: [
+        {
+          item: "Safety helmet",
+          quantity: null,
+          unit: null,
+          details: "Comply with the listed safety standard.",
+          notes: null,
+          page: 1,
+          excerpt: "Safety helmet complying with the listed standard",
+        },
+      ],
+      risks: [],
+      missing: [],
+      inconsistencies: [],
+    };
+
+    expect(parseTenderResponse(JSON.stringify(response)).specifications[0]).toMatchObject({
+      quantity: null,
+      unit: null,
+      notes: "",
+    });
+  });
 });
 
 describe("resolveProcessingSource", () => {
