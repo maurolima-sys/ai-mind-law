@@ -12,17 +12,17 @@ import type { ChatCitation, InferencePreference } from "@/lib/types";
 
 const responseSchema = z.object({
   answer: z.string().min(1),
-  hypotheses: z.array(z.string().min(1)).max(6),
-  unresolvedQuestions: z.array(z.string().min(1)).max(6),
+  hypotheses: z.array(z.string()).default([]),
+  unresolvedQuestions: z.array(z.string()).default([]),
   documentCitations: z
     .array(
       z.object({
         page: z.number().int().positive(),
-        excerpt: z.string().min(1).max(500),
+        excerpt: z.string().max(500),
       }),
     )
-    .max(8),
-  researchSourceIds: z.array(z.string().regex(/^R\d+$/)).max(5),
+    .default([]),
+  researchSourceIds: z.array(z.string()).default([]),
 });
 
 const responseConstraint = {
@@ -175,23 +175,27 @@ export function verifyQuestionCitations(
   });
 }
 
+function extractJsonBlock(text: string): string {
+  // Strip markdown code fences
+  const fenced = text.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+  // Extract first {...} block if surrounded by prose
+  const match = fenced.match(/\{[\s\S]*\}/);
+  return match ? match[0] : fenced;
+}
+
 function parseResponse(text: string) {
-  const trimmed = text.trim();
-  const json = trimmed.startsWith("```")
-    ? trimmed.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "")
-    : trimmed;
+  const json = extractJsonBlock(text);
   let parsed: unknown;
   try {
     parsed = JSON.parse(json);
-  } catch (error) {
-    const detail = error instanceof Error ? error.message : "Invalid JSON response";
-    throw new Error(`The answer could not be parsed: ${detail}`);
+  } catch {
+    // On-device model returned plain text — wrap it as a minimal valid response
+    parsed = { answer: text.trim(), hypotheses: [], unresolvedQuestions: [], documentCitations: [], researchSourceIds: [] };
   }
   const result = responseSchema.safeParse(parsed);
   if (!result.success) {
-    throw new Error(
-      `The answer did not match the required format: ${result.error.issues[0]?.message ?? "Invalid response"}`,
-    );
+    // Last resort: treat entire text as the answer
+    return { answer: text.trim(), hypotheses: [] as string[], unresolvedQuestions: [] as string[], documentCitations: [] as Array<{ page: number; excerpt: string }>, researchSourceIds: [] as string[] };
   }
   return result.data;
 }
