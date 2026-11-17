@@ -31,9 +31,29 @@ jobs:
         run: >-
           bunx eslint
           vitest.config.ts
+          src/components/pocketmind/DocumentQaPanel.tsx
+          src/components/pocketmind/EvidenceComparisonPanel.tsx
+          src/components/pocketmind/GuidedTour.tsx
+          src/components/pocketmind/LocalWorkspaceLibrary.tsx
+          src/components/pocketmind/PocketMindApp.tsx
+          src/components/pocketmind/SourceDocumentViewer.tsx
+          src/lib/i18n/en.ts
+          src/lib/i18n/es.ts
+          src/lib/i18n/index.tsx
+          src/lib/i18n/pt.ts
+          src/lib/services/documentProcessing.ts
+          src/lib/services/documentQa.ts
+          src/lib/services/evidence.ts
+          src/lib/services/evidenceComparison.ts
+          src/lib/services/evidenceComparisonSchema.ts
           src/lib/services/firebaseAi.ts
+          src/lib/services/localWorkspace.ts
           src/lib/services/tenderAnalysis.ts
           src/lib/services/tenderAnalysisSchema.ts
+          src/lib/types.ts
+          src/test/document-processing.test.ts
+          src/test/document-qa-panel.test.tsx
+          src/test/document-qa.test.ts
           src/test/model-fallback.test.ts
           src/test/csv.test.ts
           src/test/tender-analysis.test.ts

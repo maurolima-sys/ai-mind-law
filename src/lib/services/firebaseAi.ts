@@ -12,6 +12,7 @@ import {
   InferenceMode,
   type AI,
   type GenerativeModel,
+  type Schema,
 } from "firebase/ai";
 import type { InferencePreference } from "@/lib/types";
 import { TENDER_ANALYSIS_RESPONSE_SCHEMA } from "@/lib/services/tenderAnalysisSchema";
@@ -133,7 +134,11 @@ export async function generateWithModelFallback<T>(
       const nextStep = RETRY_STEPS[index + 1];
       if (!nextStep || !isRetryableFirebaseAiError(error)) break;
       const status = getFirebaseAiHttpStatus(error);
-      options.onRetry?.({ modelName: nextStep.modelName, status, attempt: index + 2 });
+      options.onRetry?.({
+        modelName: nextStep.modelName,
+        ...(status === undefined ? {} : { status }),
+        attempt: index + 2,
+      });
     } finally {
       if (timeoutId) clearTimeout(timeoutId);
     }
@@ -264,6 +269,7 @@ function getFirebaseRuntime(): FirebaseRuntime {
 export function createTenderModel(
   preference: InferencePreference,
   modelName: GeminiModelName = PRIMARY_GEMINI_MODEL,
+  responseSchema: Schema = TENDER_ANALYSIS_RESPONSE_SCHEMA,
 ): {
   model: GenerativeModel;
   appCheck: AppCheck;
@@ -281,7 +287,7 @@ export function createTenderModel(
       model: modelName,
       generationConfig: {
         responseMimeType: "application/json",
-        responseSchema: TENDER_ANALYSIS_RESPONSE_SCHEMA,
+        responseSchema,
       },
     },
     // responseConstraint is not passed to on-device — Chrome's Prompt API ignores it

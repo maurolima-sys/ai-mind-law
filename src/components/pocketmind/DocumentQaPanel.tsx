@@ -17,7 +17,7 @@ import {
   searchLegalSources,
 } from "@/lib/services/legalResearch.functions";
 import type { LegalResearchSource } from "@/lib/services/legalResearch";
-import type { ChatCitation, InferencePreference } from "@/lib/types";
+import type { ChatCitation, DocumentFormat, InferencePreference } from "@/lib/types";
 import { useT } from "@/lib/i18n";
 
 type SpeechRecognitionEventLike = {
@@ -125,11 +125,7 @@ function SuggestedQuestions({
       </button>
 
       {open && (
-        <ul
-          className="pm-qa-suggestions-list"
-          role="listbox"
-          aria-label={t("qa_suggestions_btn")}
-        >
+        <ul className="pm-qa-suggestions-list" role="listbox" aria-label={t("qa_suggestions_btn")}>
           {SUGGESTION_KEYS.map((key) => {
             const question = t(key);
             return (
@@ -155,6 +151,8 @@ function SuggestedQuestions({
 export function DocumentQaPanel({
   documentName,
   pages,
+  format,
+  sourceLocations,
   draft,
   onDraftChange,
   preference,
@@ -166,13 +164,15 @@ export function DocumentQaPanel({
 }: {
   documentName: string;
   pages: string[];
+  format: DocumentFormat;
+  sourceLocations: string[];
   draft: string;
   onDraftChange: (draft: string) => void;
   preference: InferencePreference | null;
   cloudConsent: boolean;
   paginationVerified: boolean;
   onOpenProcessing: () => void;
-  onSelectPage: (page: number) => void;
+  onSelectPage: (page: number, excerpt?: string) => void;
   onModelResponse: () => void;
 }) {
   const t = useT();
@@ -280,8 +280,8 @@ export function DocumentQaPanel({
     window.speechSynthesis.speak(utterance);
   }
 
-  function selectCitationPage(page: number | null) {
-    if (page !== null) onSelectPage(page);
+  function selectCitationSource(sourceIndex: number | null | undefined, excerpt: string) {
+    if (sourceIndex !== null && sourceIndex !== undefined) onSelectPage(sourceIndex, excerpt);
   }
 
   async function submitQuestion(event: FormEvent<HTMLFormElement>) {
@@ -337,6 +337,8 @@ export function DocumentQaPanel({
       const answer = await answerDocumentQuestion(question, pages, preference, {
         history,
         researchSources,
+        format,
+        sourceLocations,
         paginationVerified,
         onInference: onModelResponse,
       });
@@ -421,7 +423,9 @@ export function DocumentQaPanel({
           messages.map((message) => (
             <article className={`pm-qa-message pm-qa-message--${message.role}`} key={message.id}>
               <div className="pm-qa-message-head">
-                <strong>{message.role === "user" ? t("qa_role_user") : t("qa_role_assistant")}</strong>
+                <strong>
+                  {message.role === "user" ? t("qa_role_user") : t("qa_role_assistant")}
+                </strong>
                 {message.role === "assistant" && (
                   <>
                     <span>{message.engine}</span>
@@ -472,20 +476,26 @@ export function DocumentQaPanel({
                   <strong>{t("qa_citations_title")}</strong>
                   {message.citations.map((citation, index) => (
                     <div className="pm-qa-citation" key={`${message.id}-citation-${index}`}>
-                      {citation.page !== null ? (
+                      {citation.sourceIndex ? (
                         <button
                           type="button"
                           className="pm-page-link"
-                          onClick={() => selectCitationPage(citation.page)}
+                          onClick={() =>
+                            selectCitationSource(citation.sourceIndex, citation.excerpt)
+                          }
                         >
-                          Page {citation.page}
+                          {citation.page !== null
+                            ? `Page ${citation.page}`
+                            : (citation.sourceLocation ?? `Source section ${citation.sourceIndex}`)}
                         </button>
                       ) : (
                         <span className="pm-muted-label">{t("qa_page_unavailable")}</span>
                       )}
                       <blockquote>{citation.excerpt}</blockquote>
                       <span className={citation.verified ? "is-verified" : "is-unverified"}>
-                        {citation.verified ? t("qa_citation_verified") : t("qa_citation_unverified")}
+                        {citation.verified
+                          ? t("qa_citation_verified")
+                          : t("qa_citation_unverified")}
                       </span>
                     </div>
                   ))}
@@ -521,9 +531,7 @@ export function DocumentQaPanel({
         {isSending && (
           <div className="pm-qa-pending" role="status">
             <LoaderCircle size={16} className="pm-qa-spinner" />
-            <span>
-              {researchEnabled ? t("qa_sending_research") : t("qa_sending_document")}
-            </span>
+            <span>{researchEnabled ? t("qa_sending_research") : t("qa_sending_document")}</span>
           </div>
         )}
       </div>
@@ -602,9 +610,7 @@ export function DocumentQaPanel({
               {isListening ? <MicOff size={15} /> : <Mic size={15} />}
               {isListening ? t("qa_voice_stop") : t("qa_voice_use")}
             </button>
-            {speechInputAvailable && (
-              <span className="pm-qa-mic-note">{t("qa_voice_note")}</span>
-            )}
+            {speechInputAvailable && <span className="pm-qa-mic-note">{t("qa_voice_note")}</span>}
           </div>
           <button
             type="submit"
@@ -639,15 +645,13 @@ export function DocumentQaPanel({
                   : t("qa_research_error_status")}
           </span>
         </div>
-        {!speechInputAvailable && (
-          <p className="pm-qa-mic-note">{t("qa_voice_unavailable")}</p>
-        )}
+        {!speechInputAvailable && <p className="pm-qa-mic-note">{t("qa_voice_unavailable")}</p>}
         {!speechOutputAvailable && (
           <p className="pm-qa-mic-note">{t("qa_voice_output_unavailable")}</p>
         )}
       </form>
 
-      {!paginationVerified && (
+      {format === "pdf" && !paginationVerified && (
         <p className="pm-qa-pagination-note">{t("qa_pagination_note")}</p>
       )}
     </section>

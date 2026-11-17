@@ -1,13 +1,6 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 
-import { en, type TranslationKey } from "./en";
+import { en, type TranslationKey, type Translations } from "./en";
 import { pt } from "./pt";
 import { es } from "./es";
 
@@ -19,7 +12,7 @@ export const LOCALES: { value: Locale; label: string; flag: string }[] = [
   { value: "es", label: "Español", flag: "🇪🇸" },
 ];
 
-const dictionaries: Record<Locale, typeof en> = { en, pt, es };
+const dictionaries: Record<Locale, Translations> = { en, pt, es };
 
 /** Replace {{key}} placeholders in a translation string. */
 export function interpolate(template: string, vars: Record<string, string | number>): string {

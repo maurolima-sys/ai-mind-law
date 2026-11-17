@@ -23,6 +23,8 @@ describe("DocumentQaPanel", () => {
     const props = {
       documentName: "sample.pdf",
       pages: ["Extracted document text"],
+      format: "pdf" as const,
+      sourceLocations: ["Page 1"],
       preference: null,
       cloudConsent: false,
       paginationVerified: true,
@@ -78,6 +80,8 @@ describe("DocumentQaPanel", () => {
         <DocumentQaPanel
           documentName="sample.pdf"
           pages={["Applicants must hold a valid contractor licence."]}
+          format="pdf"
+          sourceLocations={["Page 1"]}
           draft="What licence is required?"
           onDraftChange={vi.fn()}
           preference="local"

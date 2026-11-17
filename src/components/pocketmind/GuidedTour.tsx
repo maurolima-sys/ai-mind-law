@@ -19,7 +19,7 @@ import {
 
 // ─── types & constants ────────────────────────────────────────────────────────
 
-type TourScreen = "overview" | "analysis" | "compliance" | "processing";
+type TourScreen = "overview" | "library" | "analysis" | "compliance" | "processing";
 
 interface TourStep {
   screen: TourScreen;
@@ -33,15 +33,61 @@ const TOUR_KEY = "pocketmind.tour.completed";
 const NARRATION_MUTE_KEY = "pocketmind.tour.muted";
 
 const STEPS: TourStep[] = [
-  { screen: "overview",    target: null,                      titleKey: "tour_step0_title", bodyKey: "tour_step0_body" },
-  { screen: "overview",    target: ".pm-navigation",          titleKey: "tour_step1_title", bodyKey: "tour_step1_body" },
-  { screen: "overview",    target: ".pm-metrics-grid",        titleKey: "tour_step2_title", bodyKey: "tour_step2_body" },
-  { screen: "overview",    target: ".pm-recent-panel",        titleKey: "tour_step3_title", bodyKey: "tour_step3_body" },
-  { screen: "processing",  target: ".pm-processing-options",  titleKey: "tour_step4_title", bodyKey: "tour_step4_body" },
-  { screen: "analysis",    target: ".pm-findings-panel",      titleKey: "tour_step5_title", bodyKey: "tour_step5_body" },
-  { screen: "analysis",    target: ".pm-source-panel",        titleKey: "tour_step6_title", bodyKey: "tour_step6_body" },
-  { screen: "compliance",  target: ".pm-matrix-panel",        titleKey: "tour_step7_title", bodyKey: "tour_step7_body" },
-  { screen: "overview",    target: ".pm-privacy-note",        titleKey: "tour_step8_title", bodyKey: "tour_step8_body" },
+  { screen: "overview", target: null, titleKey: "tour_step0_title", bodyKey: "tour_step0_body" },
+  {
+    screen: "overview",
+    target: ".pm-navigation",
+    titleKey: "tour_step1_title",
+    bodyKey: "tour_step1_body",
+  },
+  {
+    screen: "library",
+    target: ".pm-library-panel",
+    titleKey: "tour_library_title",
+    bodyKey: "tour_library_body",
+  },
+  {
+    screen: "overview",
+    target: ".pm-metrics-grid",
+    titleKey: "tour_step2_title",
+    bodyKey: "tour_step2_body",
+  },
+  {
+    screen: "overview",
+    target: ".pm-recent-panel",
+    titleKey: "tour_step3_title",
+    bodyKey: "tour_step3_body",
+  },
+  {
+    screen: "processing",
+    target: ".pm-processing-options",
+    titleKey: "tour_step4_title",
+    bodyKey: "tour_step4_body",
+  },
+  {
+    screen: "analysis",
+    target: ".pm-findings-panel",
+    titleKey: "tour_step5_title",
+    bodyKey: "tour_step5_body",
+  },
+  {
+    screen: "analysis",
+    target: ".pm-source-panel",
+    titleKey: "tour_step6_title",
+    bodyKey: "tour_step6_body",
+  },
+  {
+    screen: "compliance",
+    target: ".pm-matrix-panel",
+    titleKey: "tour_step7_title",
+    bodyKey: "tour_step7_body",
+  },
+  {
+    screen: "overview",
+    target: ".pm-privacy-note",
+    titleKey: "tour_step8_title",
+    bodyKey: "tour_step8_body",
+  },
 ];
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -104,7 +150,7 @@ function useNarration(active: boolean, locale: "en" | "pt" | "es") {
     if (active) return;
     stopAudio();
     setStatus("idle");
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
 
   // Revoke all blob URLs on unmount.
@@ -114,7 +160,7 @@ function useNarration(active: boolean, locale: "en" | "pt" | "es") {
       cacheRef.current.forEach((url) => URL.revokeObjectURL(url));
       cacheRef.current.clear();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function stopAudio() {
@@ -205,13 +251,7 @@ interface GuidedTourProps {
   returnFocusRef?: React.RefObject<HTMLElement | null>;
 }
 
-export function GuidedTour({
-  active,
-  screen,
-  onNavigate,
-  onEnd,
-  returnFocusRef,
-}: GuidedTourProps) {
+export function GuidedTour({ active, screen, onNavigate, onEnd, returnFocusRef }: GuidedTourProps) {
   const { locale, t } = useLocale();
   const [step, setStep] = useState(0);
   const [spotlight, setSpotlight] = useState<Rect | null>(null);
@@ -257,9 +297,16 @@ export function GuidedTour({
   useEffect(() => {
     if (!active) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") { event.preventDefault(); finish(); }
-      else if (event.key === "ArrowRight" || event.key === "Enter") { event.preventDefault(); next(); }
-      else if (event.key === "ArrowLeft") { event.preventDefault(); back(); }
+      if (event.key === "Escape") {
+        event.preventDefault();
+        finish();
+      } else if (event.key === "ArrowRight" || event.key === "Enter") {
+        event.preventDefault();
+        next();
+      } else if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        back();
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -270,9 +317,7 @@ export function GuidedTour({
   const measure = useCallback(() => {
     const current = STEPS[step];
     if (!current) return;
-    const targetEl = current.target
-      ? document.querySelector<HTMLElement>(current.target)
-      : null;
+    const targetEl = current.target ? document.querySelector<HTMLElement>(current.target) : null;
 
     if (!current.target || !targetEl) {
       setSpotlight(null);
@@ -335,7 +380,7 @@ export function GuidedTour({
 
     // Fire narration after the popover is positioned (next tick).
     const title = t(current.titleKey as Parameters<typeof t>[0]);
-    const body  = t(current.bodyKey  as Parameters<typeof t>[0]);
+    const body = t(current.bodyKey as Parameters<typeof t>[0]);
     const tid = setTimeout(() => {
       void narration.playStep(step, title, body);
     }, 80);
@@ -344,8 +389,8 @@ export function GuidedTour({
       cleanup?.();
       clearTimeout(tid);
     };
-  // narration.playStep is stable (defined inside useNarration with no deps that change per render)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // narration.playStep is stable (defined inside useNarration with no deps that change per render)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, step, screen, onNavigate, measure, t]);
 
   // Re-measure on resize / scroll.
@@ -378,7 +423,7 @@ export function GuidedTour({
   const current = STEPS[step];
   if (!current) return null;
   const isWelcome = step === 0;
-  const isLast    = step === STEPS.length - 1;
+  const isLast = step === STEPS.length - 1;
 
   const popoverStyle: React.CSSProperties = modalMode
     ? { left: "50%", top: "50%", transform: "translate(-50%, -50%)" }
@@ -454,9 +499,7 @@ export function GuidedTour({
         <strong id="pm-tour-title" className="pm-tour-title">
           {t(current.titleKey as Parameters<typeof t>[0])}
         </strong>
-        <p className="pm-tour-body">
-          {t(current.bodyKey as Parameters<typeof t>[0])}
-        </p>
+        <p className="pm-tour-body">{t(current.bodyKey as Parameters<typeof t>[0])}</p>
 
         <div className="pm-tour-foot">
           <button type="button" className="pm-tour-skip" onClick={finish}>
@@ -475,18 +518,17 @@ export function GuidedTour({
                 <ChevronLeft size={16} />
               </button>
             )}
-            <button
-              ref={primaryBtnRef}
-              type="button"
-              className="pm-tour-next"
-              onClick={next}
-            >
+            <button ref={primaryBtnRef} type="button" className="pm-tour-next" onClick={next}>
               {isWelcome ? (
                 t("tour_start")
               ) : isLast ? (
-                <><Check size={15} /> {t("tour_done")}</>
+                <>
+                  <Check size={15} /> {t("tour_done")}
+                </>
               ) : (
-                <>{t("tour_next")} <ChevronRight size={15} /></>
+                <>
+                  {t("tour_next")} <ChevronRight size={15} />
+                </>
               )}
             </button>
           </div>

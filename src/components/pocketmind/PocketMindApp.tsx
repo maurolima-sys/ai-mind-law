@@ -45,11 +45,31 @@ import {
 import { buildDemoDocument, DEMO_DOC_ID, DEMO_LABEL } from "@/data/sampleTender";
 import { buildLabel } from "@/lib/buildInfo";
 import { DocumentQaPanel } from "@/components/pocketmind/DocumentQaPanel";
+import { EvidenceComparisonPanel } from "@/components/pocketmind/EvidenceComparisonPanel";
 import { GuidedTour } from "@/components/pocketmind/GuidedTour";
 import { LanguageSelector } from "@/components/pocketmind/LanguageSelector";
+import { LocalWorkspaceLibrary } from "@/components/pocketmind/LocalWorkspaceLibrary";
+import { SourceDocumentViewer } from "@/components/pocketmind/SourceDocumentViewer";
 import { complianceCsv, downloadText } from "@/lib/services/csv";
-import { useT } from "@/lib/i18n";
-import { formatBytes, validatePdf, extractPdfText } from "@/lib/services/documentProcessing";
+import { useLocale, useT } from "@/lib/i18n";
+import {
+  extractDocxText,
+  extractPdfText,
+  extractXlsxText,
+  formatBytes,
+  getDocumentFormat,
+  validateDocumentFile,
+} from "@/lib/services/documentProcessing";
+import {
+  clearLocalWorkspace,
+  deleteEvidenceDocument,
+  loadLocalWorkspace,
+  saveDocumentBundle,
+  saveDocumentRecord,
+  saveEvidenceDocument,
+  saveLocalWorkspaceState,
+} from "@/lib/services/localWorkspace";
+import { compareEvidenceToRequirement } from "@/lib/services/evidenceComparison";
 import { isExternalOcrAvailable, runExternalOcr } from "@/lib/services/externalOcr";
 import { isFirebaseConfigured } from "@/lib/services/firebaseAi";
 import { markUnpaginatedEvidenceUnverified } from "@/lib/services/ocrEvidence";
@@ -61,16 +81,21 @@ import {
   STATUSES,
   type Analysis,
   type DocumentRecord,
+  type DocumentFormat,
+  type DocumentTextSource,
+  type EvidenceMatch,
   type Evidence,
+  type RequirementEvidenceLink,
   type Review,
   type ReviewStatus,
+  type SupportingEvidenceDocument,
   type InferencePreference,
   type ProcessingSource,
+  type WorkspaceActivity,
 } from "@/lib/types";
 
-type Screen = "overview" | "analysis" | "compliance" | "processing";
+type Screen = "overview" | "library" | "analysis" | "compliance" | "processing";
 type ProcessingChoice = "demo" | InferencePreference;
-type DocumentTextSource = "pdfjs" | "llamaparse";
 type ExternalOcrAvailability = "checking" | "enabled" | "disabled" | "error";
 type FindingKind = "Requirement" | "Deadline" | "Specification" | "Risk" | "Missing information";
 
@@ -80,6 +105,8 @@ type Finding = {
   title: string;
   description: string;
   page: number | null;
+  sourceIndex: number | null;
+  sourceLocation: string | null;
   excerpt: string | null;
   verified: boolean;
   confidence?: number;
@@ -89,6 +116,7 @@ type Finding = {
 
 const NAVIGATION_IDS: Array<{ id: Screen; icon: LucideIcon }> = [
   { id: "overview", icon: LayoutDashboard },
+  { id: "library", icon: FolderOpen },
   { id: "analysis", icon: FileText },
   { id: "compliance", icon: Table2 },
   { id: "processing", icon: ShieldCheck },
@@ -144,6 +172,8 @@ function findAnalysisItems(analysis: Analysis, t: TFn): Finding[] {
       title: item.description,
       description: `${item.category} · ${item.mandatory ? t("finding_mandatory") : t("finding_optional")}`,
       page: item.evidence.page,
+      sourceIndex: item.evidence.sourceIndex ?? item.evidence.page,
+      sourceLocation: item.evidence.sourceLocation ?? null,
       excerpt: item.evidence.excerpt,
       verified: item.evidence.verified,
       confidence: item.confidence,
@@ -155,6 +185,8 @@ function findAnalysisItems(analysis: Analysis, t: TFn): Finding[] {
       title: item.description,
       description: item.date ?? t("finding_date_not_specified"),
       page: item.evidence.page,
+      sourceIndex: item.evidence.sourceIndex ?? item.evidence.page,
+      sourceLocation: item.evidence.sourceLocation ?? null,
       excerpt: item.evidence.excerpt,
       verified: item.evidence.verified,
     })),
@@ -164,6 +196,8 @@ function findAnalysisItems(analysis: Analysis, t: TFn): Finding[] {
       title: item.item,
       description: [item.quantity, item.unit, item.details].filter(Boolean).join(" · "),
       page: item.evidence.page,
+      sourceIndex: item.evidence.sourceIndex ?? item.evidence.page,
+      sourceLocation: item.evidence.sourceLocation ?? null,
       excerpt: item.evidence.excerpt,
       verified: item.evidence.verified,
     })),
@@ -173,6 +207,8 @@ function findAnalysisItems(analysis: Analysis, t: TFn): Finding[] {
       title: item.title,
       description: item.explanation,
       page: item.evidence.page,
+      sourceIndex: item.evidence.sourceIndex ?? item.evidence.page,
+      sourceLocation: item.evidence.sourceLocation ?? null,
       excerpt: item.evidence.excerpt,
       verified: item.evidence.verified,
       severity: item.severity,
@@ -183,6 +219,8 @@ function findAnalysisItems(analysis: Analysis, t: TFn): Finding[] {
       title: item,
       description: t("finding_missing_desc"),
       page: null,
+      sourceIndex: null,
+      sourceLocation: null,
       excerpt: null,
       verified: false,
     })),
@@ -192,6 +230,8 @@ function findAnalysisItems(analysis: Analysis, t: TFn): Finding[] {
       title: t("finding_inconsistency_title"),
       description: item,
       page: null,
+      sourceIndex: null,
+      sourceLocation: null,
       excerpt: null,
       verified: false,
     })),
@@ -235,6 +275,7 @@ function EvidenceStatus({ evidence }: { evidence: Evidence }) {
 
 export function PocketMindApp() {
   const t = useT();
+  const { locale } = useLocale();
   const [documents, setDocuments] = useState<DocumentRecord[]>(() => [buildDemoDocument()]);
   const [selectedDocumentId, setSelectedDocumentId] = useState(DEMO_DOC_ID);
   const [screen, setScreen] = useState<Screen>("overview");
@@ -243,8 +284,21 @@ export function PocketMindApp() {
     Record<string, string>
   >({});
   const [filesByDocumentId, setFilesByDocumentId] = useState<Record<string, File>>({});
-  const [processingChoice, setProcessingChoice] = useState<ProcessingChoice>(
-    () => (isFirebaseConfigured() ? "hybrid" : "local"),
+  const [evidenceDocuments, setEvidenceDocuments] = useState<SupportingEvidenceDocument[]>([]);
+  const [filesByEvidenceId, setFilesByEvidenceId] = useState<Record<string, File>>({});
+  const [evidenceLinks, setEvidenceLinks] = useState<RequirementEvidenceLink[]>([]);
+  const [evidenceMatches, setEvidenceMatches] = useState<EvidenceMatch[]>([]);
+  const [activities, setActivities] = useState<WorkspaceActivity[]>([]);
+  const [workspaceReady, setWorkspaceReady] = useState(false);
+  const [workspaceError, setWorkspaceError] = useState("");
+  const [selectedEvidenceId, setSelectedEvidenceId] = useState("");
+  const [evidenceCloudConsent, setEvidenceCloudConsent] = useState(false);
+  const [isComparingEvidence, setIsComparingEvidence] = useState(false);
+  const [isAddingEvidence, setIsAddingEvidence] = useState(false);
+  const [evidenceComparisonProgress, setEvidenceComparisonProgress] = useState("");
+  const [evidenceComparisonError, setEvidenceComparisonError] = useState("");
+  const [processingChoice, setProcessingChoice] = useState<ProcessingChoice>(() =>
+    isFirebaseConfigured() ? "hybrid" : "local",
   );
   const [cloudConsent, setCloudConsent] = useState(false);
   const [externalOcrConsentDocumentId, setExternalOcrConsentDocumentId] = useState<string | null>(
@@ -266,12 +320,67 @@ export function PocketMindApp() {
   const [progressDetail, setProgressDetail] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [activePage, setActivePage] = useState(1);
+  const [activeExcerpt, setActiveExcerpt] = useState<string | null>(null);
   const [activeFinding, setActiveFinding] = useState("all");
   const [selectedRequirementId, setSelectedRequirementId] = useState<string | null>(null);
   const [tourActive, setTourActive] = useState(false);
   const [tourRequestedByUser, setTourRequestedByUser] = useState(false);
   const tourButtonRef = useRef<HTMLButtonElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    let active = true;
+    void loadLocalWorkspace()
+      .then((workspace) => {
+        if (!active) return;
+        const demo = buildDemoDocument();
+        setDocuments([
+          demo,
+          ...workspace.documents.filter((document) => document.id !== DEMO_DOC_ID),
+        ]);
+        setFilesByDocumentId(workspace.filesByDocumentId);
+        setEvidenceDocuments(workspace.evidenceDocuments);
+        setFilesByEvidenceId(workspace.filesByEvidenceId);
+        setReviews(workspace.reviews);
+        setEvidenceMatches(workspace.evidenceMatches);
+        setEvidenceLinks(workspace.evidenceLinks);
+        setActivities(workspace.activities);
+      })
+      .catch((error) => {
+        if (!active) return;
+        const detail =
+          error instanceof Error ? error.message : "Local workspace could not be opened.";
+        setWorkspaceError(`Local files could not be loaded. ${detail}`);
+      })
+      .finally(() => {
+        if (active) setWorkspaceReady(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!workspaceReady || workspaceError) return;
+    void Promise.all(
+      documents
+        .filter((document) => document.source === "upload")
+        .map((document) => saveDocumentRecord(document)),
+    ).catch((error: unknown) => {
+      const detail = error instanceof Error ? error.message : "Local document storage failed.";
+      setWorkspaceError(`Changes could not be saved to this browser. ${detail}`);
+    });
+  }, [documents, workspaceError, workspaceReady]);
+
+  useEffect(() => {
+    if (!workspaceReady || workspaceError) return;
+    void saveLocalWorkspaceState({ reviews, evidenceLinks, evidenceMatches, activities }).catch(
+      (error: unknown) => {
+        const detail = error instanceof Error ? error.message : "Local workspace storage failed.";
+        setWorkspaceError(`Review changes could not be saved to this browser. ${detail}`);
+      },
+    );
+  }, [activities, evidenceLinks, evidenceMatches, reviews, workspaceError, workspaceReady]);
 
   useEffect(() => {
     if (tourActive && !tourRequestedByUser) {
@@ -294,7 +403,10 @@ export function PocketMindApp() {
     : firebaseConnected
       ? "green"
       : "neutral";
-  const allFindings = useMemo(() => (analysis ? findAnalysisItems(analysis, t) : []), [analysis, t]);
+  const allFindings = useMemo(
+    () => (analysis ? findAnalysisItems(analysis, t) : []),
+    [analysis, t],
+  );
   const visibleFindings = allFindings.filter((finding) => {
     const matchesTab =
       activeFinding === "all" || finding.kind.toLowerCase().startsWith(activeFinding);
@@ -313,8 +425,17 @@ export function PocketMindApp() {
   const selectedRequirement =
     requirements.find((requirement) => requirement.id === selectedRequirementId) ?? requirements[0];
   const currentPageText = selectedDocument?.pages[activePage - 1] ?? "";
+  const documentFormat = selectedDocument?.format ?? "pdf";
+  const sourceLocations =
+    selectedDocument?.sourceLocations ??
+    selectedDocument?.pages.map((_, index) =>
+      documentFormat === "pdf" ? `Page ${index + 1}` : `Source segment ${index + 1}`,
+    ) ??
+    [];
+  const currentSourceLocation = sourceLocations[activePage - 1] ?? `Source segment ${activePage}`;
   const screenTitles: Record<Screen, { title: string; subtitle: string }> = {
     overview: { title: t("screen_overview_title"), subtitle: t("screen_overview_subtitle") },
+    library: { title: t("screen_library_title"), subtitle: t("screen_library_subtitle") },
     analysis: { title: t("screen_analysis_title"), subtitle: t("screen_analysis_subtitle") },
     compliance: { title: t("screen_compliance_title"), subtitle: t("screen_compliance_subtitle") },
     processing: { title: t("screen_processing_title"), subtitle: t("screen_processing_subtitle") },
@@ -322,32 +443,75 @@ export function PocketMindApp() {
   const currentScreenCopy = screenTitles[screen];
   const navigation = [
     { id: "overview" as Screen, label: t("nav_dashboard"), icon: LayoutDashboard },
+    { id: "library" as Screen, label: t("nav_library"), icon: FolderOpen },
     { id: "analysis" as Screen, label: t("nav_analysis"), icon: FileText },
     { id: "compliance" as Screen, label: t("nav_compliance"), icon: Table2 },
     { id: "processing" as Screen, label: t("nav_processing"), icon: ShieldCheck },
   ];
 
-  function addPdf(selectedFile: File | undefined) {
+  function recordActivity(
+    type: WorkspaceActivity["type"],
+    documentId: string,
+    relatedDocumentId?: string,
+    requirementId?: string,
+  ) {
+    const activity: WorkspaceActivity = {
+      id: `activity-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      type,
+      documentId,
+      at: new Date().toISOString(),
+      ...(relatedDocumentId ? { relatedDocumentId } : {}),
+      ...(requirementId ? { requirementId } : {}),
+    };
+    setActivities((current) => [activity, ...current].slice(0, 200));
+  }
+
+  async function addDocument(selectedFile: File | undefined) {
     if (!selectedFile) return;
-    const validationError = validatePdf(selectedFile);
+    if (!workspaceReady || workspaceError) {
+      setErrorMessage(
+        workspaceError || "Local workspace storage is still loading. Try again shortly.",
+      );
+      return;
+    }
+    const validationError = validateDocumentFile(selectedFile);
     if (validationError) {
       setErrorMessage(validationError);
       return;
     }
 
-    const id = `upload-${Date.now()}`;
+    const format = getDocumentFormat(selectedFile.name);
+    if (!format) {
+      setErrorMessage("Choose a PDF, DOCX, or XLSX file.");
+      return;
+    }
+    const id = `upload-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const newDocument: DocumentRecord = {
       id,
       name: selectedFile.name,
       size: selectedFile.size,
       source: "upload",
+      format,
       pages: [],
+      sourceLocations: [],
       addedAt: new Date().toISOString(),
     };
+    try {
+      await saveDocumentBundle(newDocument, selectedFile);
+    } catch (error) {
+      const detail =
+        error instanceof Error ? error.message : "The file could not be saved locally.";
+      setErrorMessage(`The document was not added to the workspace. ${detail}`);
+      return;
+    }
     setDocuments((current) => [newDocument, ...current.filter((document) => document.id !== id)]);
     setSelectedDocumentId(id);
     setFilesByDocumentId((current) => ({ ...current, [id]: selectedFile }));
+    setSelectedRequirementId(null);
+    setSelectedEvidenceId("");
+    setEvidenceCloudConsent(false);
     setActivePage(1);
+    setActiveExcerpt(null);
     setProcessingChoice("local");
     setCloudConsent(false);
     setExternalOcrConsentDocumentId(null);
@@ -355,50 +519,100 @@ export function PocketMindApp() {
     setExternalOcrAvailability("checking");
     setErrorMessage("");
     setScreen("processing");
+    recordActivity("document-added", id);
   }
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
-    addPdf(event.currentTarget.files?.[0]);
+    void addDocument(event.currentTarget.files?.[0]);
     event.currentTarget.value = "";
   }
 
   function handleDrop(event: DragEvent<HTMLDivElement>) {
     event.preventDefault();
-    addPdf(event.dataTransfer.files[0]);
+    void addDocument(event.dataTransfer.files[0]);
+  }
+
+  async function extractLocalDocument(fileToExtract: File, format: DocumentFormat) {
+    if (format === "pdf") {
+      const pages = await extractPdfText(fileToExtract, (completed, total) => {
+        setProgressDetail(`Extracting text from page ${completed} of ${total}`);
+      });
+      return {
+        pages,
+        sourceLocations: pages.map((_, index) => `Page ${index + 1}`),
+        textSource: "pdfjs" as const,
+        paginationVerified: true,
+      };
+    }
+    setProgressDetail(
+      format === "docx"
+        ? "Extracting DOCX text in this browser"
+        : "Extracting XLSX text in this browser",
+    );
+    const extracted =
+      format === "docx"
+        ? await extractDocxText(fileToExtract)
+        : await extractXlsxText(fileToExtract);
+    return {
+      ...extracted,
+      textSource: "browser" as const,
+      paginationVerified: false,
+    };
   }
 
   async function extractTextOnly() {
     if (!selectedDocument || selectedDocument.source !== "upload") {
-      setErrorMessage("Choose a PDF before extracting text.");
+      setErrorMessage("Choose an uploaded document before extracting text.");
       return;
     }
-    if (selectedDocument.pages.some((page) => page.trim())) {
+    if (
+      selectedDocument.pages.some((page) => page.trim()) &&
+      selectedDocument.sourceLocations?.length
+    ) {
       setScreen("analysis");
       return;
     }
     if (!file) {
-      setErrorMessage("The selected PDF is no longer available. Choose it again to continue.");
+      setErrorMessage("The selected file is no longer available in this browser.");
       return;
     }
 
     setIsAnalyzing(true);
     setErrorMessage("");
     try {
-      const pages = await extractPdfText(file, (completed, total) => {
-        setProgressDetail(`Extracting text from page ${completed} of ${total}`);
-      });
+      const extracted = await extractLocalDocument(file, selectedDocument.format ?? "pdf");
+      const updatedDocument: DocumentRecord = {
+        ...selectedDocument,
+        pages: extracted.pages,
+        sourceLocations: extracted.sourceLocations,
+        textSource: extracted.textSource,
+        paginationVerified: extracted.paginationVerified,
+      };
+      await saveDocumentRecord(updatedDocument);
       setDocuments((current) =>
         current.map((document) =>
-          document.id === selectedDocument.id ? { ...document, pages } : document,
+          document.id === selectedDocument.id ? updatedDocument : document,
         ),
       );
-      setDocumentTextSources((current) => ({ ...current, [selectedDocument.id]: "pdfjs" }));
-      setDocumentPagination((current) => ({ ...current, [selectedDocument.id]: true }));
+      setDocumentTextSources((current) => ({
+        ...current,
+        [selectedDocument.id]: extracted.textSource,
+      }));
+      setDocumentPagination((current) => ({
+        ...current,
+        [selectedDocument.id]: extracted.paginationVerified,
+      }));
       setActivePage(1);
 
-      if (shouldOfferExternalOcr(pages)) {
+      if (
+        (selectedDocument.format ?? getDocumentFormat(selectedDocument.name)) === "pdf" &&
+        shouldOfferExternalOcr(extracted.pages)
+      ) {
         setScannedDocumentId(selectedDocument.id);
-        setScannedTextByDocumentId((current) => ({ ...current, [selectedDocument.id]: pages }));
+        setScannedTextByDocumentId((current) => ({
+          ...current,
+          [selectedDocument.id]: extracted.pages,
+        }));
         setExternalOcrConsentDocumentId(null);
         void checkExternalOcrStatus();
         return;
@@ -416,15 +630,197 @@ export function PocketMindApp() {
   function openDemo() {
     setSelectedDocumentId(DEMO_DOC_ID);
     setCloudConsent(false);
+    setEvidenceCloudConsent(false);
     setErrorMessage("");
     setScreen("analysis");
   }
 
   function updateReview(id: string, patch: Partial<Review>) {
+    const previous = reviews[id];
     setReviews((current) => ({
       ...current,
       [id]: { status: current[id]?.status ?? "pending", notes: current[id]?.notes ?? "", ...patch },
     }));
+    if (patch.status && patch.status !== (previous?.status ?? "pending") && selectedDocument) {
+      recordActivity("review-updated", selectedDocument.id, undefined, id);
+    }
+  }
+
+  async function addEvidenceFile(evidenceFile: File) {
+    if (!selectedDocument || selectedDocument.source !== "upload" || !selectedDocument.analysis) {
+      setEvidenceComparisonError("Analyze an uploaded tender before adding bidder evidence.");
+      return;
+    }
+    const validationError = validateDocumentFile(evidenceFile);
+    if (validationError) {
+      setEvidenceComparisonError(validationError);
+      return;
+    }
+    const format = getDocumentFormat(evidenceFile.name);
+    if (!format) {
+      setEvidenceComparisonError("Choose a PDF, DOCX, or XLSX evidence file.");
+      return;
+    }
+
+    setIsAddingEvidence(true);
+    setEvidenceComparisonError("");
+    try {
+      const extracted = await extractLocalDocument(evidenceFile, format);
+      const evidenceId = `evidence-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const evidenceDocument: SupportingEvidenceDocument = {
+        id: evidenceId,
+        tenderDocumentId: selectedDocument.id,
+        name: evidenceFile.name,
+        size: evidenceFile.size,
+        format,
+        pages: extracted.pages,
+        sourceLocations: extracted.sourceLocations,
+        addedAt: new Date().toISOString(),
+      };
+      await saveEvidenceDocument(evidenceDocument, evidenceFile);
+      setEvidenceDocuments((current) => [evidenceDocument, ...current]);
+      setFilesByEvidenceId((current) => ({ ...current, [evidenceId]: evidenceFile }));
+      setSelectedEvidenceId(evidenceId);
+      setEvidenceCloudConsent(false);
+      recordActivity("evidence-added", selectedDocument.id, evidenceId);
+    } catch (error) {
+      const detail =
+        error instanceof Error ? error.message : "The evidence file could not be saved.";
+      setEvidenceComparisonError(`Evidence was not added to the local workspace. ${detail}`);
+    } finally {
+      setIsAddingEvidence(false);
+    }
+  }
+
+  function linkEvidence(requirementId: string, evidenceDocumentId: string) {
+    if (!selectedDocument || !selectedDocument.analysis) return;
+    setEvidenceLinks((current) => {
+      const alreadyLinked = current.some(
+        (link) =>
+          link.tenderDocumentId === selectedDocument.id &&
+          link.requirementId === requirementId &&
+          link.evidenceDocumentId === evidenceDocumentId,
+      );
+      if (alreadyLinked) return current;
+      return [
+        ...current,
+        {
+          id: `link-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          tenderDocumentId: selectedDocument.id,
+          requirementId,
+          evidenceDocumentId,
+          createdAt: new Date().toISOString(),
+        },
+      ];
+    });
+    recordActivity("evidence-linked", selectedDocument.id, evidenceDocumentId, requirementId);
+  }
+
+  function unlinkEvidence(linkId: string) {
+    setEvidenceLinks((current) => current.filter((link) => link.id !== linkId));
+  }
+
+  async function compareEvidence(requirementId: string, evidenceDocumentId: string) {
+    if (!selectedDocument?.analysis || selectedDocument.source !== "upload") {
+      setEvidenceComparisonError("Analyze an uploaded tender before comparing bidder evidence.");
+      return;
+    }
+    if (!processingChoice || processingChoice === "demo") {
+      setEvidenceComparisonError("Choose on-device, cloud, or hybrid processing before comparing.");
+      return;
+    }
+    if ((processingChoice === "cloud" || processingChoice === "hybrid") && !evidenceCloudConsent) {
+      setEvidenceComparisonError(
+        "Allow cloud processing for this evidence file before continuing.",
+      );
+      return;
+    }
+    const requirement = selectedDocument.analysis.requirements.find(
+      (item) => item.id === requirementId,
+    );
+    const evidenceDocument = evidenceDocuments.find(
+      (item) => item.id === evidenceDocumentId && item.tenderDocumentId === selectedDocument.id,
+    );
+    if (!requirement || !evidenceDocument) {
+      setEvidenceComparisonError(
+        "The selected requirement or evidence file is no longer available.",
+      );
+      return;
+    }
+    if (!filesByEvidenceId[evidenceDocument.id]) {
+      setEvidenceComparisonError(
+        "The selected evidence file is no longer available in this browser.",
+      );
+      return;
+    }
+
+    setIsComparingEvidence(true);
+    setEvidenceComparisonError("");
+    setEvidenceComparisonProgress("Preparing local evidence text");
+    setEvidenceCloudConsent(false);
+    try {
+      const result = await compareEvidenceToRequirement(requirement, evidenceDocument.pages, {
+        format: evidenceDocument.format,
+        sourceLocations: evidenceDocument.sourceLocations,
+        preference: processingChoice,
+        onInference: () => setFirebaseConnected(true),
+        onProgress: setEvidenceComparisonProgress,
+      });
+      const match: EvidenceMatch = {
+        id: `match-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        tenderDocumentId: selectedDocument.id,
+        requirementId,
+        evidenceDocumentId,
+        ...result,
+        generatedAt: new Date().toISOString(),
+      };
+      setEvidenceMatches((current) => [
+        match,
+        ...current.filter(
+          (item) =>
+            item.tenderDocumentId !== selectedDocument.id ||
+            item.requirementId !== requirementId ||
+            item.evidenceDocumentId !== evidenceDocumentId,
+        ),
+      ]);
+      recordActivity("evidence-compared", selectedDocument.id, evidenceDocumentId, requirementId);
+      setEvidenceComparisonProgress("");
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : "Evidence comparison failed.";
+      setEvidenceComparisonError(`Evidence could not be compared. ${detail}`);
+      setEvidenceComparisonProgress("");
+    } finally {
+      setIsComparingEvidence(false);
+    }
+  }
+
+  async function clearWorkspace() {
+    try {
+      await clearLocalWorkspace();
+      const demo = buildDemoDocument();
+      setDocuments([demo]);
+      setSelectedDocumentId(DEMO_DOC_ID);
+      setFilesByDocumentId({});
+      setEvidenceDocuments([]);
+      setFilesByEvidenceId({});
+      setEvidenceLinks([]);
+      setEvidenceMatches([]);
+      setActivities([]);
+      setReviews({});
+      setQuestionDraftsByDocumentId({});
+      setDocumentTextSources({});
+      setDocumentPagination({});
+      setScannedTextByDocumentId({});
+      setSelectedRequirementId(null);
+      setSelectedEvidenceId("");
+      setEvidenceCloudConsent(false);
+      setScreen("overview");
+      setWorkspaceError("");
+    } catch (error) {
+      const detail =
+        error instanceof Error ? error.message : "Local workspace could not be cleared.";
+      setWorkspaceError(`Local files could not be deleted. ${detail}`);
+    }
   }
 
   async function checkExternalOcrStatus() {
@@ -438,23 +834,39 @@ export function PocketMindApp() {
     }
   }
 
-  async function analyzePages(pages: string[], textSource: DocumentTextSource, paginated: boolean) {
+  async function analyzePages(
+    pages: string[],
+    textSource: DocumentTextSource,
+    paginated: boolean,
+    locations: string[],
+  ) {
     if (!selectedDocument) {
       throw new Error("Choose a document before starting an analysis.");
     }
     if (processingChoice === "demo") {
       throw new Error("Demo mode never runs external OCR or Firebase AI analysis.");
     }
+    const format = selectedDocument.format ?? getDocumentFormat(selectedDocument.name) ?? "pdf";
     const result = await analyzeTender(
       pages,
       processingChoice,
       ({ detail }) => setProgressDetail(detail),
       () => setFirebaseConnected(true),
+      {
+        format,
+        sourceLocations: locations,
+        paginationVerified: paginated,
+        documentId: selectedDocument.id,
+      },
     );
-    const analysis = paginated ? result : markUnpaginatedEvidenceUnverified(result);
+    const analysis =
+      format === "pdf" && !paginated ? markUnpaginatedEvidenceUnverified(result) : result;
     const updatedDocument: DocumentRecord = {
       ...selectedDocument,
       pages,
+      sourceLocations: locations,
+      textSource,
+      paginationVerified: paginated,
       analysis,
     };
     setDocuments((current) =>
@@ -464,19 +876,21 @@ export function PocketMindApp() {
     setDocumentPagination((current) => ({ ...current, [updatedDocument.id]: paginated }));
     setScannedDocumentId(null);
     setActivePage(1);
+    setActiveExcerpt(null);
     setSelectedRequirementId(null);
     setActiveFinding("all");
     setScreen("analysis");
+    recordActivity("analysis-completed", selectedDocument.id);
   }
 
   async function runAnalysis() {
     if (!selectedDocument || (!file && selectedDocument.source !== "demo")) {
-      setErrorMessage("Choose a PDF before starting an analysis.");
+      setErrorMessage("Choose an uploaded document before starting an analysis.");
       return;
     }
     if (processingChoice === "demo") {
       setErrorMessage(
-        "Demo mode uses only the fictional sample tender. Choose on-device, cloud, or hybrid processing to analyze your PDF.",
+        "Demo mode uses only the fictional sample tender. Choose on-device, cloud, or hybrid processing to analyze an uploaded document.",
       );
       return;
     }
@@ -489,31 +903,42 @@ export function PocketMindApp() {
     setErrorMessage("");
     try {
       let pages: string[];
-      let textSource: DocumentTextSource = "pdfjs";
+      let locations: string[];
+      let textSource: DocumentTextSource = "browser";
       let paginated = true;
       if (selectedDocument.source === "demo") {
         pages = selectedDocument.pages;
+        locations =
+          selectedDocument.sourceLocations ?? pages.map((_, index) => `Page ${index + 1}`);
         setProgressDetail("Using fictional sample text; no real PDF is uploaded.");
       } else {
         if (!file) {
-          throw new Error("The selected PDF is no longer available. Choose it again to continue.");
+          throw new Error("The selected file is no longer available in this browser.");
         }
-        if (
-          documentTextSources[selectedDocument.id] === "llamaparse" &&
-          selectedDocument.pages.length > 0
-        ) {
+        const format = selectedDocument.format ?? getDocumentFormat(file.name) ?? "pdf";
+        const hasSavedText =
+          selectedDocument.pages.some((page) => page.trim()) &&
+          (selectedDocument.sourceLocations?.length ?? 0) > 0;
+        textSource =
+          selectedDocument.textSource ??
+          documentTextSources[selectedDocument.id] ??
+          (format === "pdf" ? "pdfjs" : "browser");
+        paginated =
+          selectedDocument.paginationVerified ?? documentPagination[selectedDocument.id] ?? true;
+        if (hasSavedText) {
           pages = selectedDocument.pages;
-          textSource = "llamaparse";
-          paginated = documentPagination[selectedDocument.id] ?? true;
+          locations = selectedDocument.sourceLocations ?? [];
         } else {
-          setProgressDetail("Reading PDF text in this browser");
-          pages = await extractPdfText(file, (completed, total) => {
-            setProgressDetail(`Extracting text from page ${completed} of ${total}`);
-          });
+          const extracted = await extractLocalDocument(file, format);
+          pages = extracted.pages;
+          locations = extracted.sourceLocations;
+          textSource = extracted.textSource;
+          paginated = extracted.paginationVerified;
         }
       }
       if (
         selectedDocument.source === "upload" &&
+        (selectedDocument.format ?? getDocumentFormat(selectedDocument.name)) === "pdf" &&
         textSource === "pdfjs" &&
         shouldOfferExternalOcr(pages)
       ) {
@@ -524,15 +949,23 @@ export function PocketMindApp() {
         return;
       }
       if (selectedDocument.source === "upload") {
+        const updatedDocument: DocumentRecord = {
+          ...selectedDocument,
+          pages,
+          sourceLocations: locations,
+          textSource,
+          paginationVerified: paginated,
+        };
+        await saveDocumentRecord(updatedDocument);
         setDocuments((current) =>
           current.map((document) =>
-            document.id === selectedDocument.id ? { ...document, pages } : document,
+            document.id === selectedDocument.id ? updatedDocument : document,
           ),
         );
         setDocumentTextSources((current) => ({ ...current, [selectedDocument.id]: textSource }));
         setDocumentPagination((current) => ({ ...current, [selectedDocument.id]: paginated }));
       }
-      await analyzePages(pages, textSource, paginated);
+      await analyzePages(pages, textSource, paginated, locations);
     } catch (error) {
       const detail = error instanceof Error ? error.message : "An unexpected error occurred.";
       setErrorMessage(`Analysis could not be completed. ${detail}`);
@@ -560,7 +993,8 @@ export function PocketMindApp() {
     setErrorMessage("");
     try {
       setProgressDetail("Analyzing the text extracted in this browser");
-      await analyzePages(pages, "pdfjs", true);
+      const sourceLocations = pages.map((_, index) => `Page ${index + 1}`);
+      await analyzePages(pages, "pdfjs", true, sourceLocations);
     } catch (error) {
       const detail = error instanceof Error ? error.message : "An unexpected error occurred.";
       setErrorMessage(`Analysis could not be completed. ${detail}`);
@@ -570,7 +1004,12 @@ export function PocketMindApp() {
   }
 
   async function runLlamaParseOcr() {
-    if (!selectedDocument || selectedDocument.source !== "upload" || !file) {
+    if (
+      !selectedDocument ||
+      selectedDocument.source !== "upload" ||
+      (selectedDocument.format ?? getDocumentFormat(selectedDocument.name)) !== "pdf" ||
+      !file
+    ) {
       setErrorMessage("Choose a PDF before starting external text extraction.");
       return;
     }
@@ -601,7 +1040,17 @@ export function PocketMindApp() {
       }
       setDocuments((current) =>
         current.map((document) =>
-          document.id === selectedDocument.id ? { ...document, pages: result.pages } : document,
+          document.id === selectedDocument.id
+            ? {
+                ...document,
+                pages: result.pages,
+                sourceLocations: result.pages.map((_, index) =>
+                  result.paginated ? `Page ${index + 1}` : `Extracted segment ${index + 1}`,
+                ),
+                textSource: "llamaparse",
+                paginationVerified: result.paginated,
+              }
+            : document,
         ),
       );
       setDocumentTextSources((current) => ({ ...current, [selectedDocument.id]: "llamaparse" }));
@@ -610,7 +1059,10 @@ export function PocketMindApp() {
         [selectedDocument.id]: result.paginated,
       }));
       setProgressDetail("Analyzing extracted text with Firebase AI Logic");
-      await analyzePages(result.pages, "llamaparse", result.paginated);
+      const sourceLocations = result.pages.map((_, index) =>
+        result.paginated ? `Page ${index + 1}` : `Extracted segment ${index + 1}`,
+      );
+      await analyzePages(result.pages, "llamaparse", result.paginated, sourceLocations);
     } catch (error) {
       const detail = error instanceof Error ? error.message : "An unexpected error occurred.";
       setErrorMessage(`External text extraction could not be completed. ${detail}`);
@@ -622,16 +1074,14 @@ export function PocketMindApp() {
   function exportAnalysis() {
     if (!analysis || !selectedDocument) return;
     downloadText(
-      `${selectedDocument.name.replace(/\.pdf$/i, "")}-analysis.json`,
+      `${selectedDocument.name.replace(/\.(pdf|docx|xlsx)$/i, "")}-analysis.json`,
       JSON.stringify({ document: selectedDocument.name, analysis }, null, 2),
       "application/json;charset=utf-8",
     );
   }
 
   if (!selectedDocument) {
-    return (
-      <main className="pm-empty-analysis">{t("workspace_no_document")}</main>
-    );
+    return <main className="pm-empty-analysis">{t("workspace_no_document")}</main>;
   }
 
   return (
@@ -784,12 +1234,17 @@ export function PocketMindApp() {
               analysis={analysis}
               pendingReviews={pendingReviews}
               reviews={reviews}
+              activities={activities}
               search={search}
               onOpenAnalysis={() => setScreen("analysis")}
               onOpenProcessing={() => setScreen("processing")}
               onSelectDocument={(id) => {
                 setSelectedDocumentId(id);
                 setCloudConsent(false);
+                setEvidenceCloudConsent(false);
+                setSelectedEvidenceId("");
+                setSelectedRequirementId(null);
+                setActiveExcerpt(null);
                 setActivePage(1);
                 setActiveFinding("all");
                 const nextDocument = documents.find((document) => document.id === id);
@@ -797,15 +1252,42 @@ export function PocketMindApp() {
               }}
             />
           )}
+          {screen === "library" && (
+            <LocalWorkspaceLibrary
+              documents={documents}
+              evidenceDocuments={evidenceDocuments}
+              storageError={workspaceError}
+              onAddDocument={() => setScreen("processing")}
+              onOpenDocument={(id) => {
+                setSelectedDocumentId(id);
+                setCloudConsent(false);
+                setEvidenceCloudConsent(false);
+                setSelectedEvidenceId("");
+                setSelectedRequirementId(null);
+                setActiveExcerpt(null);
+                setActivePage(1);
+                setScreen(
+                  documents.find((document) => document.id === id)?.analysis
+                    ? "analysis"
+                    : "processing",
+                );
+              }}
+              onClearWorkspace={() => void clearWorkspace()}
+            />
+          )}
           {screen === "analysis" && (
             <AnalysisScreen
               document={selectedDocument}
+              file={file}
               analysis={analysis}
               findings={visibleFindings}
               totalFindings={allFindings.length}
               activeFinding={activeFinding}
               activePage={activePage}
               pageText={currentPageText}
+              sourceLocation={currentSourceLocation}
+              activeExcerpt={activeExcerpt}
+              sourceLocations={sourceLocations}
               search={search}
               questionDraft={questionDraftsByDocumentId[selectedDocument.id] ?? ""}
               onQuestionDraftChange={(draft) =>
@@ -816,10 +1298,47 @@ export function PocketMindApp() {
               }
               preference={processingChoice === "demo" ? null : processingChoice}
               cloudConsent={cloudConsent}
-              textSource={documentTextSources[selectedDocument.id] ?? null}
-              paginationVerified={documentPagination[selectedDocument.id] ?? true}
+              textSource={
+                documentTextSources[selectedDocument.id] ?? selectedDocument.textSource ?? null
+              }
+              paginationVerified={
+                documentPagination[selectedDocument.id] ??
+                selectedDocument.paginationVerified ??
+                true
+              }
+              evidenceDocuments={evidenceDocuments}
+              evidenceLinks={evidenceLinks}
+              evidenceMatches={evidenceMatches}
+              selectedEvidenceId={selectedEvidenceId}
+              selectedRequirementId={selectedRequirementId ?? selectedRequirement?.id ?? ""}
+              evidenceCloudConsent={evidenceCloudConsent}
+              isAddingEvidence={isAddingEvidence}
+              isComparingEvidence={isComparingEvidence}
+              evidenceComparisonProgress={evidenceComparisonProgress}
+              evidenceComparisonError={evidenceComparisonError}
               onSelectFilter={setActiveFinding}
-              onSelectPage={setActivePage}
+              onSelectSource={(index, excerpt, requirementId) => {
+                setActivePage(index);
+                setActiveExcerpt(excerpt);
+                if (requirementId) setSelectedRequirementId(requirementId);
+              }}
+              onSelectRequirement={(id) => {
+                setSelectedRequirementId(id);
+                setEvidenceComparisonError("");
+              }}
+              onSelectEvidence={(id) => {
+                setSelectedEvidenceId(id);
+                setEvidenceCloudConsent(false);
+                setEvidenceComparisonError("");
+                setEvidenceComparisonProgress("");
+              }}
+              onUploadEvidence={(evidenceFile) => void addEvidenceFile(evidenceFile)}
+              onLinkEvidence={linkEvidence}
+              onUnlinkEvidence={unlinkEvidence}
+              onCompareEvidence={(requirementId, evidenceId) =>
+                void compareEvidence(requirementId, evidenceId)
+              }
+              onEvidenceCloudConsentChange={(checked) => setEvidenceCloudConsent(checked)}
               onOpenProcessing={() => setScreen("processing")}
               onModelResponse={() => setFirebaseConnected(true)}
               onExport={exportAnalysis}
@@ -867,6 +1386,7 @@ export function PocketMindApp() {
               onSelectChoice={(choice) => {
                 setProcessingChoice(choice);
                 if (choice === "demo" || choice === "local") setCloudConsent(false);
+                setEvidenceCloudConsent(false);
                 if (choice === "demo") setExternalOcrConsentDocumentId(null);
                 setErrorMessage("");
               }}
@@ -909,6 +1429,7 @@ function OverviewScreen({
   analysis,
   pendingReviews,
   reviews,
+  activities,
   search,
   onOpenAnalysis,
   onOpenProcessing,
@@ -919,6 +1440,7 @@ function OverviewScreen({
   analysis: Analysis | undefined;
   pendingReviews: number;
   reviews: Record<string, Review>;
+  activities: WorkspaceActivity[];
   search: string;
   onOpenAnalysis: () => void;
   onOpenProcessing: () => void;
@@ -931,6 +1453,29 @@ function OverviewScreen({
   const criticalRisks = analysis?.risks.filter((risk) => risk.severity === "Critical").length ?? 0;
   const verifiedRequirements =
     analysis?.requirements.filter((requirement) => requirement.evidence.verified).length ?? 0;
+  const documentNames = new Map(documents.map((document) => [document.id, document.name]));
+
+  function activityDescription(activity: WorkspaceActivity) {
+    const documentId =
+      activity.type === "evidence-added" && activity.relatedDocumentId
+        ? activity.relatedDocumentId
+        : activity.documentId;
+    const name = documentNames.get(documentId) ?? t("activity_unknown_document");
+    switch (activity.type) {
+      case "document-added":
+        return t("activity_document_added", { name });
+      case "analysis-completed":
+        return t("activity_analysis_completed", { name });
+      case "evidence-added":
+        return t("activity_evidence_added", { name });
+      case "evidence-linked":
+        return t("activity_evidence_linked", { name });
+      case "evidence-compared":
+        return t("activity_evidence_compared", { name });
+      case "review-updated":
+        return t("activity_review_updated", { name });
+    }
+  }
 
   return (
     <div className="pm-screen">
@@ -945,7 +1490,9 @@ function OverviewScreen({
         <Metric
           icon={ClipboardCheck}
           label={
-            selectedDocument.source === "demo" ? t("metric_reqs_label_sample") : t("metric_reqs_label_real")
+            selectedDocument.source === "demo"
+              ? t("metric_reqs_label_sample")
+              : t("metric_reqs_label_real")
           }
           value={analysis?.requirements.length ?? 0}
           detail={
@@ -990,7 +1537,7 @@ function OverviewScreen({
                 <thead>
                   <tr>
                     <th>{t("table_col_document")}</th>
-                    <th>{t("table_col_pages")}</th>
+                    <th>{t("table_col_pages_sources")}</th>
                     <th>{t("table_col_processing")}</th>
                     <th>{t("table_col_status")}</th>
                     <th aria-label="Open" />
@@ -1119,7 +1666,11 @@ function OverviewScreen({
                         <strong>{item.description}</strong>
                         <small>
                           {item.evidence.verified
-                            ? t("review_source_verified", { page: item.evidence.page ?? "" })
+                            ? item.evidence.page !== null
+                              ? t("review_source_verified", { page: item.evidence.page })
+                              : t("review_source_verified_location", {
+                                  location: item.evidence.sourceLocation ?? "",
+                                })
                             : t("review_evidence_needs")}
                         </small>
                       </span>
@@ -1138,18 +1689,44 @@ function OverviewScreen({
           </section>
         </aside>
       </div>
+
+      <section className="pm-panel pm-activity-panel">
+        <div className="pm-panel-heading">
+          <div>
+            <h2>{t("activity_title")}</h2>
+            <p>{t("activity_detail")}</p>
+          </div>
+        </div>
+        {activities.length ? (
+          <ol className="pm-activity-list">
+            {activities.slice(0, 8).map((activity) => (
+              <li key={activity.id}>
+                <span className="pm-activity-marker" aria-hidden="true" />
+                <span>{activityDescription(activity)}</span>
+                <time dateTime={activity.at}>{new Date(activity.at).toLocaleString()}</time>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p className="pm-activity-empty">{t("activity_empty")}</p>
+        )}
+      </section>
     </div>
   );
 }
 
 function AnalysisScreen({
   document,
+  file,
   analysis,
   findings,
   totalFindings,
   activeFinding,
   activePage,
   pageText,
+  sourceLocation,
+  activeExcerpt,
+  sourceLocations,
   search,
   questionDraft,
   onQuestionDraftChange,
@@ -1157,19 +1734,40 @@ function AnalysisScreen({
   cloudConsent,
   textSource,
   paginationVerified,
+  evidenceDocuments,
+  evidenceLinks,
+  evidenceMatches,
+  selectedEvidenceId,
+  selectedRequirementId,
+  evidenceCloudConsent,
+  isAddingEvidence,
+  isComparingEvidence,
+  evidenceComparisonProgress,
+  evidenceComparisonError,
   onSelectFilter,
-  onSelectPage,
+  onSelectSource,
+  onSelectRequirement,
+  onSelectEvidence,
+  onUploadEvidence,
+  onLinkEvidence,
+  onUnlinkEvidence,
+  onCompareEvidence,
+  onEvidenceCloudConsentChange,
   onOpenProcessing,
   onModelResponse,
   onExport,
 }: {
   document: DocumentRecord;
+  file: File | null;
   analysis: Analysis | undefined;
   findings: Finding[];
   totalFindings: number;
   activeFinding: string;
   activePage: number;
   pageText: string;
+  sourceLocation: string;
+  activeExcerpt: string | null;
+  sourceLocations: string[];
   search: string;
   questionDraft: string;
   onQuestionDraftChange: (draft: string) => void;
@@ -1177,18 +1775,47 @@ function AnalysisScreen({
   cloudConsent: boolean;
   textSource: DocumentTextSource | null;
   paginationVerified: boolean;
+  evidenceDocuments: SupportingEvidenceDocument[];
+  evidenceLinks: RequirementEvidenceLink[];
+  evidenceMatches: EvidenceMatch[];
+  selectedEvidenceId: string;
+  selectedRequirementId: string;
+  evidenceCloudConsent: boolean;
+  isAddingEvidence: boolean;
+  isComparingEvidence: boolean;
+  evidenceComparisonProgress: string;
+  evidenceComparisonError: string;
   onSelectFilter: (filter: string) => void;
-  onSelectPage: (page: number) => void;
+  onSelectSource: (index: number, excerpt: string | null, requirementId?: string) => void;
+  onSelectRequirement: (id: string) => void;
+  onSelectEvidence: (id: string) => void;
+  onUploadEvidence: (file: File) => void;
+  onLinkEvidence: (requirementId: string, evidenceDocumentId: string) => void;
+  onUnlinkEvidence: (linkId: string) => void;
+  onCompareEvidence: (requirementId: string, evidenceDocumentId: string) => void;
+  onEvidenceCloudConsentChange: (checked: boolean) => void;
   onOpenProcessing: () => void;
   onModelResponse: () => void;
   onExport: () => void;
 }) {
   const t = useT();
+  const format = document.format ?? "pdf";
+  const hasPdfPagination = format === "pdf" && paginationVerified;
+  const canNavigateSources = document.pages.length > 1;
+  const sourceFile = format === "pdf" && hasPdfPagination ? file : null;
   const filterOptions = [
     { id: "all", label: t("filter_all"), count: totalFindings },
-    { id: "requirement", label: t("filter_requirements"), count: analysis?.requirements.length ?? 0 },
+    {
+      id: "requirement",
+      label: t("filter_requirements"),
+      count: analysis?.requirements.length ?? 0,
+    },
     { id: "deadline", label: t("filter_deadlines"), count: analysis?.deadlines.length ?? 0 },
-    { id: "specification", label: t("filter_specifications"), count: analysis?.specifications.length ?? 0 },
+    {
+      id: "specification",
+      label: t("filter_specifications"),
+      count: analysis?.specifications.length ?? 0,
+    },
     { id: "risk", label: t("filter_risks"), count: analysis?.risks.length ?? 0 },
     {
       id: "missing",
@@ -1220,65 +1847,69 @@ function AnalysisScreen({
                 <div>
                   <h2>{t("source_panel_title")}</h2>
                   <p>
-                    {textSource === "llamaparse"
-                      ? paginationVerified
-                        ? t("source_llamaparse_paginated")
-                        : t("source_llamaparse_unpaginated")
-                      : t("source_pdfjs")}
+                    {format !== "pdf"
+                      ? t("source_office_document")
+                      : textSource === "llamaparse"
+                        ? paginationVerified
+                          ? t("source_llamaparse_paginated")
+                          : t("source_llamaparse_unpaginated")
+                        : t("source_pdfjs")}
                   </p>
                 </div>
                 <div className="pm-page-controls">
-                  {paginationVerified ? (
-                    <>
-                      <button
-                        type="button"
-                        className="pm-icon-button"
-                        aria-label={t("source_prev_page")}
-                        disabled={activePage <= 1}
-                        onClick={() => onSelectPage(activePage - 1)}
-                      >
-                        <ChevronLeft size={17} />
-                      </button>
-                      <span>
-                        {t("source_page_of", { page: activePage, total: document.pages.length })}
-                      </span>
-                      <button
-                        type="button"
-                        className="pm-icon-button"
-                        aria-label={t("source_next_page")}
-                        disabled={activePage >= document.pages.length}
-                        onClick={() => onSelectPage(activePage + 1)}
-                      >
-                        <ChevronRight size={17} />
-                      </button>
-                    </>
-                  ) : (
-                    <span>{t("source_no_page_numbers")}</span>
+                  {canNavigateSources && (
+                    <button
+                      type="button"
+                      className="pm-icon-button"
+                      aria-label={t("source_prev_page")}
+                      disabled={activePage <= 1}
+                      onClick={() => onSelectSource(activePage - 1, null)}
+                    >
+                      <ChevronLeft size={17} />
+                    </button>
+                  )}
+                  <span>
+                    {hasPdfPagination
+                      ? t("source_page_of", { page: activePage, total: document.pages.length })
+                      : sourceLocation}
+                  </span>
+                  {canNavigateSources && (
+                    <button
+                      type="button"
+                      className="pm-icon-button"
+                      aria-label={t("source_next_page")}
+                      disabled={activePage >= document.pages.length}
+                      onClick={() => onSelectSource(activePage + 1, null)}
+                    >
+                      <ChevronRight size={17} />
+                    </button>
                   )}
                 </div>
               </div>
-              <div className="pm-source-page">
-                <div className="pm-source-page-head">
-                  <span>{document.name}</span>
-                  <span>
-                    {paginationVerified ? t("source_page_of", { page: activePage, total: document.pages.length }) : t("source_pagination_unavailable")}
-                  </span>
-                </div>
-                <pre>{pageText || t("source_no_text")}</pre>
-                <div className="pm-source-disclaimer">{t("source_disclaimer")}</div>
-              </div>
+              <SourceDocumentViewer
+                file={sourceFile}
+                format={format}
+                name={document.name}
+                pageText={pageText}
+                pageNumber={activePage}
+                pageCount={document.pages.length}
+                sourceLocation={sourceLocation}
+                excerpt={activeExcerpt}
+              />
             </section>
             <DocumentQaPanel
               key={document.id}
               documentName={document.name}
               pages={document.pages}
+              format={format}
+              sourceLocations={sourceLocations}
               draft={questionDraft}
               onDraftChange={onQuestionDraftChange}
               preference={preference}
               cloudConsent={cloudConsent}
-              paginationVerified={paginationVerified}
+              paginationVerified={hasPdfPagination}
               onOpenProcessing={onOpenProcessing}
-              onSelectPage={onSelectPage}
+              onSelectPage={(index, excerpt) => onSelectSource(index, excerpt ?? null)}
               onModelResponse={onModelResponse}
             />
           </div>
@@ -1299,9 +1930,18 @@ function AnalysisScreen({
           <div>
             <h2>{document.name}</h2>
             <span>
-              {document.source === "demo" ? t("toolbar_fictional_sample") : t("toolbar_pdf_document")} ·{" "}
-              {paginationVerified ? `${document.pages.length} ${t("toolbar_pages")}` : t("toolbar_pagination_unverified")} ·{" "}
-              {formatBytes(document.size)}
+              {document.source === "demo"
+                ? t("toolbar_fictional_sample")
+                : format === "pdf"
+                  ? t("toolbar_pdf_document")
+                  : format === "docx"
+                    ? t("toolbar_docx_document")
+                    : t("toolbar_xlsx_document")}{" "}
+              ·{" "}
+              {hasPdfPagination
+                ? `${document.pages.length} ${t("toolbar_pages")}`
+                : `${document.pages.length} ${t("toolbar_source_sections")}`}{" "}
+              · {formatBytes(document.size)}
             </span>
           </div>
           <Badge tone={modeSourceTone(processingSource)}>{modeLabel(processingSource, t)}</Badge>
@@ -1318,9 +1958,7 @@ function AnalysisScreen({
         <div className="pm-inline-warning">
           <Sparkles size={16} />
           <span>
-            {analysis.mode === "demo"
-              ? t("warning_demo_prepared")
-              : t("warning_demo_ai")}
+            {analysis.mode === "demo" ? t("warning_demo_prepared") : t("warning_demo_ai")}
           </span>
         </div>
       )}
@@ -1342,7 +1980,11 @@ function AnalysisScreen({
         <dl>
           <div>
             <dt>{t("inference_firebase_label")}</dt>
-            <dd>{analysis.mode === "demo" ? t("inference_firebase_not_used") : t("inference_firebase_connected")}</dd>
+            <dd>
+              {analysis.mode === "demo"
+                ? t("inference_firebase_not_used")
+                : t("inference_firebase_connected")}
+            </dd>
           </div>
           <div>
             <dt>{t("inference_model_label")}</dt>
@@ -1394,51 +2036,55 @@ function AnalysisScreen({
             <div>
               <h2>{t("source_panel_title_full")}</h2>
               <p>
-                {textSource === "llamaparse"
-                  ? paginationVerified
-                    ? t("source_llamaparse_full")
-                    : t("source_llamaparse_unpaginated")
-                  : t("source_pdfjs_full")}
+                {format !== "pdf"
+                  ? t("source_office_document")
+                  : textSource === "llamaparse"
+                    ? paginationVerified
+                      ? t("source_llamaparse_full")
+                      : t("source_llamaparse_unpaginated")
+                    : t("source_pdfjs_full")}
               </p>
             </div>
             <div className="pm-page-controls">
-              {paginationVerified ? (
-                <>
-                  <button
-                    type="button"
-                    className="pm-icon-button"
-                    aria-label={t("source_prev_page")}
-                    disabled={activePage <= 1}
-                    onClick={() => onSelectPage(activePage - 1)}
-                  >
-                    <ChevronLeft size={17} />
-                  </button>
-                  <span>
-                    {t("source_page_of", { page: activePage, total: document.pages.length })}
-                  </span>
-                  <button
-                    type="button"
-                    className="pm-icon-button"
-                    aria-label={t("source_next_page")}
-                    disabled={activePage >= document.pages.length}
-                    onClick={() => onSelectPage(activePage + 1)}
-                  >
-                    <ChevronRight size={17} />
-                  </button>
-                </>
-              ) : (
-                <span>{t("source_no_page_numbers")}</span>
+              {canNavigateSources && (
+                <button
+                  type="button"
+                  className="pm-icon-button"
+                  aria-label={t("source_prev_page")}
+                  disabled={activePage <= 1}
+                  onClick={() => onSelectSource(activePage - 1, null)}
+                >
+                  <ChevronLeft size={17} />
+                </button>
+              )}
+              <span>
+                {hasPdfPagination
+                  ? t("source_page_of", { page: activePage, total: document.pages.length })
+                  : sourceLocation}
+              </span>
+              {canNavigateSources && (
+                <button
+                  type="button"
+                  className="pm-icon-button"
+                  aria-label={t("source_next_page")}
+                  disabled={activePage >= document.pages.length}
+                  onClick={() => onSelectSource(activePage + 1, null)}
+                >
+                  <ChevronRight size={17} />
+                </button>
               )}
             </div>
           </div>
-          <div className="pm-source-page">
-            <div className="pm-source-page-head">
-              <span>{document.name}</span>
-              <span>{paginationVerified ? t("source_page_of", { page: activePage, total: document.pages.length }) : t("source_pagination_unavailable")}</span>
-            </div>
-            <pre>{pageText || t("source_no_text")}</pre>
-            <div className="pm-source-disclaimer">{t("source_disclaimer")}</div>
-          </div>
+          <SourceDocumentViewer
+            file={sourceFile}
+            format={format}
+            name={document.name}
+            pageText={pageText}
+            pageNumber={activePage}
+            pageCount={document.pages.length}
+            sourceLocation={sourceLocation}
+            excerpt={activeExcerpt}
+          />
         </section>
 
         <section className="pm-findings-panel">
@@ -1494,15 +2140,24 @@ function AnalysisScreen({
                   <div className="pm-finding-evidence">
                     {finding.excerpt && <blockquote>“{finding.excerpt}”</blockquote>}
                     <div className="pm-finding-meta">
-                      {finding.page !== null ? (
+                      {finding.sourceIndex !== null ? (
                         <button
                           className="pm-page-link"
                           type="button"
                           onClick={() => {
-                            if (finding.page !== null) onSelectPage(finding.page);
+                            if (finding.sourceIndex !== null) {
+                              onSelectSource(
+                                finding.sourceIndex,
+                                finding.excerpt,
+                                finding.kind === "Requirement" ? finding.id : undefined,
+                              );
+                            }
                           }}
                         >
-                          <FileText size={14} /> {t("finding_page", { page: finding.page })}
+                          <FileText size={14} />{" "}
+                          {finding.page !== null
+                            ? t("finding_page", { page: finding.page })
+                            : (finding.sourceLocation ?? `Source section ${finding.sourceIndex}`)}
                         </button>
                       ) : (
                         <span className="pm-muted-label">{t("finding_no_source_page")}</span>
@@ -1512,6 +2167,8 @@ function AnalysisScreen({
                           page: finding.page,
                           excerpt: finding.excerpt,
                           verified: finding.verified,
+                          sourceIndex: finding.sourceIndex,
+                          sourceLocation: finding.sourceLocation,
                         }}
                       />
                     </div>
@@ -1535,17 +2192,43 @@ function AnalysisScreen({
         </section>
       </div>
 
+      <EvidenceComparisonPanel
+        tenderDocumentId={document.id}
+        requirements={analysis.requirements}
+        selectedRequirementId={selectedRequirementId}
+        evidenceDocuments={evidenceDocuments}
+        links={evidenceLinks}
+        matches={evidenceMatches}
+        selectedEvidenceId={selectedEvidenceId}
+        preference={preference}
+        cloudConsent={evidenceCloudConsent}
+        isAddingEvidence={isAddingEvidence}
+        isComparing={isComparingEvidence}
+        progress={evidenceComparisonProgress}
+        error={evidenceComparisonError}
+        demo={document.source === "demo"}
+        onSelectRequirement={onSelectRequirement}
+        onSelectEvidence={onSelectEvidence}
+        onUpload={onUploadEvidence}
+        onLink={onLinkEvidence}
+        onUnlink={onUnlinkEvidence}
+        onCompare={onCompareEvidence}
+        onCloudConsentChange={onEvidenceCloudConsentChange}
+      />
+
       <DocumentQaPanel
         key={document.id}
         documentName={document.name}
         pages={document.pages}
+        format={format}
+        sourceLocations={sourceLocations}
         draft={questionDraft}
         onDraftChange={onQuestionDraftChange}
         preference={preference}
         cloudConsent={cloudConsent}
-        paginationVerified={paginationVerified}
+        paginationVerified={hasPdfPagination}
         onOpenProcessing={onOpenProcessing}
-        onSelectPage={onSelectPage}
+        onSelectPage={(index, excerpt) => onSelectSource(index, excerpt ?? null)}
         onModelResponse={onModelResponse}
       />
     </div>
@@ -1618,9 +2301,7 @@ function ComplianceScreen({
       <div className="pm-compliance-toolbar">
         <label className="pm-table-search">
           <Search size={16} />{" "}
-          <span aria-label="Search requirements">
-            {search || t("compliance_search_hint")}
-          </span>
+          <span aria-label="Search requirements">{search || t("compliance_search_hint")}</span>
         </label>
         <label className="pm-select-wrap">
           <span className="sr-only">{t("compliance_category_filter_sr")}</span>
@@ -1664,10 +2345,12 @@ function ComplianceScreen({
         <section className="pm-panel pm-matrix-panel">
           <div className="pm-matrix-summary">
             <span>
-              <strong>{requirements.length}</strong> {t("compliance_summary_reqs", { count: requirements.length })}
+              <strong>{requirements.length}</strong>{" "}
+              {t("compliance_summary_reqs", { count: requirements.length })}
             </span>
             <span>
-              <strong>{requirements.filter((item) => item.evidence.verified).length}</strong> {t("compliance_summary_verified")}
+              <strong>{requirements.filter((item) => item.evidence.verified).length}</strong>{" "}
+              {t("compliance_summary_verified")}
             </span>
             <span>
               <strong>{filteredRequirements.length}</strong> {t("compliance_summary_shown")}
@@ -1711,7 +2394,9 @@ function ComplianceScreen({
                         </td>
                         <td>
                           <Badge tone={requirement.mandatory ? "red" : "neutral"}>
-                            {requirement.mandatory ? t("compliance_mandatory_yes") : t("compliance_mandatory_no")}
+                            {requirement.mandatory
+                              ? t("compliance_mandatory_yes")
+                              : t("compliance_mandatory_no")}
                           </Badge>
                         </td>
                         <td>
@@ -1723,7 +2408,9 @@ function ComplianceScreen({
                                   : "pm-unverified-text"
                               }
                             >
-                              {requirement.evidence.verified ? t("compliance_verified") : t("compliance_check_excerpt")}
+                              {requirement.evidence.verified
+                                ? t("compliance_verified")
+                                : t("compliance_check_excerpt")}
                             </span>
                           ) : (
                             <span className="pm-muted-label">{t("compliance_not_provided")}</span>
@@ -1787,15 +2474,15 @@ function ComplianceScreen({
               <div className="pm-evidence-meta">
                 <Badge tone="purple">{selectedRequirement.category}</Badge>
                 {selectedRequirement.evidence.page && (
-                  <Badge tone="blue">{t("evidence_page_badge", { page: selectedRequirement.evidence.page })}</Badge>
+                  <Badge tone="blue">
+                    {t("evidence_page_badge", { page: selectedRequirement.evidence.page })}
+                  </Badge>
                 )}
               </div>
               {selectedRequirement.evidence.excerpt ? (
                 <blockquote>“{selectedRequirement.evidence.excerpt}”</blockquote>
               ) : (
-                <div className="pm-evidence-missing">
-                  {t("evidence_no_excerpt")}
-                </div>
+                <div className="pm-evidence-missing">{t("evidence_no_excerpt")}</div>
               )}
               <EvidenceStatus evidence={selectedRequirement.evidence} />
               <label className="pm-notes-label">
@@ -1896,7 +2583,8 @@ function ProcessingScreen({
         >
           <span className="pm-mode-card-top">
             <span className="pm-radio-indicator" />
-            {t("mode_card_local_title")}<Badge tone="green">{t("mode_card_local_badge")}</Badge>
+            {t("mode_card_local_title")}
+            <Badge tone="green">{t("mode_card_local_badge")}</Badge>
           </span>
           <span className="pm-mode-illustration pm-mode-illustration--local">
             <LockKeyhole size={32} />
@@ -1904,9 +2592,15 @@ function ProcessingScreen({
           <strong>{t("mode_card_local_heading")}</strong>
           <span className="pm-mode-description">{t("mode_card_local_desc")}</span>
           <span className="pm-mode-points">
-            <span><CheckCircle2 size={15} /> {t("mode_card_local_p1")}</span>
-            <span><CheckCircle2 size={15} /> {t("mode_card_local_p2")}</span>
-            <span><CheckCircle2 size={15} /> {t("mode_card_local_p3")}</span>
+            <span>
+              <CheckCircle2 size={15} /> {t("mode_card_local_p1")}
+            </span>
+            <span>
+              <CheckCircle2 size={15} /> {t("mode_card_local_p2")}
+            </span>
+            <span>
+              <CheckCircle2 size={15} /> {t("mode_card_local_p3")}
+            </span>
           </span>
         </button>
 
@@ -1917,7 +2611,8 @@ function ProcessingScreen({
         >
           <span className="pm-mode-card-top">
             <span className="pm-radio-indicator" />
-            {t("mode_card_cloud_title")}<Badge tone="blue">{t("mode_card_cloud_badge")}</Badge>
+            {t("mode_card_cloud_title")}
+            <Badge tone="blue">{t("mode_card_cloud_badge")}</Badge>
           </span>
           <span className="pm-mode-illustration pm-mode-illustration--hybrid">
             <Cloud size={34} />
@@ -1925,9 +2620,15 @@ function ProcessingScreen({
           <strong>{t("mode_card_cloud_heading")}</strong>
           <span className="pm-mode-description">{t("mode_card_cloud_desc")}</span>
           <span className="pm-mode-points">
-            <span><CheckCircle2 size={15} /> {t("mode_card_cloud_p1")}</span>
-            <span><CheckCircle2 size={15} /> {t("mode_card_cloud_p2")}</span>
-            <span><CheckCircle2 size={15} /> {t("mode_card_cloud_p3")}</span>
+            <span>
+              <CheckCircle2 size={15} /> {t("mode_card_cloud_p1")}
+            </span>
+            <span>
+              <CheckCircle2 size={15} /> {t("mode_card_cloud_p2")}
+            </span>
+            <span>
+              <CheckCircle2 size={15} /> {t("mode_card_cloud_p3")}
+            </span>
           </span>
         </button>
 
@@ -1938,7 +2639,8 @@ function ProcessingScreen({
         >
           <span className="pm-mode-card-top">
             <span className="pm-radio-indicator" />
-            {t("mode_card_hybrid_title")}<Badge tone="blue">{t("mode_card_hybrid_badge")}</Badge>
+            {t("mode_card_hybrid_title")}
+            <Badge tone="blue">{t("mode_card_hybrid_badge")}</Badge>
           </span>
           <span className="pm-mode-illustration pm-mode-illustration--hybrid">
             <Cloud size={34} />
@@ -1947,9 +2649,15 @@ function ProcessingScreen({
           <strong>{t("mode_card_hybrid_heading")}</strong>
           <span className="pm-mode-description">{t("mode_card_hybrid_desc")}</span>
           <span className="pm-mode-points">
-            <span><CheckCircle2 size={15} /> {t("mode_card_hybrid_p1")}</span>
-            <span><CheckCircle2 size={15} /> {t("mode_card_hybrid_p2")}</span>
-            <span><CheckCircle2 size={15} /> {t("mode_card_hybrid_p3")}</span>
+            <span>
+              <CheckCircle2 size={15} /> {t("mode_card_hybrid_p1")}
+            </span>
+            <span>
+              <CheckCircle2 size={15} /> {t("mode_card_hybrid_p2")}
+            </span>
+            <span>
+              <CheckCircle2 size={15} /> {t("mode_card_hybrid_p3")}
+            </span>
           </span>
         </button>
 
@@ -1960,7 +2668,8 @@ function ProcessingScreen({
         >
           <span className="pm-mode-card-top">
             <span className="pm-radio-indicator" />
-            {t("mode_card_demo_title")}<Badge tone="amber">{t("mode_card_demo_badge")}</Badge>
+            {t("mode_card_demo_title")}
+            <Badge tone="amber">{t("mode_card_demo_badge")}</Badge>
           </span>
           <span className="pm-mode-illustration pm-mode-illustration--demo">
             <FileText size={35} />
@@ -1968,9 +2677,15 @@ function ProcessingScreen({
           <strong>{t("mode_card_demo_heading")}</strong>
           <span className="pm-mode-description">{t("mode_card_demo_desc")}</span>
           <span className="pm-mode-points">
-            <span><CheckCircle2 size={15} /> {t("mode_card_demo_p1")}</span>
-            <span><CheckCircle2 size={15} /> {t("mode_card_demo_p2")}</span>
-            <span><CheckCircle2 size={15} /> {t("mode_card_demo_p3")}</span>
+            <span>
+              <CheckCircle2 size={15} /> {t("mode_card_demo_p1")}
+            </span>
+            <span>
+              <CheckCircle2 size={15} /> {t("mode_card_demo_p2")}
+            </span>
+            <span>
+              <CheckCircle2 size={15} /> {t("mode_card_demo_p3")}
+            </span>
           </span>
         </button>
       </div>
@@ -1987,14 +2702,10 @@ function ProcessingScreen({
           </span>
           <span>
             <strong>
-              {choice === "cloud"
-                ? t("consent_cloud_title")
-                : t("consent_hybrid_title")}
+              {choice === "cloud" ? t("consent_cloud_title") : t("consent_hybrid_title")}
             </strong>
             <small>
-              {choice === "cloud"
-                ? t("consent_cloud_detail")
-                : t("consent_hybrid_detail")}
+              {choice === "cloud" ? t("consent_cloud_detail") : t("consent_hybrid_detail")}
             </small>
           </span>
         </label>
@@ -2005,7 +2716,7 @@ function ProcessingScreen({
           ref={inputRef}
           className="pm-visually-hidden"
           type="file"
-          accept="application/pdf,.pdf"
+          accept=".pdf,.docx,.xlsx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
           onChange={onFileChange}
           aria-label={t("file_input_aria")}
         />
@@ -2016,7 +2727,10 @@ function ProcessingScreen({
             </span>
             <div>
               <strong>{file.name}</strong>
-              <span>{formatBytes(file.size)} · PDF · {t("file_stored")}</span>
+              <span>
+                {formatBytes(file.size)} · {getDocumentFormat(file.name)?.toUpperCase()} ·{" "}
+                {t("file_stored")}
+              </span>
             </div>
             <button
               className="pm-button pm-button--outline"

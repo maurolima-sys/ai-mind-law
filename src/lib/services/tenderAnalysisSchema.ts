@@ -17,7 +17,7 @@ const findingSchema = z.object({
     .union([z.number(), z.string()])
     .transform((v) => (typeof v === "string" ? parseFloat(v) : v))
     .pipe(z.number().min(0).max(1)),
-  page: z.number().int().positive(),
+  sourceIndex: z.number().int().positive(),
   excerpt: z.string().min(1),
 });
 
@@ -25,7 +25,7 @@ const deadlineSchema = z.object({
   description: z.string().min(1),
   date: z.string().nullable(),
   relatedRequirement: z.string().nullable(),
-  page: z.number().int().positive(),
+  sourceIndex: z.number().int().positive(),
   excerpt: z.string().min(1),
 });
 
@@ -44,7 +44,7 @@ const specificationSchema = z.object({
     .string()
     .nullable()
     .transform((v) => v ?? ""),
-  page: z.number().int().positive(),
+  sourceIndex: z.number().int().positive(),
   excerpt: z.string().min(1),
 });
 
@@ -53,7 +53,7 @@ const riskSchema = z.object({
   severity: z.enum(["Critical", "High", "Medium", "Low"]),
   kind: z.enum(["detected", "suggestion"]),
   explanation: z.string().min(1),
-  page: z.number().int().positive(),
+  sourceIndex: z.number().int().positive(),
   excerpt: z.string().min(1),
 });
 
@@ -87,7 +87,7 @@ export const TENDER_ANALYSIS_RESPONSE_SCHEMA = Schema.object({
           }),
           mandatory: Schema.boolean(),
           confidence: Schema.number(),
-          page: Schema.integer(),
+          sourceIndex: Schema.integer(),
           excerpt: Schema.string(),
         },
       }),
@@ -98,7 +98,7 @@ export const TENDER_ANALYSIS_RESPONSE_SCHEMA = Schema.object({
           description: Schema.string(),
           date: Schema.string({ nullable: true }),
           relatedRequirement: Schema.string({ nullable: true }),
-          page: Schema.integer(),
+          sourceIndex: Schema.integer(),
           excerpt: Schema.string(),
         },
       }),
@@ -111,7 +111,7 @@ export const TENDER_ANALYSIS_RESPONSE_SCHEMA = Schema.object({
           unit: Schema.string({ nullable: true }),
           details: Schema.string(),
           notes: Schema.string({ nullable: true }),
-          page: Schema.integer(),
+          sourceIndex: Schema.integer(),
           excerpt: Schema.string(),
         },
       }),
@@ -123,7 +123,7 @@ export const TENDER_ANALYSIS_RESPONSE_SCHEMA = Schema.object({
           severity: Schema.enumString({ enum: ["Critical", "High", "Medium", "Low"] }),
           kind: Schema.enumString({ enum: ["detected", "suggestion"] }),
           explanation: Schema.string(),
-          page: Schema.integer(),
+          sourceIndex: Schema.integer(),
           excerpt: Schema.string(),
         },
       }),

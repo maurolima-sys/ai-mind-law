@@ -90,7 +90,10 @@ describe("Firebase AI retry policy", () => {
           });
         });
       },
-      { onRetry: ({ modelName, status }) => retryUpdates.push({ modelName, status }) },
+      {
+        onRetry: ({ modelName, status }) =>
+          retryUpdates.push({ modelName, ...(status === undefined ? {} : { status }) }),
+      },
     );
 
     await vi.runAllTimersAsync();

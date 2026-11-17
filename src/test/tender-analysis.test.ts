@@ -43,7 +43,7 @@ describe("parseTenderResponse", () => {
           category: "Administrative",
           mandatory: true,
           confidence: 0.85,
-          page: 1,
+          sourceIndex: 1,
           excerpt: null,
         },
       ],
@@ -71,7 +71,7 @@ describe("parseTenderResponse", () => {
           unit: null,
           details: "Comply with the listed safety standard.",
           notes: null,
-          page: 1,
+          sourceIndex: 1,
           excerpt: "Safety helmet complying with the listed standard",
         },
       ],
@@ -85,6 +85,41 @@ describe("parseTenderResponse", () => {
       unit: null,
       notes: "",
     });
+  });
+
+  it("normalizes numeric strings and numeric quantities to the public analysis types", () => {
+    const response = {
+      summary: "One requirement and specification were identified.",
+      requirements: [
+        {
+          description: "Submit three reports.",
+          category: "Documentation",
+          mandatory: true,
+          confidence: "0.85",
+          sourceIndex: 1,
+          excerpt: "Submit three reports.",
+        },
+      ],
+      deadlines: [],
+      specifications: [
+        {
+          item: "Reports",
+          quantity: 3,
+          unit: 1,
+          details: "Submit reports.",
+          notes: "",
+          sourceIndex: 1,
+          excerpt: "Submit three reports.",
+        },
+      ],
+      risks: [],
+      missing: [],
+      inconsistencies: [],
+    };
+
+    const parsed = parseTenderResponse(JSON.stringify(response));
+    expect(parsed.requirements[0]?.confidence).toBe(0.85);
+    expect(parsed.specifications[0]).toMatchObject({ quantity: "3", unit: "1" });
   });
 });
 

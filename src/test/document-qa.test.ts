@@ -24,26 +24,63 @@ describe("selectRelevantPages", () => {
     ]);
   });
 
-  it("only verifies exact page excerpts and hides page numbers without trusted pagination", () => {
+  it("verifies exact source excerpts and hides page numbers without trusted pagination", () => {
     const citations = [
-      { page: 1, excerpt: "Faltas injustificadas atrasam a licença." },
-      { page: 3, excerpt: "This page does not exist." },
+      { sourceIndex: 1, excerpt: "Faltas injustificadas atrasam a licença." },
+      { sourceIndex: 3, excerpt: "This page does not exist." },
     ];
 
     expect(
-      verifyQuestionCitations(["Faltas injustificadas atrasam a licença."], citations, true),
+      verifyQuestionCitations(["Faltas injustificadas atrasam a licença."], citations, {
+        format: "pdf",
+      }),
     ).toEqual([
-      { page: 1, excerpt: "Faltas injustificadas atrasam a licença.", verified: true },
-      { page: null, excerpt: "This page does not exist.", verified: false },
+      {
+        page: 1,
+        sourceIndex: 1,
+        sourceLocation: "Page 1",
+        excerpt: "Faltas injustificadas atrasam a licença.",
+        verified: true,
+      },
+      {
+        page: null,
+        sourceIndex: null,
+        sourceLocation: null,
+        excerpt: "This page does not exist.",
+        verified: false,
+      },
     ]);
     expect(
+      verifyQuestionCitations(["Faltas injustificadas atrasam a licença."], citations.slice(0, 1), {
+        format: "pdf",
+        paginationVerified: false,
+      }),
+    ).toEqual([
+      {
+        page: null,
+        sourceIndex: 1,
+        sourceLocation: "Page 1",
+        excerpt: "Faltas injustificadas atrasam a licença.",
+        verified: true,
+      },
+    ]);
+  });
+
+  it("verifies non-PDF source locations without claiming a page number", () => {
+    expect(
       verifyQuestionCitations(
-        ["Faltas injustificadas atrasam a licença."],
-        citations.slice(0, 1),
-        false,
+        ["Tenderer must provide a current licence."],
+        [{ sourceIndex: 1, excerpt: "provide a current licence" }],
+        { format: "docx", sourceLocations: ["Paragraph 12"] },
       ),
     ).toEqual([
-      { page: null, excerpt: "Faltas injustificadas atrasam a licença.", verified: false },
+      {
+        page: null,
+        sourceIndex: 1,
+        sourceLocation: "Paragraph 12",
+        excerpt: "provide a current licence",
+        verified: true,
+      },
     ]);
   });
 });

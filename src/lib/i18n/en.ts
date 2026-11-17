@@ -1,6 +1,7 @@
 export const en = {
   // ── Navigation ───────────────────────────────────────────────────────────────
   nav_dashboard: "Dashboard",
+  nav_library: "Library",
   nav_analysis: "Document analysis",
   nav_compliance: "Compliance matrix",
   nav_processing: "Processing & privacy",
@@ -9,11 +10,13 @@ export const en = {
   screen_overview_title: "Your document intelligence workspace",
   screen_overview_subtitle:
     "Turn complex tenders into reviewable findings, with source evidence attached.",
+  screen_library_title: "Local document library",
+  screen_library_subtitle: "Your tender files, evidence, and review work stay in this browser.",
   screen_analysis_title: "Document analysis",
   screen_analysis_subtitle: "Review extracted findings beside their source pages.",
   screen_compliance_title: "Compliance matrix",
   screen_compliance_subtitle:
-    "Track each requirement against evidence and your team's review status.",
+    "Track tender citations, bidder evidence, and your own review status.",
   screen_processing_title: "Choose how your document is processed",
   screen_processing_subtitle:
     "Text is extracted in this browser. You control whether AI may process it in the cloud.",
@@ -31,7 +34,7 @@ export const en = {
   sidebar_privacy_title: "Privacy by choice",
   sidebar_privacy_note: "Cloud use is always explicit.",
   sidebar_user_workspace: "Procurement workspace",
-  sidebar_user_session: "Local browser session",
+  sidebar_user_session: "Local browser workspace",
 
   // ── Topbar ───────────────────────────────────────────────────────────────────
   search_placeholder: "Search documents, requirements, risks...",
@@ -59,12 +62,47 @@ export const en = {
   metric_risks_detail: "Flagged for human review",
   metric_pending_label: "Pending reviews",
   metric_pending_detail: "Requirements awaiting a decision",
+  metric_workspace_empty: "No uploaded tenders yet",
 
   // ── Overview — documents table ───────────────────────────────────────────────
   table_col_document: "Document",
-  table_col_pages: "Pages",
+  table_col_pages_sources: "Pages / sections",
   table_col_processing: "Processing",
   table_col_status: "Status",
+  library_privacy_title: "Stored only in this browser",
+  library_privacy_detail:
+    "Files and extracted text are kept in IndexedDB on this device, not encrypted or synced. Browser data clearing may remove them.",
+  library_documents_title: "Tender documents",
+  library_documents_detail: "{{count}} uploaded tender documents",
+  library_documents_table: "Local tender document library",
+  library_col_format: "Format",
+  library_col_sources: "Source sections",
+  library_col_action: "Action",
+  library_source_count: "{{count}} source sections",
+  library_not_extracted: "Not extracted",
+  library_open_document: "Open",
+  library_empty_title: "No tender documents saved here",
+  library_empty_detail: "Add a PDF, DOCX, or XLSX file to start a local workspace.",
+  library_evidence_title: "Bidder evidence files",
+  library_evidence_detail: "{{count}} evidence files linked to tenders",
+  library_evidence_empty: "No separate bidder evidence files have been added.",
+  library_delete_title: "Remove local workspace data",
+  library_delete_detail:
+    "This deletes uploaded tender files, evidence files, extracted text, analyses, comparison results, notes, and activity from this browser. The fictional sample is kept.",
+  library_delete_action: "Clear local files and analyses",
+  library_delete_confirm: "Delete all uploaded files and saved review data from this browser?",
+  library_delete_confirm_action: "Delete local data",
+  library_delete_cancel: "Keep data",
+  activity_title: "Recent activity",
+  activity_detail: "Actions recorded in this local browser workspace.",
+  activity_empty: "Uploaded document activity will appear here.",
+  activity_document_added: "Added {{name}}",
+  activity_analysis_completed: "Analyzed {{name}}",
+  activity_evidence_added: "Added evidence file {{name}}",
+  activity_evidence_linked: "Linked evidence to a requirement in {{name}}",
+  activity_evidence_compared: "Compared evidence in {{name}}",
+  activity_review_updated: "Updated a requirement review in {{name}}",
+  activity_unknown_document: "a document",
   status_prepared_sample: "Prepared sample",
   status_ai_analysed: "AI-analysed sample",
   status_analyzed: "Analyzed",
@@ -76,14 +114,16 @@ export const en = {
 
   // ── Overview — upload tile ───────────────────────────────────────────────────
   upload_tile_title: "Upload a tender",
-  upload_tile_detail: "Extract text locally, with optional external OCR for scanned PDFs.",
+  upload_tile_detail:
+    "Extract PDF, DOCX, and XLSX text locally; scanned PDFs may use optional external OCR.",
   upload_tile_cta: "Choose processing mode",
-  upload_tile_note: "PDF only · maximum 20 MB · optional external OCR for scanned PDFs",
+  upload_tile_note: "PDF, DOCX, or XLSX · maximum 50 MB · optional external OCR for scanned PDFs",
 
   // ── Overview — review queue ──────────────────────────────────────────────────
   review_queue_title: "Review queue",
   review_queue_subtitle: "Findings that need human attention.",
   review_source_verified: "Source verified · page {{page}}",
+  review_source_verified_location: "Source verified · {{location}}",
   review_evidence_needs: "Evidence needs verification",
   review_all_done: "All requirements are reviewed.",
   review_empty: "Analyze a document to create a review queue.",
@@ -103,6 +143,7 @@ export const en = {
   source_llamaparse_unpaginated: "LlamaParse text; original page boundaries are unavailable.",
   source_pdfjs: "Text extracted locally in this browser.",
   source_pdfjs_full: "Page text extracted in this browser.",
+  source_office_document: "Text extracted locally from this Office document.",
   source_llamaparse_full: "Page text extracted by LlamaParse.",
   source_prev_page: "Previous page",
   source_next_page: "Next page",
@@ -110,8 +151,12 @@ export const en = {
   source_no_page_numbers: "Page numbers unavailable",
   source_pagination_unavailable: "Pagination unavailable",
   source_no_text: "No text is available for this page.",
-  source_disclaimer:
-    "Extracted text may need manual verification against the original PDF.",
+  source_disclaimer: "Extracted text may need manual verification against the original PDF.",
+  source_page_rendering_region: "Rendered source page",
+  source_rendered_page: "Rendered page {{page}} of the original PDF",
+  source_rendering: "Rendering the original PDF page…",
+  source_render_error:
+    "The original page could not be rendered. Extracted text remains available. {{detail}}",
 
   // ── Analysis — pre-analysis ──────────────────────────────────────────────────
   pre_analysis_title: "Ask about this document",
@@ -122,7 +167,10 @@ export const en = {
   // ── Analysis — document toolbar ──────────────────────────────────────────────
   toolbar_fictional_sample: "Fictional sample",
   toolbar_pdf_document: "PDF document",
+  toolbar_docx_document: "DOCX document",
+  toolbar_xlsx_document: "XLSX document",
   toolbar_pages: "pages",
+  toolbar_source_sections: "source sections",
   toolbar_pagination_unverified: "Pagination unverified",
   toolbar_llamaparse_badge: "Text: external OCR (LlamaParse)",
   toolbar_export_json: "Export JSON",
@@ -130,8 +178,7 @@ export const en = {
   // ── Analysis — warnings ──────────────────────────────────────────────────────
   warning_demo_prepared:
     "This prepared analysis is simulated and illustrative; it was not generated from the sample text.",
-  warning_demo_ai:
-    "This AI analysis uses fictional sample text, not a real procurement document.",
+  warning_demo_ai: "This AI analysis uses fictional sample text, not a real procurement document.",
   warning_llamaparse_no_pages:
     "LlamaParse did not provide page numbers. Citations cannot be page-verified; findings are flagged for human review.",
 
@@ -154,6 +201,7 @@ export const en = {
   // ── Analysis — finding cards ─────────────────────────────────────────────────
   finding_date_not_specified: "Date not specified",
   finding_no_source_page: "No source page",
+  finding_source_location: "Source: {{location}}",
   finding_source_verified: "Source verified",
   finding_verify_source: "Verify source",
   finding_confidence: "{{pct}}% confidence",
@@ -172,7 +220,7 @@ export const en = {
   // ── Analysis — empty state ────────────────────────────────────────────────────
   empty_analysis_title: "No analysis for this document yet",
   empty_analysis_detail:
-    "Choose an on-device or hybrid processing mode to extract findings from a PDF.",
+    "Choose an on-device, cloud, or hybrid mode to extract findings from a PDF, DOCX, or XLSX file.",
   empty_analysis_cta: "Open processing options",
 
   // ── Compliance — toolbar ──────────────────────────────────────────────────────
@@ -200,11 +248,10 @@ export const en = {
   compliance_summary_reqs: "{{count}} requirements",
   compliance_summary_verified: "with verified evidence",
   compliance_summary_shown: "shown",
-  compliance_footer_session: "Review status is held in this browser session only.",
+  compliance_footer_session: "Review status and notes are stored locally in this browser.",
   compliance_empty_title: "No requirements match these filters",
   compliance_empty_detail: "Adjust the filters or search terms.",
-  compliance_demo_warning:
-    "Sample requirements and review results are fictional and illustrative.",
+  compliance_demo_warning: "Sample requirements and review results are fictional and illustrative.",
 
   // ── Compliance — evidence panel ───────────────────────────────────────────────
   evidence_panel_title: "Source evidence",
@@ -213,6 +260,37 @@ export const en = {
   evidence_notes_label: "Review notes",
   evidence_notes_placeholder: "Add a note for your review...",
   evidence_select_hint: "Select a requirement to inspect its evidence.",
+  evidence_compare_title: "Bidder evidence comparison",
+  evidence_compare_detail:
+    "Link separate bidder files to this requirement, then compare their extracted text.",
+  evidence_compare_demo:
+    "The sample requirements are fictional. Add a real tender before linking bidder evidence.",
+  evidence_compare_select_requirement: "Select a requirement to link bidder evidence.",
+  evidence_compare_requirement: "Tender requirement",
+  evidence_compare_no_requirements:
+    "Run an analysis that finds requirements before comparing evidence.",
+  evidence_compare_select_file: "Evidence document",
+  evidence_compare_choose_file: "Choose an evidence file",
+  evidence_compare_file_input: "Choose a bidder evidence document",
+  evidence_compare_add_file: "Add evidence file",
+  evidence_compare_adding_file: "Extracting and saving locally...",
+  evidence_compare_link: "Link to requirement",
+  evidence_compare_unlink: "Unlink",
+  evidence_compare_unlink_named: "Unlink {{name}} from this requirement",
+  evidence_compare_linked: "Linked to this requirement",
+  evidence_compare_linked_files: "Evidence files linked to this requirement",
+  evidence_compare_cloud_consent: "Allow cloud processing for this evidence file",
+  evidence_compare_cloud_consent_detail:
+    "The extracted text from {{name}} may be sent to Gemini through Firebase AI Logic during this comparison. This consent is separate from tender analysis and resets on reload.",
+  evidence_compare_running: "Comparing…",
+  evidence_compare_action: "Compare evidence",
+  evidence_compare_ai_estimate: "AI estimate · {{confidence}}% confidence",
+  evidence_compare_unknown_file: "Evidence file",
+  evidence_compare_quote_verified: "Excerpt verified in extracted text",
+  evidence_compare_quote_unverified: "Excerpt not verified · human review required",
+  evidence_assessment_supports: "May support the requirement",
+  evidence_assessment_contradicts: "May conflict with the requirement",
+  evidence_assessment_insufficient: "Evidence is insufficient",
 
   // ── Processing — topline ──────────────────────────────────────────────────────
   processing_topline: "Processing options",
@@ -223,7 +301,7 @@ export const en = {
   mode_card_local_badge: "PRIVATE",
   mode_card_local_heading: "Keep inference on this device",
   mode_card_local_desc:
-    "PDF text is extracted in your browser. Firebase AI Logic asks Chrome's on-device model to analyze it. If that model is unavailable, the request fails instead of moving to cloud.",
+    "PDF, DOCX, and XLSX text is extracted in your browser. Firebase AI Logic asks Chrome's on-device model to analyze it. If that model is unavailable, the request fails instead of moving to cloud.",
   mode_card_local_p1: "No cloud fallback",
   mode_card_local_p2: "Requires supported desktop Chrome",
   mode_card_local_p3: "Firebase App Check still applies",
@@ -232,7 +310,7 @@ export const en = {
   mode_card_cloud_badge: "GEMINI",
   mode_card_cloud_heading: "Analyze with Gemini 3.8 Flash",
   mode_card_cloud_desc:
-    "Send extracted PDF text to Google's cloud through Firebase AI Logic. This mode uses cloud inference only and does not fall back to on-device processing.",
+    "Send extracted document text to Google's cloud through Firebase AI Logic. This mode uses cloud inference only and does not fall back to on-device processing.",
   mode_card_cloud_p1: "Direct cloud inference",
   mode_card_cloud_p2: "Requires your explicit consent",
   mode_card_cloud_p3: "Firebase App Check required",
@@ -241,7 +319,7 @@ export const en = {
   mode_card_hybrid_badge: "ON-DEVICE FIRST",
   mode_card_hybrid_heading: "Prefer on-device, allow fallback",
   mode_card_hybrid_desc:
-    "Firebase AI Logic tries the available on-device model first. If unavailable, the SDK may send extracted text to Gemini 3.8 Flash in Google's cloud.",
+    "Firebase AI Logic tries the available on-device model first. If unavailable, the SDK may send extracted document text to Gemini 3.8 Flash in Google's cloud.",
   mode_card_hybrid_p1: "Actual source shown after analysis",
   mode_card_hybrid_p2: "Cloud use requires your consent",
   mode_card_hybrid_p3: "App Check required",
@@ -258,19 +336,19 @@ export const en = {
   // ── Processing — cloud consent ────────────────────────────────────────────────
   consent_cloud_title: "I explicitly allow cloud AI processing for this session.",
   consent_cloud_detail:
-    "Extracted text from this PDF will be sent to Gemini through Firebase AI Logic. This setting resets when the page is reloaded.",
+    "Extracted text from this tender will be sent to Gemini through Firebase AI Logic. Bidder evidence needs its own separate consent. This setting resets when the page is reloaded.",
   consent_hybrid_title: "I explicitly allow cloud fallback for this session.",
   consent_hybrid_detail:
-    "If the on-device model is unavailable, extracted text from this PDF may be sent to Google's Gemini service through Firebase AI Logic. This setting resets when the page is reloaded.",
+    "If the on-device model is unavailable, extracted text from this tender may be sent to Google's Gemini service through Firebase AI Logic. Bidder evidence needs its own separate consent. This setting resets when the page is reloaded.",
 
   // ── Processing — file drop ────────────────────────────────────────────────────
-  file_input_aria: "Choose a PDF document",
+  file_input_aria: "Choose a PDF, DOCX, or XLSX document",
   file_replace: "Replace",
-  file_stored: "stored in this browser session",
-  drop_title: "Drop a tender PDF here",
+  file_stored: "stored in this browser",
+  drop_title: "Drop a tender PDF, DOCX, or XLSX here",
   drop_or: "or select a file from your device",
-  drop_choose: "Choose PDF",
-  drop_note: "PDF only · maximum 20 MB · scanned PDFs may use optional external OCR",
+  drop_choose: "Choose document",
+  drop_note: "PDF, DOCX, or XLSX · maximum 50 MB · scanned PDFs may use optional external OCR",
 
   // ── Processing — external OCR ─────────────────────────────────────────────────
   ocr_scanned_title: "This looks like a scanned PDF.",
@@ -325,7 +403,7 @@ export const en = {
 
   // ── Processing — footer actions ───────────────────────────────────────────────
   btn_explore_sample: "Explore sample analysis",
-  btn_ask_pdf: "Ask about this PDF",
+  btn_ask_pdf: "Ask about this document",
   btn_extract_text: "Extract text only",
   btn_analyze_sample: "Analyze fictional sample",
   btn_analyze_pdf: "Analyze PDF",
@@ -334,7 +412,7 @@ export const en = {
   // ── Processing — process flow ─────────────────────────────────────────────────
   flow_title: "From document to reviewable findings",
   flow_subtitle: "Every finding links back to a source excerpt so a person can verify it.",
-  flow_step1_title: "Choose PDF",
+  flow_step1_title: "Choose document",
   flow_step1_detail: "File stays in browser",
   flow_step2_title: "Process text",
   flow_step2_detail: "Selected mode applies",
@@ -346,7 +424,7 @@ export const en = {
 
   // ── Hardcoded strings (previously missed) ────────────────────────────────────
   overview_recent_title: "Recent tender documents",
-  overview_recent_subtitle: "Files currently available in this browser session.",
+  overview_recent_subtitle: "Files saved in this browser workspace.",
   overview_add_document: "Add document",
   sidebar_whats_new: "What's new",
   sidebar_take_tour: "Take a tour",
@@ -361,7 +439,8 @@ export const en = {
   finding_inconsistency_title: "Potential inconsistency",
   evidence_page_badge: "Page {{page}}",
   review_status_sr: "Review status for {{description}}",
-  workspace_no_document: "The workspace has no selected document. Refresh the page to restore the sample workspace.",
+  workspace_no_document:
+    "The workspace has no selected document. Refresh the page to restore the sample workspace.",
   runtime_demo_data_label: "Demo data",
   open_processing_aria: "Open processing options",
   ocr_analyze_browser: "Analyze the text available in this browser",
@@ -378,8 +457,7 @@ export const en = {
   qa_choose_mode: "Choose a mode",
   qa_error_no_text: "No extracted document text is available to answer this question.",
   qa_error_mode: "Choose an AI processing mode before asking.",
-  qa_error_cloud_consent:
-    "Enable cloud consent in Processing & privacy, or choose on-device only.",
+  qa_error_cloud_consent: "Enable cloud consent in Processing & privacy, or choose on-device only.",
   qa_error_research:
     "External research is unavailable or incomplete. Turn it off, or provide consent and valid jurisdiction details.",
   qa_answer_region: "Answer",
@@ -393,15 +471,14 @@ export const en = {
   qa_hypotheses: "Working hypotheses",
   qa_unresolved: "Still to verify",
   qa_citations_title: "Document evidence",
-  qa_page_unavailable: "Page reference unavailable",
+  qa_page_unavailable: "Source location unavailable",
   qa_citation_verified: "Verified in extracted text",
   qa_citation_unverified: "Verify against the PDF",
   qa_research_title: "Search results · verify authority and current status",
   qa_research_cited: "Cited in answer",
   qa_research_not_cited: "Not cited in answer",
   qa_research_no_date: "Publication date not provided",
-  qa_research_no_sources:
-    "Firecrawl returned no sources; this answer uses the document only.",
+  qa_research_no_sources: "Firecrawl returned no sources; this answer uses the document only.",
   qa_sending_research: "Searching sources and preparing an evidence-based answer…",
   qa_sending_document: "Checking the document and preparing an answer…",
   qa_research_checking: "Checking availability…",
@@ -459,9 +536,12 @@ export const en = {
   tour_step0_title: "Welcome to PocketMind AI",
   tour_step0_body:
     "Turn complex tender PDFs into reviewable findings — with a link to the source page for each one. This short tour walks the full flow in about 90 seconds, using the preloaded sample tender. No setup needed.",
-  tour_step1_title: "Four areas, one workspace",
+  tour_step1_title: "Five areas, one workspace",
   tour_step1_body:
-    "Move between Dashboard, Document analysis, Compliance matrix, and Processing & privacy from this sidebar.",
+    "Move between Dashboard, Library, Document analysis, Compliance matrix, and Processing & privacy from this sidebar.",
+  tour_library_title: "Your local document library",
+  tour_library_body:
+    "Uploaded tenders, extracted text, bidder evidence, and review work stay in this browser. The library shows what's saved and lets you delete local workspace data.",
   tour_step2_title: "Your workspace at a glance",
   tour_step2_body:
     "Documents in the session, requirements extracted, critical risks flagged for review, and pending reviews.",
@@ -501,4 +581,4 @@ export const en = {
 } as const;
 
 export type TranslationKey = keyof typeof en;
-export type Translations = typeof en;
+export type Translations = { [Key in TranslationKey]: string };

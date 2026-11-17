@@ -2,6 +2,7 @@ import type { Translations } from "./en";
 
 export const es: Translations = {
   nav_dashboard: "Panel",
+  nav_library: "Biblioteca",
   nav_analysis: "Análisis documental",
   nav_compliance: "Matriz de cumplimiento",
   nav_processing: "Procesamiento y privacidad",
@@ -9,11 +10,14 @@ export const es: Translations = {
   screen_overview_title: "Tu espacio de trabajo documental",
   screen_overview_subtitle:
     "Convierte licitaciones complejas en hallazgos revisables, con evidencia de origen adjunta.",
+  screen_library_title: "Biblioteca local de documentos",
+  screen_library_subtitle:
+    "Tus archivos de licitación, evidencias y revisiones permanecen en este navegador.",
   screen_analysis_title: "Análisis documental",
   screen_analysis_subtitle: "Revisa los hallazgos extraídos junto a sus páginas de origen.",
   screen_compliance_title: "Matriz de cumplimiento",
   screen_compliance_subtitle:
-    "Realiza el seguimiento de cada requisito frente a la evidencia y el estado de revisión de tu equipo.",
+    "Sigue las citas de la licitación, la evidencia del licitador y tu propio estado de revisión.",
   screen_processing_title: "Elige cómo se procesa tu documento",
   screen_processing_subtitle:
     "El texto se extrae en este navegador. Tú controlas si la IA puede procesarlo en la nube.",
@@ -29,7 +33,7 @@ export const es: Translations = {
   sidebar_privacy_title: "Privacidad por elección",
   sidebar_privacy_note: "El uso de la nube siempre es explícito.",
   sidebar_user_workspace: "Espacio de contratación pública",
-  sidebar_user_session: "Sesión local del navegador",
+  sidebar_user_session: "Espacio de trabajo local del navegador",
 
   search_placeholder: "Buscar documentos, requisitos, riesgos...",
   search_aria: "Buscar en el espacio de trabajo",
@@ -53,11 +57,48 @@ export const es: Translations = {
   metric_risks_detail: "Marcados para revisión humana",
   metric_pending_label: "Revisiones pendientes",
   metric_pending_detail: "Requisitos a la espera de una decisión",
+  metric_workspace_empty: "Aún no has subido licitaciones",
 
   table_col_document: "Documento",
-  table_col_pages: "Páginas",
+  table_col_pages_sources: "Páginas / secciones",
   table_col_processing: "Procesamiento",
   table_col_status: "Estado",
+  library_privacy_title: "Guardado solo en este navegador",
+  library_privacy_detail:
+    "Los archivos y el texto extraído se guardan en IndexedDB en este dispositivo; no están cifrados ni sincronizados. Borrar los datos del navegador puede eliminarlos.",
+  library_documents_title: "Documentos de licitación",
+  library_documents_detail: "{{count}} documentos subidos",
+  library_documents_table: "Biblioteca local de documentos de licitación",
+  library_col_format: "Formato",
+  library_col_sources: "Secciones de origen",
+  library_col_action: "Acción",
+  library_source_count: "{{count}} secciones de origen",
+  library_not_extracted: "Texto no extraído",
+  library_open_document: "Abrir",
+  library_empty_title: "No hay documentos guardados",
+  library_empty_detail:
+    "Añade un archivo PDF, DOCX o XLSX para iniciar un espacio de trabajo local.",
+  library_evidence_title: "Archivos de evidencia del licitador",
+  library_evidence_detail: "{{count}} archivos de evidencia vinculados a licitaciones",
+  library_evidence_empty: "Aún no se han añadido archivos de evidencia separados.",
+  library_delete_title: "Eliminar datos del espacio local",
+  library_delete_detail:
+    "Esto elimina los archivos subidos, el texto extraído, los análisis, las comparaciones, las notas y la actividad de este navegador. La muestra ficticia se conserva.",
+  library_delete_action: "Borrar archivos y análisis locales",
+  library_delete_confirm:
+    "¿Eliminar de este navegador todos los archivos y datos de revisión guardados?",
+  library_delete_confirm_action: "Eliminar datos locales",
+  library_delete_cancel: "Conservar datos",
+  activity_title: "Actividad reciente",
+  activity_detail: "Acciones registradas en este espacio de trabajo local.",
+  activity_empty: "La actividad de los documentos subidos aparecerá aquí.",
+  activity_document_added: "Añadiste {{name}}",
+  activity_analysis_completed: "Analizaste {{name}}",
+  activity_evidence_added: "Añadiste el archivo de evidencia {{name}}",
+  activity_evidence_linked: "Vinculaste evidencia a un requisito en {{name}}",
+  activity_evidence_compared: "Comparaste evidencia en {{name}}",
+  activity_review_updated: "Actualizaste la revisión de un requisito en {{name}}",
+  activity_unknown_document: "un documento",
   status_prepared_sample: "Muestra preparada",
   status_ai_analysed: "Muestra analizada por IA",
   status_analyzed: "Analizado",
@@ -69,14 +110,14 @@ export const es: Translations = {
 
   upload_tile_title: "Subir licitación",
   upload_tile_detail:
-    "Extrae texto localmente, con OCR externo opcional para PDFs escaneados.",
+    "Extrae texto de PDF, DOCX y XLSX localmente; los PDFs escaneados pueden usar OCR externo opcional.",
   upload_tile_cta: "Elegir modo de procesamiento",
-  upload_tile_note:
-    "Solo PDF · máximo 20 MB · OCR externo opcional para PDFs escaneados",
+  upload_tile_note: "PDF, DOCX o XLSX · máximo 50 MB · OCR externo opcional para PDFs escaneados",
 
   review_queue_title: "Cola de revisión",
   review_queue_subtitle: "Hallazgos que necesitan atención humana.",
   review_source_verified: "Origen verificado · página {{page}}",
+  review_source_verified_location: "Origen verificado · {{location}}",
   review_evidence_needs: "La evidencia necesita verificación",
   review_all_done: "Todos los requisitos han sido revisados.",
   review_empty: "Analiza un documento para crear una cola de revisión.",
@@ -95,6 +136,7 @@ export const es: Translations = {
     "Texto de LlamaParse; los límites de página originales no están disponibles.",
   source_pdfjs: "Texto extraído localmente en este navegador.",
   source_pdfjs_full: "Texto de página extraído en este navegador.",
+  source_office_document: "Texto extraído localmente de este documento de Office.",
   source_llamaparse_full: "Texto de página extraído por LlamaParse.",
   source_prev_page: "Página anterior",
   source_next_page: "Página siguiente",
@@ -104,6 +146,11 @@ export const es: Translations = {
   source_no_text: "No hay texto disponible para esta página.",
   source_disclaimer:
     "El texto extraído puede necesitar verificación manual frente al PDF original.",
+  source_page_rendering_region: "Página de origen renderizada",
+  source_rendered_page: "Página {{page}} del PDF original",
+  source_rendering: "Renderizando la página original del PDF…",
+  source_render_error:
+    "No se pudo renderizar la página original. El texto extraído sigue disponible. {{detail}}",
 
   pre_analysis_title: "Pregunta sobre este documento",
   pre_analysis_subtitle:
@@ -112,7 +159,10 @@ export const es: Translations = {
 
   toolbar_fictional_sample: "Muestra ficticia",
   toolbar_pdf_document: "Documento PDF",
+  toolbar_docx_document: "Documento DOCX",
+  toolbar_xlsx_document: "Documento XLSX",
   toolbar_pages: "páginas",
+  toolbar_source_sections: "secciones de origen",
   toolbar_pagination_unverified: "Paginación no verificada",
   toolbar_llamaparse_badge: "Texto: OCR externo (LlamaParse)",
   toolbar_export_json: "Exportar JSON",
@@ -131,7 +181,8 @@ export const es: Translations = {
   inference_firebase_connected: "Conectado · respuesta recibida",
   inference_model_label: "Modelo",
   inference_evidence_label: "Modo de evidencia",
-  inference_evidence_value: "Fragmentos vinculados a páginas · verificados frente al texto extraído",
+  inference_evidence_value:
+    "Fragmentos vinculados a páginas · verificados frente al texto extraído",
   inference_demo_label: "Datos de demostración",
   inference_yes: "Sí",
   inference_no: "No",
@@ -140,6 +191,7 @@ export const es: Translations = {
 
   finding_date_not_specified: "Fecha no especificada",
   finding_no_source_page: "Sin página de origen",
+  finding_source_location: "Origen: {{location}}",
   finding_source_verified: "Origen verificado",
   finding_verify_source: "Verificar origen",
   finding_confidence: "{{pct}}% de confianza",
@@ -172,7 +224,7 @@ export const es: Translations = {
   compliance_col_category: "Categoría",
   compliance_col_mandatory: "Obligatorio",
   compliance_col_evidence: "Evidencia",
-  compliance_col_page: "Página",
+  compliance_col_page: "Ubicación de origen",
   compliance_col_review_status: "Estado de revisión",
   compliance_verified: "Verificado",
   compliance_check_excerpt: "Verificar fragmento",
@@ -183,7 +235,7 @@ export const es: Translations = {
   compliance_summary_verified: "con evidencia verificada",
   compliance_summary_shown: "mostrados",
   compliance_footer_session:
-    "El estado de revisión se guarda solo en esta sesión del navegador.",
+    "El estado de revisión y las notas se guardan localmente en este navegador.",
   compliance_empty_title: "Ningún requisito coincide con estos filtros",
   compliance_empty_detail: "Ajusta los filtros o los términos de búsqueda.",
   compliance_demo_warning:
@@ -196,6 +248,39 @@ export const es: Translations = {
   evidence_notes_label: "Notas de revisión",
   evidence_notes_placeholder: "Añade una nota para tu revisión...",
   evidence_select_hint: "Selecciona un requisito para inspeccionar su evidencia.",
+  evidence_compare_title: "Comparación de evidencia del licitador",
+  evidence_compare_detail:
+    "Vincula archivos separados a este requisito y compara el texto extraído.",
+  evidence_compare_demo:
+    "Los requisitos de la muestra son ficticios. Añade una licitación real antes de vincular evidencias.",
+  evidence_compare_select_requirement:
+    "Selecciona un requisito para vincular evidencia del licitador.",
+  evidence_compare_requirement: "Requisito de licitación",
+  evidence_compare_no_requirements:
+    "Ejecuta un análisis que encuentre requisitos antes de comparar evidencia.",
+  evidence_compare_select_file: "Documento de evidencia",
+  evidence_compare_choose_file: "Elige un archivo de evidencia",
+  evidence_compare_file_input: "Elegir un documento de evidencia del licitador",
+  evidence_compare_add_file: "Añadir archivo de evidencia",
+  evidence_compare_adding_file: "Extrayendo y guardando localmente...",
+  evidence_compare_link: "Vincular al requisito",
+  evidence_compare_unlink: "Desvincular",
+  evidence_compare_unlink_named: "Desvincular {{name}} de este requisito",
+  evidence_compare_linked: "Vinculado a este requisito",
+  evidence_compare_linked_files: "Archivos de evidencia vinculados a este requisito",
+  evidence_compare_cloud_consent:
+    "Permitir procesamiento en la nube para este archivo de evidencia",
+  evidence_compare_cloud_consent_detail:
+    "El texto extraído de {{name}} puede enviarse a Gemini a través de Firebase AI Logic durante esta comparación. Este consentimiento es independiente del análisis de la licitación y se restablece al recargar la página.",
+  evidence_compare_running: "Comparando…",
+  evidence_compare_action: "Comparar evidencia",
+  evidence_compare_ai_estimate: "Estimación de IA · {{confidence}}% de confianza",
+  evidence_compare_unknown_file: "Archivo de evidencia",
+  evidence_compare_quote_verified: "Fragmento verificado en el texto extraído",
+  evidence_compare_quote_unverified: "Fragmento no verificado · revisión humana necesaria",
+  evidence_assessment_supports: "Puede respaldar el requisito",
+  evidence_assessment_contradicts: "Puede contradecir el requisito",
+  evidence_assessment_insufficient: "La evidencia es insuficiente",
 
   processing_topline: "Opciones de procesamiento",
   processing_steps: "01 / 03",
@@ -204,7 +289,7 @@ export const es: Translations = {
   mode_card_local_badge: "PRIVADO",
   mode_card_local_heading: "Mantener la inferencia en este dispositivo",
   mode_card_local_desc:
-    "El texto del PDF se extrae en tu navegador. Firebase AI Logic pide al modelo en el dispositivo de Chrome que lo analice. Si ese modelo no está disponible, la solicitud falla en lugar de pasar a la nube.",
+    "El texto de PDF, DOCX y XLSX se extrae en tu navegador. Firebase AI Logic pide al modelo en el dispositivo de Chrome que lo analice. Si ese modelo no está disponible, la solicitud falla en lugar de pasar a la nube.",
   mode_card_local_p1: "Sin fallback a la nube",
   mode_card_local_p2: "Requiere Chrome de escritorio compatible",
   mode_card_local_p3: "Firebase App Check sigue aplicándose",
@@ -213,7 +298,7 @@ export const es: Translations = {
   mode_card_cloud_badge: "GEMINI",
   mode_card_cloud_heading: "Analizar con Gemini 3.8 Flash",
   mode_card_cloud_desc:
-    "Envía el texto extraído del PDF a la nube de Google a través de Firebase AI Logic. Este modo utiliza solo inferencia en la nube y no recurre al procesamiento en el dispositivo.",
+    "Envía el texto extraído del documento a la nube de Google a través de Firebase AI Logic. Este modo utiliza solo inferencia en la nube y no recurre al procesamiento en el dispositivo.",
   mode_card_cloud_p1: "Inferencia directa en la nube",
   mode_card_cloud_p2: "Requiere tu consentimiento explícito",
   mode_card_cloud_p3: "Firebase App Check requerido",
@@ -222,7 +307,7 @@ export const es: Translations = {
   mode_card_hybrid_badge: "DISPOSITIVO PRIMERO",
   mode_card_hybrid_heading: "Preferir en el dispositivo, permitir fallback",
   mode_card_hybrid_desc:
-    "Firebase AI Logic intenta primero el modelo disponible en el dispositivo. Si no está disponible, el SDK puede enviar el texto extraído a Gemini 3.8 Flash en la nube de Google.",
+    "Firebase AI Logic intenta primero el modelo disponible en el dispositivo. Si no está disponible, el SDK puede enviar el texto extraído del documento a Gemini 3.8 Flash en la nube de Google.",
   mode_card_hybrid_p1: "Fuente real mostrada tras el análisis",
   mode_card_hybrid_p2: "El uso de la nube requiere tu consentimiento",
   mode_card_hybrid_p3: "App Check requerido",
@@ -239,20 +324,19 @@ export const es: Translations = {
   consent_cloud_title:
     "Autorizo explícitamente el procesamiento de IA en la nube para esta sesión.",
   consent_cloud_detail:
-    "El texto extraído de este PDF se enviará a Gemini a través de Firebase AI Logic. Esta configuración se restablece cuando se recarga la página.",
-  consent_hybrid_title:
-    "Autorizo explícitamente el fallback a la nube para esta sesión.",
+    "El texto extraído de esta licitación se enviará a Gemini a través de Firebase AI Logic. La evidencia del licitador requiere un consentimiento independiente. Esta configuración se restablece al recargar la página.",
+  consent_hybrid_title: "Autorizo explícitamente el fallback a la nube para esta sesión.",
   consent_hybrid_detail:
-    "Si el modelo en el dispositivo no está disponible, el texto extraído de este PDF puede enviarse al servicio Gemini de Google a través de Firebase AI Logic. Esta configuración se restablece cuando se recarga la página.",
+    "Si el modelo en el dispositivo no está disponible, el texto extraído de esta licitación puede enviarse a Gemini de Google a través de Firebase AI Logic. La evidencia del licitador requiere un consentimiento independiente. Esta configuración se restablece al recargar la página.",
 
-  file_input_aria: "Elegir un documento PDF",
+  file_input_aria: "Elegir un documento PDF, DOCX o XLSX",
   file_replace: "Reemplazar",
-  file_stored: "guardado en esta sesión del navegador",
-  drop_title: "Suelta aquí un PDF de licitación",
+  file_stored: "guardado en este navegador",
+  drop_title: "Suelta aquí un PDF, DOCX o XLSX de licitación",
   drop_or: "o selecciona un archivo de tu dispositivo",
-  drop_choose: "Elegir PDF",
+  drop_choose: "Elegir documento",
   drop_note:
-    "Solo PDF · máximo 20 MB · los PDFs escaneados pueden usar OCR externo opcional",
+    "PDF, DOCX o XLSX · máximo 50 MB · los PDFs escaneados pueden usar OCR externo opcional",
 
   ocr_scanned_title: "Este parece ser un PDF escaneado.",
   ocr_scanned_desc:
@@ -260,8 +344,7 @@ export const es: Translations = {
   ocr_analyze_extracted: "Analizar el texto disponible en este navegador",
   ocr_checking: "Comprobando si el OCR externo está habilitado...",
   ocr_disabled_title: "El OCR externo no está habilitado.",
-  ocr_disabled_desc:
-    "Conecta el conector de la Plataforma LlamaParse a este proyecto en Lovable.",
+  ocr_disabled_desc: "Conecta el conector de la Plataforma LlamaParse a este proyecto en Lovable.",
   ocr_check_again: "Comprobar de nuevo",
   ocr_error: "No se pudo comprobar la disponibilidad del conector.",
   ocr_retry: "Reintentar",
@@ -296,13 +379,14 @@ export const es: Translations = {
   footer_mode_hybrid: "Híbrido · consentimiento requerido",
   footer_status_demo: "No se procesa ningún documento real.",
   footer_status_local: "No se utilizará fallback a la nube.",
-  footer_status_cloud_ok: "El consentimiento de procesamiento en la nube está activo para esta sesión.",
+  footer_status_cloud_ok:
+    "El consentimiento de procesamiento en la nube está activo para esta sesión.",
   footer_status_cloud_pending: "Activa el consentimiento de nube arriba para continuar.",
   footer_status_hybrid_ok: "El consentimiento de fallback a la nube está activo para esta sesión.",
   footer_status_hybrid_pending: "Activa el consentimiento de nube arriba para continuar.",
 
   btn_explore_sample: "Explorar análisis de muestra",
-  btn_ask_pdf: "Preguntar sobre este PDF",
+  btn_ask_pdf: "Preguntar sobre este documento",
   btn_extract_text: "Extraer solo texto",
   btn_analyze_sample: "Analizar muestra ficticia",
   btn_analyze_pdf: "Analizar PDF",
@@ -311,7 +395,7 @@ export const es: Translations = {
   flow_title: "Del documento a hallazgos revisables",
   flow_subtitle:
     "Cada hallazgo está vinculado a un fragmento de origen para que una persona pueda verificarlo.",
-  flow_step1_title: "Elegir PDF",
+  flow_step1_title: "Elegir documento",
   flow_step1_detail: "Archivo permanece en el navegador",
   flow_step2_title: "Procesar texto",
   flow_step2_detail: "Modo seleccionado aplicado",
@@ -326,7 +410,8 @@ export const es: Translations = {
   overview_add_document: "Añadir documento",
   sidebar_whats_new: "Novedades",
   sidebar_take_tour: "Hacer visita guiada",
-  compliance_demo_inline: "Los requisitos de muestra y los resultados de revisión son ficticios e ilustrativos.",
+  compliance_demo_inline:
+    "Los requisitos de muestra y los resultados de revisión son ficticios e ilustrativos.",
   compliance_category_filter_sr: "Filtro de categoría",
   compliance_status_filter_sr: "Filtro de estado de revisión",
   compliance_count_of: "de",
@@ -337,14 +422,14 @@ export const es: Translations = {
   finding_inconsistency_title: "Posible inconsistencia",
   evidence_page_badge: "Página {{page}}",
   review_status_sr: "Estado de revisión para {{description}}",
-  workspace_no_document: "El espacio de trabajo no tiene documento seleccionado. Recarga la página para restaurar el espacio de trabajo de muestra.",
+  workspace_no_document:
+    "El espacio de trabajo no tiene documento seleccionado. Recarga la página para restaurar el espacio de trabajo de muestra.",
   runtime_demo_data_label: "Datos de demostración",
   open_processing_aria: "Abrir opciones de procesamiento",
   ocr_analyze_browser: "Analizar el texto disponible en este navegador",
 
   qa_title: "Pregunta a este documento",
-  qa_subtitle:
-    "Haz preguntas de seguimiento y revisa cada respuesta frente a sus fuentes.",
+  qa_subtitle: "Haz preguntas de seguimiento y revisa cada respuesta frente a sus fuentes.",
   qa_document_grounded: "Basado en el documento",
   qa_privacy_note:
     "Las preguntas utilizan el modo de IA seleccionado. El fallback de nube e híbrido requiere tu consentimiento de Firebase existente. El PDF nunca se envía a Firecrawl.",
@@ -369,7 +454,7 @@ export const es: Translations = {
   qa_hypotheses: "Hipótesis de trabajo",
   qa_unresolved: "Aún por verificar",
   qa_citations_title: "Evidencia documental",
-  qa_page_unavailable: "Referencia de página no disponible",
+  qa_page_unavailable: "Ubicación de origen no disponible",
   qa_citation_verified: "Verificado en el texto extraído",
   qa_citation_unverified: "Verificar frente al PDF",
   qa_research_title: "Resultados de búsqueda · verificar autoridad y estado actual",
@@ -406,8 +491,7 @@ export const es: Translations = {
   qa_speak_read: "Leer respuesta en voz alta",
   qa_voice_note:
     "Tu navegador puede usar su propio servicio de voz. Nada se envía a la IA hasta que envíes la pregunta.",
-  qa_voice_unavailable:
-    "La entrada de voz no está disponible en este navegador; puedes escribir.",
+  qa_voice_unavailable: "La entrada de voz no está disponible en este navegador; puedes escribir.",
   qa_send: "Enviar pregunta",
   qa_research_toggle: "Incluir investigación externa (Firecrawl)",
   qa_pagination_note:
@@ -415,7 +499,8 @@ export const es: Translations = {
 
   // ── Preguntas sugeridas ───────────────────────────────────────────────────────
   qa_suggestions_btn: "Preguntas sugeridas",
-  qa_suggestions_q1: "¿Cuáles son los requisitos de elegibilidad obligatorios para presentar una oferta?",
+  qa_suggestions_q1:
+    "¿Cuáles son los requisitos de elegibilidad obligatorios para presentar una oferta?",
   qa_suggestions_q2: "¿Cuáles son los plazos de entrega clave y qué ocurre si se incumplen?",
   qa_suggestions_q3: "¿Qué especificaciones técnicas deben cumplir los artículos suministrados?",
   qa_suggestions_q4: "¿Qué garantías financieras o seguros se requieren?",
@@ -435,9 +520,12 @@ export const es: Translations = {
   tour_step0_title: "Bienvenido a PocketMind AI",
   tour_step0_body:
     "Convierte PDFs de licitaciones complejas en hallazgos revisables — con un enlace a la página de origen para cada uno. Esta visita guiada recorre el flujo completo en unos 90 segundos, usando la licitación de muestra precargada. No se necesita configuración.",
-  tour_step1_title: "Cuatro áreas, un espacio de trabajo",
+  tour_step1_title: "Cinco áreas, un espacio de trabajo",
   tour_step1_body:
-    "Navega entre Panel, Análisis documental, Matriz de cumplimiento y Procesamiento y privacidad desde esta barra lateral.",
+    "Navega entre Panel, Biblioteca, Análisis documental, Matriz de cumplimiento y Procesamiento y privacidad desde esta barra lateral.",
+  tour_library_title: "Tu biblioteca local de documentos",
+  tour_library_body:
+    "Las licitaciones cargadas, el texto extraído, la evidencia del licitador y las revisiones permanecen en este navegador. La biblioteca muestra lo guardado y permite borrar los datos locales.",
   tour_step2_title: "Tu espacio de trabajo de un vistazo",
   tour_step2_body:
     "Documentos en la sesión, requisitos extraídos, riesgos críticos marcados para revisión y revisiones pendientes.",
