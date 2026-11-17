@@ -1,11 +1,14 @@
 # sync-vercel-prod.ps1
-# Reads values from .env.local and pushes only production-safe Firebase variables to Vercel.
+# Reads values from .env and pushes only production-safe Firebase variables to Vercel.
+# Uses cmd echo to avoid UTF-8 BOM that PowerShell temp files introduce.
 # Never sends VITE_FIREBASE_APPCHECK_DEBUG_TOKEN to production.
 
-$envFile = Join-Path $PSScriptRoot "..\\.env.local"
+$envFile = Join-Path $PSScriptRoot "..\.env"
 $envVars = @{}
-foreach ($line in Get-Content $envFile) {
-  if ($line -match '^\s*([^#=\s]+)\s*=\s*(.*)$') {
+$raw = [System.IO.File]::ReadAllText($envFile)
+foreach ($line in ($raw -split "`n")) {
+  $line = $line.Trim()
+  if ($line -match '^([^#=\s]+)=(.*)$') {
     $envVars[$Matches[1]] = $Matches[2].Trim().Trim('"')
   }
 }
@@ -21,19 +24,13 @@ $prodKeys = @(
 
 foreach ($key in $prodKeys) {
   $value = $envVars[$key]
-  if (-not $value) { Write-Warning "SKIP $key (not found in .env.local)"; continue }
+  if (-not $value) { Write-Warning "SKIP $key (not found in .env)"; continue }
 
-  vercel env rm $key production --yes 2>$null | Out-Null
+  vercel env rm $key production --yes 2>&1 | Out-Null
 
-  # Write value to temp file without BOM or trailing newline
-  $tmpFile = [System.IO.Path]::GetTempFileName()
-  [System.IO.File]::WriteAllText($tmpFile, $value.Trim(), [System.Text.Encoding]::UTF8)
-
-  # --type config required for VITE_* vars in Vercel CLI v65+ to avoid interactive prompt
-  $result = cmd /c "type `"$tmpFile`" | vercel env add $key production --type config" 2>&1
-  Remove-Item $tmpFile
-
-  if ($LASTEXITCODE -eq 0) {
+  # Use cmd echo -- avoids UTF-8 BOM that PowerShell WriteAllText introduces
+  $result = cmd /c "echo $value | vercel env add $key --environment production --type config" 2>&1
+  if ($result -match "Added") {
     Write-Host "OK $key"
   } else {
     Write-Warning "FAILED $key -- $result"
