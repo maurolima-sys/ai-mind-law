@@ -339,7 +339,7 @@ export async function analyzeTender(
             phase: "analyzing",
             completed: index,
             total: chunks.length,
-            detail: `Gemini returned HTTP ${status}. ${action} ${geminiModelLabel(nextModel)} (${attempt}/${TOTAL_MODEL_ATTEMPTS}).`,
+            detail: `${status === undefined ? "Gemini request timed out" : `Gemini returned HTTP ${status}`}. ${action} ${geminiModelLabel(nextModel)} (${attempt}/${TOTAL_MODEL_ATTEMPTS}).`,
           });
         },
       },

@@ -74,4 +74,36 @@ describe("Firebase AI retry policy", () => {
     ).rejects.toBe(localFailure);
     expect(localCalls).toEqual([PRIMARY_GEMINI_MODEL]);
   });
+
+  it("advances to the next model after a request timeout", async () => {
+    vi.useFakeTimers();
+    const calls: string[] = [];
+    const retryUpdates: Array<{ modelName: string; status?: number }> = [];
+
+    const request = generateWithModelFallback(
+      "cloud",
+      (modelName, signal) => {
+        calls.push(modelName);
+        if (calls.length > 2) return Promise.resolve("completed");
+        return new Promise((_, reject) => {
+          signal?.addEventListener("abort", () => {
+            const error = Object.assign(new Error("aborted"), { name: "AbortError" });
+            reject(error);
+          });
+        });
+      },
+      { onRetry: ({ modelName, status }) => retryUpdates.push({ modelName, status }) },
+    );
+
+    await vi.runAllTimersAsync();
+    await expect(request).resolves.toEqual({
+      result: "completed",
+      modelName: SECONDARY_GEMINI_MODEL,
+    });
+    expect(calls).toEqual([PRIMARY_GEMINI_MODEL, PRIMARY_GEMINI_MODEL, SECONDARY_GEMINI_MODEL]);
+    expect(retryUpdates).toEqual([
+      { modelName: PRIMARY_GEMINI_MODEL, status: undefined },
+      { modelName: SECONDARY_GEMINI_MODEL, status: undefined },
+    ]);
+  });
 });

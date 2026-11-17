@@ -30,6 +30,7 @@ export const GEMINI_MODEL_FALLBACK_CHAIN = [
 export type GeminiModelName = (typeof GEMINI_MODEL_FALLBACK_CHAIN)[number];
 
 const RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503]);
+const TIMEOUT_ERROR_CODE = "TIMEOUT";
 const GENERATION_TIMEOUT_MS = 60_000;
 const TOTAL_GENERATION_BUDGET_MS = 180_000;
 const RETRY_STEPS = [
@@ -60,6 +61,14 @@ export function getFirebaseAiHttpStatus(error: unknown): number | undefined {
 }
 
 export function isRetryableFirebaseAiError(error: unknown): boolean {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === TIMEOUT_ERROR_CODE
+  ) {
+    return true;
+  }
   const status = getFirebaseAiHttpStatus(error);
   return status !== undefined && RETRYABLE_STATUS_CODES.has(status);
 }
@@ -83,7 +92,7 @@ export async function generateWithModelFallback<T>(
   preference: InferencePreference,
   generate: (modelName: GeminiModelName, signal?: AbortSignal) => Promise<T>,
   options: {
-    onRetry?: (update: { modelName: GeminiModelName; status: number; attempt: number }) => void;
+    onRetry?: (update: { modelName: GeminiModelName; status?: number; attempt: number }) => void;
   } = {},
 ): Promise<{ result: T; modelName: GeminiModelName }> {
   if (preference === "local") {
@@ -113,21 +122,21 @@ export async function generateWithModelFallback<T>(
     try {
       const timeout = new Promise<never>((_, reject) => {
         timeoutId = setTimeout(() => {
-          controller.abort();
-          reject(
-            new Error(
-              `Firebase AI Logic request timed out after ${Math.ceil(timeoutMs / 1000)} seconds.`,
-            ),
+          const timeoutError = new Error(
+            `Firebase AI Logic request timed out after ${Math.ceil(timeoutMs / 1000)} seconds.`,
           );
+          Object.assign(timeoutError, { code: TIMEOUT_ERROR_CODE });
+          reject(timeoutError);
+          controller.abort();
         }, timeoutMs);
       });
       const result = await Promise.race([generate(step.modelName, controller.signal), timeout]);
       return { result, modelName: step.modelName };
     } catch (error) {
       lastError = error;
-      const status = getFirebaseAiHttpStatus(error);
       const nextStep = RETRY_STEPS[index + 1];
-      if (!nextStep || status === undefined || !RETRYABLE_STATUS_CODES.has(status)) break;
+      if (!nextStep || !isRetryableFirebaseAiError(error)) break;
+      const status = getFirebaseAiHttpStatus(error);
       options.onRetry?.({ modelName: nextStep.modelName, status, attempt: index + 2 });
     } finally {
       if (timeoutId) clearTimeout(timeoutId);
