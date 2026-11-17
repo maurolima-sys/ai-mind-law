@@ -243,7 +243,9 @@ export function PocketMindApp() {
     Record<string, string>
   >({});
   const [filesByDocumentId, setFilesByDocumentId] = useState<Record<string, File>>({});
-  const [processingChoice, setProcessingChoice] = useState<ProcessingChoice>("demo");
+  const [processingChoice, setProcessingChoice] = useState<ProcessingChoice>(
+    () => (isFirebaseConfigured() ? "hybrid" : "local"),
+  );
   const [cloudConsent, setCloudConsent] = useState(false);
   const [externalOcrConsentDocumentId, setExternalOcrConsentDocumentId] = useState<string | null>(
     null,
