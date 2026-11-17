@@ -2,7 +2,6 @@ import { getApp, getApps, initializeApp, type FirebaseApp } from "firebase/app";
 import {
   initializeAppCheck,
   ReCaptchaEnterpriseProvider,
-  ReCaptchaV3Provider,
   type AppCheck,
 } from "firebase/app-check";
 import {
@@ -236,26 +235,27 @@ function getFirebaseRuntime(): FirebaseRuntime {
     ? getApp()
     : initializeApp(firebaseConfiguration());
 
-  let appCheck: AppCheck;
+  const siteKey = import.meta.env["VITE_FIREBASE_APPCHECK_RECAPTCHA_SITE_KEY"];
+  if (!siteKey) {
+    throw new Error(
+      "Firebase App Check is not configured. Set VITE_FIREBASE_APPCHECK_RECAPTCHA_SITE_KEY for this deployment.",
+    );
+  }
+
+  // Setting window.FIREBASE_APPCHECK_DEBUG_TOKEN before initializeAppCheck
+  // activates the App Check debug bypass — the reCAPTCHA call is skipped
+  // and the registered debug token is used instead.
   if (import.meta.env.DEV) {
     const debugToken = import.meta.env["VITE_FIREBASE_APPCHECK_DEBUG_TOKEN"] as string | undefined;
-    window.FIREBASE_APPCHECK_DEBUG_TOKEN = debugToken ?? true;
-    appCheck = initializeAppCheck(app, {
-      provider: new ReCaptchaV3Provider("debug"),
-      isTokenAutoRefreshEnabled: true,
-    });
-  } else {
-    const siteKey = import.meta.env["VITE_FIREBASE_APPCHECK_RECAPTCHA_SITE_KEY"];
-    if (!siteKey) {
-      throw new Error(
-        "Firebase App Check is not configured. Set VITE_FIREBASE_APPCHECK_RECAPTCHA_SITE_KEY for this deployment.",
-      );
+    if (debugToken) {
+      window.FIREBASE_APPCHECK_DEBUG_TOKEN = debugToken;
     }
-    appCheck = initializeAppCheck(app, {
-      provider: new ReCaptchaEnterpriseProvider(siteKey),
-      isTokenAutoRefreshEnabled: true,
-    });
   }
+
+  const appCheck = initializeAppCheck(app, {
+    provider: new ReCaptchaEnterpriseProvider(siteKey),
+    isTokenAutoRefreshEnabled: true,
+  });
 
   const runtime = {
     app,
