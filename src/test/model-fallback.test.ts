@@ -44,7 +44,6 @@ describe("Firebase AI retry policy", () => {
     });
     expect(calls).toEqual([
       PRIMARY_GEMINI_MODEL,
-      PRIMARY_GEMINI_MODEL,
       SECONDARY_GEMINI_MODEL,
       TERTIARY_GEMINI_MODEL,
     ]);
@@ -119,7 +118,7 @@ describe("Firebase AI retry policy", () => {
       "cloud",
       (modelName, signal) => {
         calls.push(modelName);
-        if (calls.length > 3) return Promise.resolve("completed");
+        if (calls.length > 2) return Promise.resolve("completed");
         return new Promise((_, reject) => {
           signal?.addEventListener("abort", () => {
             const error = Object.assign(new Error("aborted"), { name: "AbortError" });
@@ -140,12 +139,10 @@ describe("Firebase AI retry policy", () => {
     });
     expect(calls).toEqual([
       PRIMARY_GEMINI_MODEL,
-      PRIMARY_GEMINI_MODEL,
       SECONDARY_GEMINI_MODEL,
       TERTIARY_GEMINI_MODEL,
     ]);
     expect(retryUpdates).toEqual([
-      { modelName: PRIMARY_GEMINI_MODEL, status: undefined },
       { modelName: SECONDARY_GEMINI_MODEL, status: undefined },
       { modelName: TERTIARY_GEMINI_MODEL, status: undefined },
     ]);

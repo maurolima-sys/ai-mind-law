@@ -12,9 +12,9 @@ import {
 import type { InferencePreference } from "@/lib/types";
 import { TENDER_ANALYSIS_RESPONSE_SCHEMA } from "@/lib/services/tenderAnalysisSchema";
 
-export const PRIMARY_GEMINI_MODEL = "gemini-3.5-flash-lite";
-export const SECONDARY_GEMINI_MODEL = "gemini-3.5-flash";
-export const TERTIARY_GEMINI_MODEL = "gemini-3.8-flash";
+export const PRIMARY_GEMINI_MODEL = "gemini-2.0-flash";
+export const SECONDARY_GEMINI_MODEL = "gemini-2.0-flash-lite";
+export const TERTIARY_GEMINI_MODEL = "gemini-1.5-flash";
 
 export const GEMINI_MODEL_FALLBACK_CHAIN = [
   PRIMARY_GEMINI_MODEL,
@@ -30,9 +30,8 @@ const GENERATION_TIMEOUT_MS = 60_000;
 const TOTAL_GENERATION_BUDGET_MS = 180_000;
 const RETRY_STEPS = [
   { modelName: PRIMARY_GEMINI_MODEL, delayMs: 0, jitterMs: 0 },
-  { modelName: PRIMARY_GEMINI_MODEL, delayMs: 3_000, jitterMs: 2_000 },
-  { modelName: SECONDARY_GEMINI_MODEL, delayMs: 6_000, jitterMs: 3_000 },
-  { modelName: TERTIARY_GEMINI_MODEL, delayMs: 15_000, jitterMs: 5_000 },
+  { modelName: SECONDARY_GEMINI_MODEL, delayMs: 3_000, jitterMs: 2_000 },
+  { modelName: TERTIARY_GEMINI_MODEL, delayMs: 6_000, jitterMs: 3_000 },
 ] as const;
 
 export const DEVICE_MODEL_INIT_TIMEOUT_MS = 60_000;
@@ -96,11 +95,11 @@ export function isRetryableFirebaseAiError(error: unknown): boolean {
 export function geminiModelLabel(modelName: string): string {
   switch (modelName) {
     case PRIMARY_GEMINI_MODEL:
-      return "Gemini 3.5 Flash-Lite";
+      return "Gemini 2.0 Flash";
     case SECONDARY_GEMINI_MODEL:
-      return "Gemini 3.5 Flash";
+      return "Gemini 2.0 Flash-Lite";
     case TERTIARY_GEMINI_MODEL:
-      return "Gemini 3.8 Flash";
+      return "Gemini 1.5 Flash";
     default:
       return modelName;
   }
