@@ -25,36 +25,6 @@ const responseSchema = z.object({
   researchSourceIds: z.array(z.string()).default([]),
 });
 
-const responseConstraint = {
-  type: "object",
-  properties: {
-    answer: { type: "string" },
-    hypotheses: { type: "array", items: { type: "string" } },
-    unresolvedQuestions: { type: "array", items: { type: "string" } },
-    documentCitations: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          page: { type: "integer" },
-          excerpt: { type: "string" },
-        },
-        required: ["page", "excerpt"],
-        additionalProperties: false,
-      },
-    },
-    researchSourceIds: { type: "array", items: { type: "string" } },
-  },
-  required: [
-    "answer",
-    "hypotheses",
-    "unresolvedQuestions",
-    "documentCitations",
-    "researchSourceIds",
-  ],
-  additionalProperties: false,
-};
-
 const stopWords = new Set([
   "about",
   "and",
@@ -286,7 +256,7 @@ export async function answerDocumentQuestion(
     compact,
   );
   const { result, modelName } = await generateWithModelFallback(preference, (candidate, signal) =>
-    createTenderModel(preference, responseConstraint, candidate).model.generateContent(
+    createTenderModel(preference, candidate).model.generateContent(
       prompt,
       signal ? { signal } : undefined,
     ),

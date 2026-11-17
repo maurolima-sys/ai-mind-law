@@ -228,7 +228,8 @@ function getFirebaseRuntime(): FirebaseRuntime {
 
   let appCheck: AppCheck;
   if (import.meta.env.DEV) {
-    window.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+    const debugToken = import.meta.env["VITE_FIREBASE_APPCHECK_DEBUG_TOKEN"] as string | undefined;
+    window.FIREBASE_APPCHECK_DEBUG_TOKEN = debugToken ?? true;
     appCheck = initializeAppCheck(app, {
       provider: new ReCaptchaV3Provider("debug"),
       isTokenAutoRefreshEnabled: true,
@@ -257,7 +258,6 @@ function getFirebaseRuntime(): FirebaseRuntime {
 
 export function createTenderModel(
   preference: InferencePreference,
-  responseConstraint?: object,
   modelName: GeminiModelName = PRIMARY_GEMINI_MODEL,
 ): {
   model: GenerativeModel;
@@ -276,7 +276,8 @@ export function createTenderModel(
       model: modelName,
       generationConfig: { responseMimeType: "application/json" },
     },
-    ...(responseConstraint ? { onDeviceParams: { promptOptions: { responseConstraint } } } : {}),
+    // responseConstraint is not passed to on-device — Chrome's Prompt API ignores it
+    // and some versions throw on unknown fields. The parser handles free-form output.
   });
   return { model, appCheck };
 }

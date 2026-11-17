@@ -327,7 +327,7 @@ export async function analyzeTender(
       (candidate, signal) => {
         let currentModel = models.get(candidate);
         if (!currentModel) {
-          currentModel = createTenderModel(preference, undefined, candidate).model;
+          currentModel = createTenderModel(preference, candidate).model;
           models.set(candidate, currentModel);
         }
         return currentModel.generateContent(prompt, signal ? { signal } : undefined);
