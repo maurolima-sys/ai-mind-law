@@ -114,7 +114,7 @@
 - **Contexto**: Identificado durante sessão de trabalho (não tem commit único).
 - **Sintoma**: Firebase AI Logic mostrava "not connected"; análise cloud falhava silenciosamente.
 - **Causa**: Token `VITE_FIREBASE_APPCHECK_DEBUG_TOKEN` presente no `.env` mas não registado na Firebase Console.
-- **Fix**: Token `531CF450-EA03-4EBE-81EB-3CFE3FCC690D` deve ser registado manualmente na Firebase Console → App Check → Debug tokens.
+- **Fix**: O token de debug (`VITE_FIREBASE_APPCHECK_DEBUG_TOKEN` no `.env`) deve ser registado manualmente na Firebase Console → App Check → Debug tokens. Nunca commitar o valor do token.
 
 ---
 
@@ -139,4 +139,4 @@
 
 ---
 
-*Última atualização: HEAD `d2b0356`*
+*Última atualização: HEAD `df4ab3f`*
