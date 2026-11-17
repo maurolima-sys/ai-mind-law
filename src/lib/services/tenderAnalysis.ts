@@ -35,7 +35,7 @@ const findingSchema = z.object({
     "Delivery",
   ]),
   mandatory: z.boolean(),
-  confidence: z.number().min(0).max(1),
+  confidence: z.union([z.number(), z.string()]).transform((v) => (typeof v === "string" ? parseFloat(v) : v)).pipe(z.number().min(0).max(1)),
   page: z.number().int().positive(),
   excerpt: z.string().min(1),
 });
@@ -50,8 +50,8 @@ const deadlineSchema = z.object({
 
 const specificationSchema = z.object({
   item: z.string().min(1),
-  quantity: z.string().nullable(),
-  unit: z.string().nullable(),
+  quantity: z.union([z.string(), z.number()]).nullable().transform((v) => (v === null ? null : String(v))),
+  unit: z.union([z.string(), z.number()]).nullable().transform((v) => (v === null ? null : String(v))),
   details: z.string().min(1),
   notes: z.string(),
   page: z.number().int().positive(),
