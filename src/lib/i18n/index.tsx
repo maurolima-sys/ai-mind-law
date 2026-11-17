@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
   type ReactNode,
 } from "react";
@@ -34,15 +35,18 @@ type LocaleContextValue = {
 const LocaleContext = createContext<LocaleContextValue | null>(null);
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocale] = useState<Locale>(() => {
+  // Always start with "en" so SSR and client first render match.
+  // Sync from localStorage after hydration to avoid mismatch.
+  const [locale, setLocale] = useState<Locale>("en");
+
+  useEffect(() => {
     try {
       const stored = localStorage.getItem("pocketmind.locale");
-      if (stored === "en" || stored === "pt" || stored === "es") return stored;
+      if (stored === "en" || stored === "pt" || stored === "es") setLocale(stored);
     } catch {
       /* ignore */
     }
-    return "en";
-  });
+  }, []);
 
   const handleSetLocale = useCallback((next: Locale) => {
     setLocale(next);
