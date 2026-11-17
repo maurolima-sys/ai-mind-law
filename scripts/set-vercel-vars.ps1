@@ -1,56 +1,47 @@
-param(
-  [Parameter(Mandatory)][string]$Token,
-  [Parameter(Mandatory)][string]$ProjectId,
-  [Parameter(Mandatory)][string]$TeamId
-)
-
 $envFile = Join-Path $PSScriptRoot "..\.env"
 $envVars = @{}
 foreach ($line in Get-Content $envFile) {
-  if ($line -match '^\s*([^#=]+)=(.*)$') {
-    $envVars[$Matches[1].Trim()] = $Matches[2].Trim().Trim('"')
+  if ($line -match '^\s*([^#=\s]+)\s*=\s*(.*)$') {
+    $envVars[$Matches[1]] = $Matches[2].Trim().Trim('"')
   }
 }
 
-$targets = @("production", "preview", "development")
-$keys = @(
+$allKeys = @(
   "VITE_FIREBASE_API_KEY",
   "VITE_FIREBASE_AUTH_DOMAIN",
   "VITE_FIREBASE_PROJECT_ID",
   "VITE_FIREBASE_STORAGE_BUCKET",
   "VITE_FIREBASE_MESSAGING_SENDER_ID",
   "VITE_FIREBASE_APP_ID",
-  "VITE_FIREBASE_APPCHECK_RECAPTCHA_SITE_KEY"
+  "VITE_FIREBASE_APPCHECK_RECAPTCHA_SITE_KEY",
+  "VITE_FIREBASE_APPCHECK_DEBUG_TOKEN",
+  "FIRECRAWL_API_KEY",
+  "AI_GATEWAY_API_KEY",
+  "HYDROGEN_API_KEY",
+  "ELEVENLABS_API_KEY",
+  "FIREBASE_PRODUCTION_DEBUG_TOKEN",
+  "SITE_KEY",
+  "SECRET_KEY"
 )
 
-$headers = @{
-  Authorization  = "Bearer $Token"
-  "Content-Type" = "application/json"
-}
-
-$baseUrl = "https://api.vercel.com/v10/projects/$ProjectId/env?teamId=$TeamId"
-
-$existing = (Invoke-RestMethod -Uri $baseUrl -Headers $headers -Method Get).envs
-
-foreach ($key in $keys) {
+foreach ($key in $allKeys) {
   $value = $envVars[$key]
-  if (-not $value) { Write-Warning "Key $key not found in .env — skipping"; continue }
+  if (-not $value) { Write-Warning "SKIP $key (not in .env)"; continue }
 
-  foreach ($e in ($existing | Where-Object { $_.key -eq $key })) {
-    $delUrl = "https://api.vercel.com/v10/projects/$ProjectId/env/$($e.id)?teamId=$TeamId"
-    Invoke-RestMethod -Uri $delUrl -Headers $headers -Method Delete | Out-Null
-    Write-Host "Deleted existing $key ($($e.id))"
-  }
+  # Remove existing entries for all environments
+  vercel env rm $key production --yes 2>$null
+  vercel env rm $key preview --yes 2>$null
+  vercel env rm $key development --yes 2>$null
 
-  $body = @{
-    key    = $key
-    value  = $value
-    type   = "plain"
-    target = $targets
-  } | ConvertTo-Json
+  # Add for all three environments via stdin
+  $tmpFile = [System.IO.Path]::GetTempFileName()
+  [System.IO.File]::WriteAllText($tmpFile, $value, [System.Text.Encoding]::UTF8)
+  Get-Content $tmpFile | vercel env add $key --environment production
+  Get-Content $tmpFile | vercel env add $key --environment preview
+  Get-Content $tmpFile | vercel env add $key --environment development
+  Remove-Item $tmpFile
 
-  $result = Invoke-RestMethod -Uri $baseUrl -Headers $headers -Method Post -Body $body
-  Write-Host "Added $key → id=$($result.id) type=$($result.type)"
+  Write-Host "OK $key"
 }
 
 Write-Host "`nDone. Run: vercel --prod --force"
