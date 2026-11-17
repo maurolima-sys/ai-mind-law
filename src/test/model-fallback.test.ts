@@ -1,13 +1,13 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
-  FALLBACK_GEMINI_MODEL,
   GEMINI_MODEL_FALLBACK_CHAIN,
   generateWithModelFallback,
   getFirebaseAiHttpStatus,
   isRetryableFirebaseAiError,
   PRIMARY_GEMINI_MODEL,
   SECONDARY_GEMINI_MODEL,
+  TERTIARY_GEMINI_MODEL,
 } from "@/lib/services/firebaseAi";
 
 afterEach(() => {
@@ -31,7 +31,7 @@ describe("Firebase AI retry policy", () => {
 
     const request = generateWithModelFallback("cloud", async (modelName) => {
       calls.push(modelName);
-      if (modelName !== FALLBACK_GEMINI_MODEL) {
+      if (modelName !== TERTIARY_GEMINI_MODEL) {
         throw { customErrorData: { status: 500 } };
       }
       return "completed";
@@ -40,13 +40,13 @@ describe("Firebase AI retry policy", () => {
     await vi.runAllTimersAsync();
     await expect(request).resolves.toEqual({
       result: "completed",
-      modelName: FALLBACK_GEMINI_MODEL,
+      modelName: TERTIARY_GEMINI_MODEL,
     });
     expect(calls).toEqual([
       PRIMARY_GEMINI_MODEL,
       PRIMARY_GEMINI_MODEL,
       SECONDARY_GEMINI_MODEL,
-      FALLBACK_GEMINI_MODEL,
+      TERTIARY_GEMINI_MODEL,
     ]);
     expect([...new Set(calls)]).toEqual([...GEMINI_MODEL_FALLBACK_CHAIN]);
   });
@@ -71,6 +71,44 @@ describe("Firebase AI retry policy", () => {
       }),
     ).rejects.toBe(localFailure);
     expect(localCalls).toEqual([PRIMARY_GEMINI_MODEL]);
+  });
+
+  it("applies a timeout to local-only requests and rejects on expiry", async () => {
+    vi.useFakeTimers();
+    const request = generateWithModelFallback(
+      "local",
+      (_modelName, signal) =>
+        new Promise((_, reject) => {
+          signal?.addEventListener("abort", () => reject(new Error("aborted")));
+        }),
+    );
+    const rejection = expect(request).rejects.toThrow(/timed out/);
+    await vi.runAllTimersAsync();
+    await rejection;
+  });
+
+  it("rejects local-only requests that ignore the abort signal", async () => {
+    vi.useFakeTimers();
+    const request = generateWithModelFallback("local", () => new Promise(() => {}));
+
+    const rejection = expect(request).rejects.toThrow(/timed out/);
+    await vi.advanceTimersByTimeAsync(60_000);
+    await rejection;
+  });
+
+  it("does not fall back to cloud when local times out", async () => {
+    vi.useFakeTimers();
+    const calls: string[] = [];
+    const request = generateWithModelFallback("local", (modelName, signal) => {
+      calls.push(modelName);
+      return new Promise((_, reject) => {
+        signal?.addEventListener("abort", () => reject(new Error("aborted")));
+      });
+    });
+    const rejection = expect(request).rejects.toThrow();
+    await vi.runAllTimersAsync();
+    await rejection;
+    expect(calls).toEqual([PRIMARY_GEMINI_MODEL]);
   });
 
   it("advances to the next model after a request timeout", async () => {

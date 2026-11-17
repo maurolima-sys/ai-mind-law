@@ -1,25 +1,25 @@
 # PocketMind AI
 
-> **#BuildHybridAI 2026 submission — Web (Chrome) · Firebase AI Logic hybrid inference**
+> **#BuildHybridAI 2026 submission — Web (Chrome) · Firebase AI Logic integration; production verification pending**
 
 **Live demo:** [ai-mind-law.vercel.app](https://ai-mind-law.vercel.app/) · **Source:** [maurolima-sys/ai-mind-law](https://github.com/maurolima-sys/ai-mind-law)
 
 ## What we built
 
-PocketMind AI turns procurement documents into a structured, human-reviewable workspace. Reviewers can add PDF, DOCX, and XLSX files up to 50 MB; text is extracted in the browser with PDF.js, Mammoth, or ExcelJS. Under explicit consent, extracted text can be analyzed through Firebase AI Logic in cloud-only, on-device-only, or on-device-first hybrid mode. Findings link to a verified PDF page or a labelled DOCX/XLSX source section, so a person can check each excerpt before acting on it.
+PocketMind AI turns procurement documents into a structured, human-reviewable workspace. Reviewers can add PDF, DOCX, and XLSX files up to 50 MB; text is extracted in the browser with PDF.js, Mammoth, or ExcelJS. The application includes consent-gated Firebase AI Logic paths for cloud-only, on-device-only, and on-device-first hybrid inference. The latest reported production Cloud AI test reached Gemini but failed with HTTP 500 after model fallbacks; no analysis has yet completed end-to-end.
 
 The core problem: tender documents run to dozens of pages of dense prose. The obligations that decide whether a bid is eligible, technically compliant, and commercially sound are buried in that text. Reviewers re-read, cross-reference, and still miss things. PocketMind AI organizes extracted text, verifies excerpts against their cited source, and surfaces a compliance matrix for review, notes, and export. Uploaded tenders, extracted text, analyses, bidder evidence, comparisons, and review state persist in IndexedDB in the current browser; they are not encrypted or synced.
 
 ## Firebase AI Logic — how it's used at runtime
 
-- **Hybrid inference (on-device-first):** Firebase AI Logic's web hybrid API (`getGenerativeModel` with `InferenceMode.PREFER_ON_DEVICE`) is called in `src/lib/services/firebaseAi.ts`. The app requests on-device inference via Chrome's Prompt API first; if the model is unavailable, the SDK falls back to Gemini in Google's cloud. The actual inference source reported by the SDK (`on-device`, `cloud`, `cloud-fallback`) is surfaced to the user after every analysis.
-- **Cloud-only and on-device-only modes:** selectable from the Processing & privacy screen, both implemented through the same Firebase AI Logic SDK with different `InferenceMode` values.
-- **App Check:** enforced for all Firebase AI Logic calls. Development uses the App Check debug provider, which may print a debug token to the browser console; never share or commit that token. Production uses reCAPTCHA Enterprise and requires its site key for the deployed domain.
+- **Hybrid inference (on-device-first):** the code configures Firebase AI Logic's web hybrid API (`getGenerativeModel` with `InferenceMode.PREFER_ON_DEVICE`) in `src/lib/services/firebaseAi.ts`. The intended path requests Chrome's on-device model first and permits Gemini cloud fallback only with consent. A successful production inference source has not yet been observed.
+- **Cloud-only and on-device-only modes:** selectable from the Processing & privacy screen and configured through Firebase AI Logic. Their end-to-end behavior depends on valid App Check configuration and a supported browser.
+- **App Check:** development uses the debug provider; treat its token as sensitive and never commit or publish it. A manual Firebase Console check reported the production web app as **Registered (Enforced)** with reCAPTCHA Enterprise. This does not by itself prove every browser request receives a valid token; see Verification notes.
 - **Document Q&A:** follow-up questions about extracted PDF, DOCX, or XLSX text use the same inference path, separating stated facts, working hypotheses, and unresolved questions, with citations to pages or source sections.
 
 ## What makes this a non-obvious use of hybrid inference
 
-Most hybrid AI demos run a single prompt against a fixed input. PocketMind AI applies hybrid inference to a *document review workflow* where the inference source matters to the user: sensitive procurement documents may not leave the device; the app surfaces which model actually ran and requires explicit consent before any cloud path is used. The on-device preference is a product feature, not an implementation detail.
+Most hybrid AI demos run a single prompt against a fixed input. PocketMind AI is designed to apply hybrid inference to a *document review workflow* where the inference source matters to the user: sensitive procurement documents may not leave the device; the app requires explicit consent before any cloud path is used and is designed to surface the reported inference source. Production inference still needs end-to-end verification.
 
 ## Who it's for
 
@@ -27,27 +27,29 @@ Procurement and tendering teams, consultants, and anyone who reviews public or p
 
 ## Built during the submission period
 
-The repository began as a standard TanStack/Lovable starter during the submission period and was substantially rebuilt into PocketMind AI. Work completed during the submission period includes: Firebase AI Logic hybrid inference integration, App Check setup, local PDF/DOCX/XLSX extraction and storage, source verification, the compliance matrix with persistent per-requirement review tracking, bidder evidence linking and comparison, document Q&A with structured fact/hypothesis/unresolved separation, optional LlamaParse OCR for scanned PDFs (via the Lovable connector), optional Firecrawl external research (server-side only), and the Dashboard, Library, Document analysis, Compliance matrix, and Processing & privacy screens.
+The repository began as a standard TanStack/Lovable starter during the submission period and was substantially rebuilt into PocketMind AI. Work completed during the submission period includes: Firebase AI Logic hybrid inference integration and App Check integration (production verification pending), local PDF/DOCX/XLSX extraction and storage, source verification, the compliance matrix with persistent per-requirement review tracking, bidder evidence linking and comparison, document Q&A with structured fact/hypothesis/unresolved separation, optional LlamaParse OCR for scanned PDFs (via the Lovable connector), optional Firecrawl external research (server-side only), and the Dashboard, Library, Document analysis, Compliance matrix, and Processing & privacy screens.
 
-## Product screens
+## Design references—not screenshots of this build
 
-![PocketMind AI dashboard](public/pocketmind-dashboard.jpg)
+The images below are concept mockups used as visual references; they are not screenshots of the current application. They show navigation and workspace ideas that are not all implemented. The running app's functional navigation is **Dashboard**, **Documents**, **Analysis**, **Compliance matrix**, and **Processing**; verify the current interface and capabilities in the live demo.
 
-![Tender analysis with source-linked findings](public/pocketmind-analysis.jpg)
+![Dashboard design reference](public/pocketmind-dashboard.jpg)
 
-![Compliance matrix](public/pocketmind-compliance.jpg)
+![Document analysis design reference](public/pocketmind-analysis.jpg)
 
-![Hybrid processing and privacy controls](public/pocketmind-hybrid-processing.jpg)
+![Compliance matrix design reference](public/pocketmind-compliance.jpg)
+
+![Processing and privacy design reference](public/pocketmind-hybrid-processing.jpg)
 
 ## What works
 
 - Upload PDF, DOCX, and XLSX files up to 50 MB and extract text locally in the browser. PDF text retains page numbers; Office documents use paragraph, sheet, and row-range source labels.
 - Keep tender files, extracted text, analyses, review notes, evidence files, comparison results, and activity in a persistent local browser library. This IndexedDB data is not encrypted or synced and can be deleted from the library.
 - Offer optional LlamaParse OCR for scanned or very sparse PDFs, only after separate per-document consent and when the Lovable connector is enabled.
-- Run Firebase AI Logic analysis in cloud-only, on-device-only, or on-device-first hybrid mode. Cloud processing and fallback require explicit consent.
-- Show the actual inference source reported by Firebase AI Logic, and validate AI excerpts against extracted source text.
+- Select cloud-only, on-device-only, or on-device-first hybrid inference. Cloud processing and fallback require explicit consent; the latest reported production Cloud request reached Gemini but returned HTTP 500, so inference is not verified end-to-end.
+- Validate returned excerpts against extracted source text. The production Cloud test did not return model findings, so its schema and citation path remain unverified in production.
 - Show Firebase AI Logic as connected after a model response is received. This confirms a response arrived, not that it passed structured-output validation or produced an accepted analysis. The sample-data workflow does not call Firebase.
-- Test a live model call with the built-in fictional tender text without uploading a real procurement PDF; the result remains labeled as demo data.
+- Use the built-in fictional tender text for a live model test without uploading a real procurement PDF. A successful production analysis has not yet been verified; results remain labeled as demo data.
 - Ask follow-up questions about extracted document text, with exact-text-checked page/section citations, working hypotheses, browser speech input, and optional browser text-to-speech.
 - Optionally search external legal sources through Firecrawl after separate consent. Only the question and jurisdiction are sent to Firecrawl; the PDF is not. Configure `FIRECRAWL_API_KEY` on the server, never in a `VITE_*` variable.
 - Attach separate bidder evidence documents to tender requirements and compare their extracted text using the selected inference mode. Cloud use requires separate consent for each selected evidence document.
@@ -71,14 +73,14 @@ External research is off by default and requires a separate checkbox consent. It
 The sample dashboard works without Firebase. Live model analysis requires a Firebase project and App Check configuration:
 
 1. Register a Firebase web app, enable Firebase AI Logic, and choose a supported Gemini API provider.
-2. Enforce App Check for Firebase AI Logic. For local development, the app uses the App Check debug provider and prints a debug token in the browser console; register that token in the Firebase console. Do not commit or publish the token.
-3. For a public deployment, register a production App Check provider (reCAPTCHA Enterprise) for the deployed domain and configure its site key. Do not ship the debug provider to production.
+2. Enforce App Check for Firebase AI Logic. For local development, the app uses the App Check debug provider and prints a debug token in the browser console; register that token only for local testing. Never commit or publish it.
+3. For a public deployment, register a production App Check provider (reCAPTCHA Enterprise) for the deployed domain and configure the matching site key in the Vercel Production environment. Because Vite variables are embedded at build time, redeploy after changing the value. Confirm the site key's allowed domain and that the reCAPTCHA Enterprise API is enabled.
 4. Copy `.env.example` to `.env.local` and fill in the Firebase web app configuration and production App Check site key when applicable.
 5. Start the app and open it in desktop Chrome. To verify a live call without uploading a real tender, keep the fictional sample document selected, choose **Cloud AI**, accept the consent, and click **Analyze fictional sample**. On-device inference depends on Chrome's available model and hardware; the app reports on-device, cloud, cloud-fallback, or mixed results from Firebase's response.
 
 References: [Firebase AI Logic hybrid inference for Web](https://firebase.google.com/docs/ai-logic/hybrid/web/get-started), [Firebase AI Logic supported models](https://firebase.google.com/docs/ai-logic/models), [App Check debug provider](https://firebase.google.com/docs/app-check/web/debug-provider), and [App Check reCAPTCHA Enterprise](https://firebase.google.com/docs/app-check/web/recaptcha-enterprise-provider).
 
-The Firebase web configuration and reCAPTCHA site key are public client configuration values, not server secrets. Never put service-account keys, private API keys, or App Check debug tokens in this repository. Hybrid fallback can send extracted document text to Google's cloud, so the app requires explicit consent before enabling it.
+The Firebase web configuration and reCAPTCHA site key are public client configuration values, not server secrets. Never put service-account keys, private API keys, or App Check debug tokens in this repository or a public production bundle. A debug token bypasses attestation and can be reused by anyone who obtains it; acceptance by a submission rule does not make production use safe. If an event explicitly permits a temporary debug-token demo, isolate it in a dedicated Firebase project and separate non-production deployment, apply strict quota budgets, and revoke it by a fixed date. Do not use the production Firebase project for that exception. Hybrid fallback can send extracted document text to Google's cloud, so the app requires explicit consent before enabling it.
 
 Firebase AI Logic's web on-device inference uses Chrome's Prompt API and is available only in supported desktop Chrome versions. The SDK reports the inference source but does not let the app pin a particular on-device model version. PDF, DOCX, and XLSX files are converted to text before model analysis; direct file input to the model is not used. Scanned PDFs may use the separately consented external OCR path described above.
 
@@ -105,8 +107,10 @@ GitHub Actions runs the full test suite and production build, plus targeted ESLi
 
 ## Verification notes
 
-The sample-data workflow does not call Firebase. A live test must select Cloud AI or hybrid mode, grant the explicit cloud consent, and run the fictional sample analysis. The most recent reported cloud retest received a model response but the analysis failed structured-output validation; the response-schema correction is in the code, but a successful live analysis after that change has not yet been verified. A “connected” status means a response was received, not that the analysis passed validation.
+The sample-data workflow does not call Firebase. An earlier production Cloud attempt using the built-in fictional sample received a reCAPTCHA Enterprise 403 followed by an App Check 401. A later manual Firebase Console check reported the web app as **Registered (Enforced)** with reCAPTCHA Enterprise. In the latest reported Cloud test, the request reached Gemini but failed with HTTP 500 after the configured model fallbacks; no findings were returned, so production schema validation and citation behavior remain unverified.
 
-The cloud fallback uses model IDs listed in Firebase AI Logic's current catalog. `gemini-3.7-flash` was removed because the Gemini Developer API routes it to `gemini-3.8-flash`, so it was not a distinct fallback. This static catalog check does not confirm the Firebase project's live availability or a successful analysis.
+An on-device-only sample test reached “Analyzing text section 1 of 1” but remained in processing for over a minute without a result or error, and did not use cloud fallback. The local-only generation path previously waited indefinitely if the SDK ignored its abort signal. It now rejects after 60 seconds independently of SDK cancellation; initialization is also bounded to 60 seconds. Targeted tests cover a generator that never settles, but the updated timeout has not yet been retested in Chrome. No real procurement document was uploaded.
+
+The cloud retry sequence tries `gemini-3.5-flash-lite` twice, then `gemini-3.5-flash`, and finally `gemini-3.8-flash`. Firebase AI Logic lists these models in its [model catalog](https://firebase.google.com/docs/ai-logic/models); for the Gemini Developer API, requests for `gemini-3.5-flash` route to `gemini-3.6-flash`. `gemini-3.7-flash` is omitted because requests route to `gemini-3.8-flash`, so it would not be a distinct fallback. Catalog support does not confirm this Firebase project's live availability or a successful analysis.
 
 A real scanned-PDF OCR test and responsive checks for longer Portuguese and Spanish text on small screens are still pending. Optional Firecrawl research also requires `FIRECRAWL_API_KEY` in the server-side deployment environment. The repository includes the Apache License 2.0 in the root-level `LICENSE` file.

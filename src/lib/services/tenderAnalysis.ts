@@ -18,6 +18,7 @@ import {
   createTenderModel,
   generateWithModelFallback,
   geminiModelLabel,
+  initializeDeviceModelWithTimeout,
   PRIMARY_GEMINI_MODEL,
   TOTAL_MODEL_ATTEMPTS,
   type GeminiModelName,
@@ -274,14 +275,17 @@ export async function analyzeTender(
       detail: "Preparing the on-device model",
     });
     try {
-      await model.initializeDeviceModel((progress) => {
-        onProgress({
-          phase: "preparing",
-          completed: Math.round(progress * 100),
-          total: 100,
-          detail: `Downloading the on-device model (${Math.round(progress * 100)}%)`,
-        });
-      });
+      await initializeDeviceModelWithTimeout(
+        (progress) => model.initializeDeviceModel(progress),
+        (progress) => {
+          onProgress({
+            phase: "preparing",
+            completed: Math.round(progress * 100),
+            total: 100,
+            detail: `Downloading the on-device model (${Math.round(progress * 100)}%)`,
+          });
+        },
+      );
     } catch (error) {
       const detail =
         error instanceof Error ? error.message : "On-device model initialization failed";

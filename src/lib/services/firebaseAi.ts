@@ -1,9 +1,5 @@
 import { getApp, getApps, initializeApp, type FirebaseApp } from "firebase/app";
-import {
-  initializeAppCheck,
-  ReCaptchaEnterpriseProvider,
-  type AppCheck,
-} from "firebase/app-check";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider, type AppCheck } from "firebase/app-check";
 import {
   getAI,
   getGenerativeModel,
@@ -16,14 +12,14 @@ import {
 import type { InferencePreference } from "@/lib/types";
 import { TENDER_ANALYSIS_RESPONSE_SCHEMA } from "@/lib/services/tenderAnalysisSchema";
 
-export const PRIMARY_GEMINI_MODEL = "gemini-3.8-flash";
-export const SECONDARY_GEMINI_MODEL = "gemini-3.6-flash";
-export const FALLBACK_GEMINI_MODEL = "gemini-3.5-flash-lite";
+export const PRIMARY_GEMINI_MODEL = "gemini-3.5-flash-lite";
+export const SECONDARY_GEMINI_MODEL = "gemini-3.5-flash";
+export const TERTIARY_GEMINI_MODEL = "gemini-3.8-flash";
 
 export const GEMINI_MODEL_FALLBACK_CHAIN = [
   PRIMARY_GEMINI_MODEL,
   SECONDARY_GEMINI_MODEL,
-  FALLBACK_GEMINI_MODEL,
+  TERTIARY_GEMINI_MODEL,
 ] as const;
 
 export type GeminiModelName = (typeof GEMINI_MODEL_FALLBACK_CHAIN)[number];
@@ -36,10 +32,36 @@ const RETRY_STEPS = [
   { modelName: PRIMARY_GEMINI_MODEL, delayMs: 0, jitterMs: 0 },
   { modelName: PRIMARY_GEMINI_MODEL, delayMs: 3_000, jitterMs: 2_000 },
   { modelName: SECONDARY_GEMINI_MODEL, delayMs: 6_000, jitterMs: 3_000 },
-  { modelName: FALLBACK_GEMINI_MODEL, delayMs: 15_000, jitterMs: 5_000 },
+  { modelName: TERTIARY_GEMINI_MODEL, delayMs: 15_000, jitterMs: 5_000 },
 ] as const;
 
+export const DEVICE_MODEL_INIT_TIMEOUT_MS = 60_000;
+
 export const TOTAL_MODEL_ATTEMPTS = RETRY_STEPS.length;
+
+export async function initializeDeviceModelWithTimeout(
+  initialize: (onProgress: (progress: number) => void) => Promise<void>,
+  onProgress: (progress: number) => void,
+): Promise<void> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const initialization = initialize(onProgress);
+    const timeout = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(
+        () =>
+          reject(
+            new Error(
+              `On-device model initialisation timed out after ${DEVICE_MODEL_INIT_TIMEOUT_MS / 1000} seconds.`,
+            ),
+          ),
+        DEVICE_MODEL_INIT_TIMEOUT_MS,
+      );
+    });
+    await Promise.race([initialization, timeout]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+}
 
 export function getFirebaseAiHttpStatus(error: unknown): number | undefined {
   if (typeof error !== "object" || error === null) return undefined;
@@ -74,11 +96,11 @@ export function isRetryableFirebaseAiError(error: unknown): boolean {
 export function geminiModelLabel(modelName: string): string {
   switch (modelName) {
     case PRIMARY_GEMINI_MODEL:
-      return "Gemini 3.8 Flash";
-    case SECONDARY_GEMINI_MODEL:
-      return "Gemini 3.6 Flash";
-    case FALLBACK_GEMINI_MODEL:
       return "Gemini 3.5 Flash-Lite";
+    case SECONDARY_GEMINI_MODEL:
+      return "Gemini 3.5 Flash";
+    case TERTIARY_GEMINI_MODEL:
+      return "Gemini 3.8 Flash";
     default:
       return modelName;
   }
@@ -92,7 +114,27 @@ export async function generateWithModelFallback<T>(
   } = {},
 ): Promise<{ result: T; modelName: GeminiModelName }> {
   if (preference === "local") {
-    return { result: await generate(PRIMARY_GEMINI_MODEL), modelName: PRIMARY_GEMINI_MODEL };
+    const controller = new AbortController();
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const timeout = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          const timeoutError = new Error(
+            `Firebase AI Logic request timed out after ${GENERATION_TIMEOUT_MS / 1000} seconds.`,
+          );
+          Object.assign(timeoutError, { code: TIMEOUT_ERROR_CODE });
+          reject(timeoutError);
+          controller.abort(timeoutError);
+        }, GENERATION_TIMEOUT_MS);
+      });
+      const result = await Promise.race([
+        generate(PRIMARY_GEMINI_MODEL, controller.signal),
+        timeout,
+      ]);
+      return { result, modelName: PRIMARY_GEMINI_MODEL };
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId);
+    }
   }
 
   const deadline = Date.now() + TOTAL_GENERATION_BUDGET_MS;
@@ -110,7 +152,12 @@ export async function generateWithModelFallback<T>(
       (total, nextStep) => total + nextStep.delayMs + nextStep.jitterMs,
       0,
     );
-    const timeoutMs = Math.min(GENERATION_TIMEOUT_MS, deadline - Date.now() - futureDelayBudget);
+    const remainingAttempts = RETRY_STEPS.length - index;
+    const availableAttemptBudget = deadline - Date.now() - futureDelayBudget;
+    const timeoutMs = Math.min(
+      GENERATION_TIMEOUT_MS,
+      Math.floor(availableAttemptBudget / remainingAttempts),
+    );
     if (timeoutMs <= 0) break;
 
     const controller = new AbortController();

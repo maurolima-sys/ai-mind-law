@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   parseTenderResponse,
@@ -7,6 +7,14 @@ import {
   type InferenceSource,
 } from "@/lib/services/tenderAnalysis";
 import { InferenceSource as FirebaseInferenceSource } from "firebase/ai";
+import {
+  DEVICE_MODEL_INIT_TIMEOUT_MS,
+  initializeDeviceModelWithTimeout,
+} from "@/lib/services/firebaseAi";
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 describe("parseTenderResponse", () => {
   it("accepts a complete JSON response wrapped in a code fence", () => {
@@ -144,5 +152,21 @@ describe("requireInferenceSource", () => {
     expect(() => requireInferenceSource(undefined)).toThrow(
       "Firebase AI Logic returned a result without reporting its inference source.",
     );
+  });
+});
+
+describe("on-device model initialization timeout", () => {
+  it("rejects when device-model initialization never settles", async () => {
+    vi.useFakeTimers();
+    const initialization = initializeDeviceModelWithTimeout(
+      () => new Promise<void>(() => {}),
+      () => {},
+    );
+    const rejection = expect(initialization).rejects.toThrow(
+      "On-device model initialisation timed out after 60 seconds.",
+    );
+
+    await vi.advanceTimersByTimeAsync(DEVICE_MODEL_INIT_TIMEOUT_MS);
+    await rejection;
   });
 });
