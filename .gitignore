@@ -40,6 +40,16 @@ dist-ssr
 Impeccable_*.md
 apple-design.md
 
+# Firebase service account credentials — NEVER commit
+*-firebase-adminsdk-*.json
+firebase-adminsdk*.json
+
+# Independent evaluation files — out of repo scope
+Avalia*.md
+
+# Compliance exports — out of repo scope
+pocketmind-compliance.csv
+
 # Stray root-level source copies (correct files live under src/)
 /firebaseAi.ts
 /model-fallback.test.ts
