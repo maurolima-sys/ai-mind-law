@@ -12,7 +12,7 @@ The core problem: tender documents run to dozens of pages of dense prose. The ob
 
 - **Hybrid inference (on-device-first):** Firebase AI Logic's web hybrid API (`getGenerativeModel` with `InferenceMode.PREFER_ON_DEVICE`) is called in `src/lib/services/firebaseAi.ts`. The app requests on-device inference via Chrome's Prompt API first; if the model is unavailable, the SDK falls back to Gemini in Google's cloud. The actual inference source reported by the SDK (`on-device`, `cloud`, `cloud-fallback`) is surfaced to the user after every analysis.
 - **Cloud-only and on-device-only modes:** selectable from the Processing & privacy screen, both implemented through the same Firebase AI Logic SDK with different `InferenceMode` values.
-- **App Check:** enforced for all Firebase AI Logic calls. The app uses the App Check debug provider for development (token printed to the browser console; not committed). Production deployment requires a reCAPTCHA Enterprise provider.
+- **App Check:** enforced for all Firebase AI Logic calls. Development uses the App Check debug provider, which may print a debug token to the browser console; never share or commit that token. Production uses reCAPTCHA Enterprise and requires its site key for the deployed domain.
 - **Document Q&A:** follow-up questions about the extracted PDF text use the same hybrid inference path, separating stated facts, working hypotheses, and unresolved questions in the model response.
 
 ## What makes this a non-obvious use of hybrid inference
@@ -37,19 +37,13 @@ The repository began as a standard TanStack/Lovable starter during the submissio
 
 ![Hybrid processing and privacy controls](public/pocketmind-hybrid-processing.jpg)
 
----
-
-PocketMind AI helps procurement teams review tender PDFs by organizing requirements, deadlines, specifications, risks, and source evidence into a human-reviewable workspace.
-
-The web app includes a dashboard, document analysis view, compliance matrix, and processing/privacy controls. The included Northbridge tender and prepared findings are fictional sample data; they are illustrative and are **not** generated from a real procurement document.
-
 ## What works
 
 - Upload a PDF up to 20 MB and extract selectable text in the browser with PDF.js.
 - Offer optional LlamaParse OCR for scanned or very sparse PDFs, only after separate per-document consent and when the Lovable connector is enabled.
 - Run Firebase AI Logic analysis in cloud-only, on-device-only, or on-device-first hybrid mode. Cloud processing and fallback require explicit consent.
 - Show the actual inference source reported by Firebase AI Logic, and validate AI citations against extracted page text.
-- Show Firebase AI Logic as connected only after the app receives a real model response; the sample-data workflow does not call Firebase.
+- Show Firebase AI Logic as connected after a model response is received. This confirms a response arrived, not that it passed structured-output validation or produced an accepted analysis. The sample-data workflow does not call Firebase.
 - Test a live model call with the built-in fictional tender text without uploading a real procurement PDF; the result remains labeled as demo data.
 - Ask follow-up questions about extracted PDF text, with exact-text-checked page citations, working hypotheses, browser speech input, and optional browser text-to-speech.
 - Optionally search external legal sources through Firecrawl after separate consent. Only the question and jurisdiction are sent to Firecrawl; the PDF is not. Configure `FIRECRAWL_API_KEY` on the server, never in a `VITE_*` variable.
@@ -84,7 +78,7 @@ The Firebase web configuration and reCAPTCHA site key are public client configur
 
 Firebase AI Logic's web on-device inference uses Chrome's Prompt API and is available only in supported desktop Chrome versions. The SDK reports the inference source but does not let the app pin a particular on-device model version. PDF files are converted to text before model analysis; direct on-device PDF input is not supported. Scanned PDFs may use the separately consented external OCR path described above.
 
-The current local checkout has no `.env.local` file with Firebase configuration committed (by design — secrets must not be committed). Set up your own Firebase project following the steps above, or use the hosted deployment at **https://ai-mind-law.vercel.app/** where Firebase is configured. A configured client is not shown as connected until a Firebase AI Logic response is received.
+The current local checkout has no `.env.local` file with Firebase configuration committed (by design — secrets must not be committed). Set up your own Firebase project following the steps above, or open the hosted deployment at **https://ai-mind-law.vercel.app/**. Loading the dashboard does not by itself verify that live Firebase AI analysis is configured; use the live-analysis test below.
 
 ## Development
 
@@ -110,6 +104,10 @@ npm run lint
 npm run build
 ```
 
+GitHub Actions runs the full test suite and production build, plus targeted ESLint checks for integration files. It does not currently lint every source file; the full local lint command may report existing formatting debt outside those checks.
+
 ## Verification notes
 
-The live AI feature is usable only after the Firebase and App Check setup above is completed for the deployment. The sample-data workflow does not call Firebase; a live test must select Cloud AI or hybrid mode, grant the explicit cloud consent, and run the fictional sample analysis. The repository includes the Apache License 2.0 in the root-level `LICENSE` file.
+The sample-data workflow does not call Firebase. A live test must select Cloud AI or hybrid mode, grant the explicit cloud consent, and run the fictional sample analysis. The most recent reported cloud retest received a model response but the analysis failed structured-output validation; the response-schema correction is in the code, but a successful live analysis after that change has not yet been verified. A “connected” status means a response was received, not that the analysis passed validation.
+
+A real scanned-PDF OCR test and responsive checks for longer Portuguese and Spanish text on small screens are still pending. Optional Firecrawl research also requires `FIRECRAWL_API_KEY` in the server-side deployment environment. The repository includes the Apache License 2.0 in the root-level `LICENSE` file.
