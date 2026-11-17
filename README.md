@@ -25,7 +25,17 @@ Procurement and tendering teams, consultants, and anyone who reviews public or p
 
 ## Built during the submission period
 
-The project was started from scratch for this hackathon. Work completed during the submission period includes: Firebase AI Logic hybrid inference integration, App Check setup, PDF.js in-browser text extraction, evidence verification against extracted page text, the compliance matrix with per-requirement review tracking, document Q&A with structured fact/hypothesis/unresolved separation, optional LlamaParse OCR path for scanned PDFs (via Lovable connector), optional Firecrawl external research (server-side only), and the full UI across Dashboard, Document analysis, Compliance matrix, and Processing & privacy screens.
+The repository began as a standard TanStack/Lovable starter during the submission period and was substantially rebuilt into PocketMind AI. Work completed during the submission period includes: Firebase AI Logic hybrid inference integration, App Check setup, PDF.js in-browser text extraction, evidence verification against extracted page text, the compliance matrix with per-requirement review tracking, document Q&A with structured fact/hypothesis/unresolved separation, optional LlamaParse OCR for scanned PDFs (via the Lovable connector), optional Firecrawl external research (server-side only), and the full UI across Dashboard, Document analysis, Compliance matrix, and Processing & privacy screens.
+
+## Product screens
+
+![PocketMind AI dashboard](public/pocketmind-dashboard.jpg)
+
+![Tender analysis with source-linked findings](public/pocketmind-analysis.jpg)
+
+![Compliance matrix](public/pocketmind-compliance.jpg)
+
+![Hybrid processing and privacy controls](public/pocketmind-hybrid-processing.jpg)
 
 ---
 
@@ -100,6 +110,6 @@ npm run lint
 npm run build
 ```
 
-## Submission readiness
+## Verification notes
 
-The live AI feature is only usable after the Firebase and App Check setup above is completed and tested in the deployment. The repository now includes the Apache License 2.0 in the root-level LICENSE file. Use the public GitHub URL when a license link is requested.
+The live AI feature is usable only after the Firebase and App Check setup above is completed for the deployment. The sample-data workflow does not call Firebase; a live test must select Cloud AI or hybrid mode, grant the explicit cloud consent, and run the fictional sample analysis. The repository includes the Apache License 2.0 in the root-level `LICENSE` file.

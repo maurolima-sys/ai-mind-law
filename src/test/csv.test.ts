@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { complianceCsv } from "@/lib/services/csv";
+import type { TranslationKey } from "@/lib/i18n/en";
 import type { Requirement } from "@/lib/types";
 import type { TranslationKey } from "@/lib/i18n/en";
 
@@ -9,6 +10,7 @@ const t = (key: TranslationKey) => key;
 
 describe("complianceCsv", () => {
   it("exports model-provided formula-like text as a literal value", () => {
+    const t = (key: TranslationKey) => key;
     const requirements: Requirement[] = [
       {
         id: "r1",

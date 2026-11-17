@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run tests
+        run: bun run test
+
+      - name: Run lint on application integration files
+        run: >-
+          bunx eslint
+          vitest.config.ts
+          src/lib/services/firebaseAi.ts
+          src/lib/services/tenderAnalysis.ts
+          src/test/model-fallback.test.ts
+          src/test/csv.test.ts
+
+      - name: Build application
+        run: bun run build
