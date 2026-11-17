@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   GEMINI_MODEL_FALLBACK_CHAIN,
@@ -10,11 +10,11 @@ import {
   TERTIARY_GEMINI_MODEL,
 } from "@/lib/services/firebaseAi";
 
-afterEach(() => {
-  vi.useRealTimers();
-});
-
 describe("Firebase AI retry policy", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("extracts Firebase SDK status metadata and retries only transient statuses", () => {
     expect(getFirebaseAiHttpStatus({ customErrorData: { status: 500 } })).toBe(500);
     expect(getFirebaseAiHttpStatus(new Error("Error fetching request: [502 Bad Gateway]"))).toBe(
@@ -90,7 +90,6 @@ describe("Firebase AI retry policy", () => {
   it("rejects local-only requests that ignore the abort signal", async () => {
     vi.useFakeTimers();
     const request = generateWithModelFallback("local", () => new Promise(() => {}));
-
     const rejection = expect(request).rejects.toThrow(/timed out/);
     await vi.advanceTimersByTimeAsync(60_000);
     await rejection;
@@ -111,7 +110,7 @@ describe("Firebase AI retry policy", () => {
     expect(calls).toEqual([PRIMARY_GEMINI_MODEL]);
   });
 
-  it("advances to the next model after a request timeout", async () => {
+  it("keeps advancing after request timeouts within the total budget", async () => {
     vi.useFakeTimers();
     const calls: string[] = [];
     const retryUpdates: Array<{ modelName: string; status?: number }> = [];
@@ -120,7 +119,7 @@ describe("Firebase AI retry policy", () => {
       "cloud",
       (modelName, signal) => {
         calls.push(modelName);
-        if (calls.length > 2) return Promise.resolve("completed");
+        if (calls.length > 3) return Promise.resolve("completed");
         return new Promise((_, reject) => {
           signal?.addEventListener("abort", () => {
             const error = Object.assign(new Error("aborted"), { name: "AbortError" });
@@ -137,12 +136,18 @@ describe("Firebase AI retry policy", () => {
     await vi.runAllTimersAsync();
     await expect(request).resolves.toEqual({
       result: "completed",
-      modelName: SECONDARY_GEMINI_MODEL,
+      modelName: TERTIARY_GEMINI_MODEL,
     });
-    expect(calls).toEqual([PRIMARY_GEMINI_MODEL, PRIMARY_GEMINI_MODEL, SECONDARY_GEMINI_MODEL]);
+    expect(calls).toEqual([
+      PRIMARY_GEMINI_MODEL,
+      PRIMARY_GEMINI_MODEL,
+      SECONDARY_GEMINI_MODEL,
+      TERTIARY_GEMINI_MODEL,
+    ]);
     expect(retryUpdates).toEqual([
       { modelName: PRIMARY_GEMINI_MODEL, status: undefined },
       { modelName: SECONDARY_GEMINI_MODEL, status: undefined },
+      { modelName: TERTIARY_GEMINI_MODEL, status: undefined },
     ]);
   });
 });

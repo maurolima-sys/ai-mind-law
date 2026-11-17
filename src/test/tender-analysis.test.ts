@@ -12,10 +12,6 @@ import {
   initializeDeviceModelWithTimeout,
 } from "@/lib/services/firebaseAi";
 
-afterEach(() => {
-  vi.useRealTimers();
-});
-
 describe("parseTenderResponse", () => {
   it("accepts a complete JSON response wrapped in a code fence", () => {
     const response = {
@@ -156,6 +152,10 @@ describe("requireInferenceSource", () => {
 });
 
 describe("on-device model initialization timeout", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("rejects when device-model initialization never settles", async () => {
     vi.useFakeTimers();
     const initialization = initializeDeviceModelWithTimeout(
