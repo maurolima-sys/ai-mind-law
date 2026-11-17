@@ -32,6 +32,8 @@ dist-ssr
 *.sw?
 .env*
 !.env.example
+!.env.public
+!.env
 .vercel/
 
 # Reference files — do not commit
