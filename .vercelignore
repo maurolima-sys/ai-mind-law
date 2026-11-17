@@ -1,0 +1,15 @@
+# Local credentials and environment files
+/.env
+/.env.*
+
+# Local documents and evaluation artifacts are not application assets
+/*.pdf
+/*.zip
+/*.csv
+/*.md
+/docs/
+/.agents/
+/.amazonq/
+/.lovable/
+/firebaseAi.ts
+/model-fallback.test.ts

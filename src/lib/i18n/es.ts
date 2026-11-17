@@ -2,10 +2,10 @@ import type { Translations } from "./en";
 
 export const es: Translations = {
   nav_dashboard: "Panel",
-  nav_library: "Biblioteca",
-  nav_analysis: "Análisis documental",
+  nav_library: "Documentos",
+  nav_analysis: "Análisis",
   nav_compliance: "Matriz de cumplimiento",
-  nav_processing: "Procesamiento y privacidad",
+  nav_processing: "Procesamiento",
 
   screen_overview_title: "Tu espacio de trabajo documental",
   screen_overview_subtitle:
@@ -296,7 +296,7 @@ export const es: Translations = {
 
   mode_card_cloud_title: "IA en la nube",
   mode_card_cloud_badge: "GEMINI",
-  mode_card_cloud_heading: "Analizar con Gemini 3.8 Flash",
+  mode_card_cloud_heading: "Analizar con Gemini 3.5 Flash-Lite",
   mode_card_cloud_desc:
     "Envía el texto extraído del documento a la nube de Google a través de Firebase AI Logic. Este modo utiliza solo inferencia en la nube y no recurre al procesamiento en el dispositivo.",
   mode_card_cloud_p1: "Inferencia directa en la nube",
@@ -307,7 +307,7 @@ export const es: Translations = {
   mode_card_hybrid_badge: "DISPOSITIVO PRIMERO",
   mode_card_hybrid_heading: "Preferir en el dispositivo, permitir fallback",
   mode_card_hybrid_desc:
-    "Firebase AI Logic intenta primero el modelo disponible en el dispositivo. Si no está disponible, el SDK puede enviar el texto extraído del documento a Gemini 3.8 Flash en la nube de Google.",
+    "Firebase AI Logic intenta primero el modelo disponible en el dispositivo. Si no está disponible, el SDK puede enviar el texto extraído del documento a Gemini 3.5 Flash-Lite y otros modelos de respaldo en la nube de Google.",
   mode_card_hybrid_p1: "Fuente real mostrada tras el análisis",
   mode_card_hybrid_p2: "El uso de la nube requiere tu consentimiento",
   mode_card_hybrid_p3: "App Check requerido",

@@ -340,7 +340,6 @@ export async function analyzeTender(
     const source = requireInferenceSource(result.response.inferenceSource);
     sources.add(source);
     if (source === "IN_CLOUD") cloudModelNames.add(modelName);
-    onInference(source);
     if (preference === "hybrid" && source === "IN_CLOUD") {
       onProgress({
         phase: "analyzing",
@@ -350,6 +349,7 @@ export async function analyzeTender(
       });
     }
     records.push(parseTenderResponse(result.response.text()));
+    onInference(source);
   }
 
   if (sources.size === 0) {
