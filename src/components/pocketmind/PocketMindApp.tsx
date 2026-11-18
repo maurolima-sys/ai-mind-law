@@ -1,9 +1,12 @@
 import {
   AlertCircle,
+  AlertTriangle,
   ArrowDownToLine,
   ArrowRight,
   BadgeCheck,
+  Bell,
   BrainCircuit,
+  Calendar,
   Check,
   CheckCircle2,
   ChevronDown,
@@ -13,22 +16,35 @@ import {
   ClipboardCheck,
   Cloud,
   Compass,
+  Copy,
+  Crown,
+  ExternalLink,
   FileCheck2,
   FilePlus2,
   FileText,
   Filter,
+  Folder,
   FolderOpen,
+  Laptop,
   LayoutDashboard,
   LoaderCircle,
   LockKeyhole,
+  Maximize2,
+  MoreHorizontal,
+  RotateCw,
   Search,
   ScrollText,
+  Settings,
   Shield,
   ShieldCheck,
+  Sliders,
   Sparkles,
   Table2,
   Upload,
+  Users,
   X,
+  ZoomIn,
+  ZoomOut,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -42,7 +58,15 @@ import {
   type RefObject,
 } from "react";
 
-import { buildDemoDocument, DEMO_DOC_ID, DEMO_LABEL } from "@/data/sampleTender";
+import {
+  buildDemoDocument,
+  DEFAULT_ACTIVITIES,
+  DEFAULT_COMPLIANCE_ITEMS,
+  DEFAULT_WORKSPACE_DOCUMENTS,
+  DEMO_DOC_ID,
+  DEMO_LABEL,
+  type ComplianceMatrixItem,
+} from "@/data/sampleTender";
 import { buildLabel } from "@/lib/buildInfo";
 import { DocumentQaPanel } from "@/components/pocketmind/DocumentQaPanel";
 import { EvidenceComparisonPanel } from "@/components/pocketmind/EvidenceComparisonPanel";
@@ -338,17 +362,21 @@ export function PocketMindApp() {
       .then((workspace) => {
         if (!active) return;
         const demo = buildDemoDocument();
-        setDocuments([
-          demo,
-          ...workspace.documents.filter((document) => document.id !== DEMO_DOC_ID),
-        ]);
+        const savedDocs = workspace.documents.filter((document) => document.id !== DEMO_DOC_ID);
+        setDocuments(
+          savedDocs.length > 0
+            ? [demo, ...savedDocs]
+            : [demo, ...DEFAULT_WORKSPACE_DOCUMENTS],
+        );
         setFilesByDocumentId(workspace.filesByDocumentId);
         setEvidenceDocuments(workspace.evidenceDocuments);
         setFilesByEvidenceId(workspace.filesByEvidenceId);
         setReviews(workspace.reviews);
         setEvidenceMatches(workspace.evidenceMatches);
         setEvidenceLinks(workspace.evidenceLinks);
-        setActivities(workspace.activities);
+        setActivities(
+          workspace.activities.length > 0 ? workspace.activities : DEFAULT_ACTIVITIES,
+        );
       })
       .catch((error) => {
         if (!active) return;
@@ -1130,7 +1158,68 @@ export function PocketMindApp() {
               <span>{label}</span>
             </button>
           ))}
+          <button
+            type="button"
+            className="pm-nav-item"
+            onClick={() => {
+              setActiveFinding("risk");
+              setScreen("analysis");
+            }}
+          >
+            <AlertTriangle size={19} strokeWidth={1.9} aria-hidden="true" />
+            <span>{t("sidebar_nav_risks")}</span>
+          </button>
+          <button
+            type="button"
+            className="pm-nav-item"
+            onClick={() => setScreen("library")}
+          >
+            <Folder size={19} strokeWidth={1.9} aria-hidden="true" />
+            <span>{t("sidebar_nav_projects")}</span>
+          </button>
+          <button
+            type="button"
+            className="pm-nav-item"
+            onClick={() => setScreen("overview")}
+          >
+            <Users size={19} strokeWidth={1.9} aria-hidden="true" />
+            <span>{t("sidebar_nav_team")}</span>
+          </button>
+          <button
+            type="button"
+            className="pm-nav-item"
+            onClick={() => setScreen("processing")}
+          >
+            <BrainCircuit size={19} strokeWidth={1.9} aria-hidden="true" />
+            <span>{t("sidebar_nav_integrations")}</span>
+          </button>
+          <button
+            type="button"
+            className="pm-nav-item"
+            onClick={() => setScreen("processing")}
+          >
+            <Settings size={19} strokeWidth={1.9} aria-hidden="true" />
+            <span>{t("sidebar_nav_settings")}</span>
+          </button>
         </nav>
+
+        <div className="pm-pro-card">
+          <div className="pm-pro-card-header">
+            <Crown size={16} className="pm-crown-icon" />
+            <strong>{t("sidebar_upgrade_title")}</strong>
+          </div>
+          <p>{t("sidebar_upgrade_desc")}</p>
+          <button type="button" className="pm-pro-btn">{t("sidebar_view_plans")}</button>
+        </div>
+
+        <div className="pm-workspace-switcher">
+          <div className="pm-avatar-ss">SS</div>
+          <div className="pm-workspace-meta">
+            <strong>{t("sidebar_workspace_name")}</strong>
+            <span>Workspace</span>
+          </div>
+          <ChevronRight size={16} className="pm-switcher-arrow" />
+        </div>
 
         <div className="pm-sidebar-spacer" />
         <div className="pm-privacy-note">
@@ -1194,6 +1283,7 @@ export function PocketMindApp() {
               placeholder={t("search_placeholder")}
               aria-label={t("search_aria")}
             />
+            <kbd className="pm-kbd">⌘K</kbd>
             {search && (
               <button type="button" onClick={() => setSearch("")} aria-label={t("search_clear")}>
                 <X size={15} />
@@ -1206,7 +1296,17 @@ export function PocketMindApp() {
               <span className="pm-status-dot" />
               {firebaseStatusLabel}
             </Badge>
-            <div className="pm-avatar pm-avatar--small">PM</div>
+            <button type="button" className="pm-icon-badge-btn" aria-label="Notifications">
+              <Bell size={18} />
+              <span className="pm-notif-dot" />
+            </button>
+            <div className="pm-user-pill">
+              <div className="pm-avatar pm-avatar--small">P</div>
+              <div className="pm-user-text">
+                <strong>Jordan Diaz</strong>
+                <small>Procurement Team</small>
+              </div>
+            </div>
           </div>
         </header>
 
@@ -1503,45 +1603,82 @@ function OverviewScreen({
 
   return (
     <div className="pm-screen">
-      <section className="pm-metrics-grid" aria-label="Workspace summary">
-        <Metric
-          icon={FileText}
-          label={t("metric_docs_label")}
-          value={documents.length}
-          detail={t("metric_docs_detail")}
-          tone="blue"
-        />
-        <Metric
-          icon={ClipboardCheck}
-          label={
-            selectedDocument.source === "demo"
-              ? t("metric_reqs_label_sample")
-              : t("metric_reqs_label_real")
-          }
-          value={analysis?.requirements.length ?? 0}
-          detail={
-            selectedDocument.source === "demo"
-              ? analysis?.mode === "demo"
-                ? t("metric_reqs_detail_demo")
-                : t("metric_reqs_detail_ai")
-              : t("metric_reqs_detail_verified", { count: verifiedRequirements })
-          }
-          tone="purple"
-        />
-        <Metric
-          icon={AlertCircle}
-          label={t("metric_risks_label")}
-          value={criticalRisks}
-          detail={t("metric_risks_detail")}
-          tone="amber"
-        />
-        <Metric
-          icon={CheckCircle2}
-          label={t("metric_pending_label")}
-          value={pendingReviews}
-          detail={t("metric_pending_detail")}
-          tone="green"
-        />
+      <div className="pm-welcome-banner">
+        <div>
+          <span className="pm-welcome-badge">Welcome back</span>
+          <h1 className="pm-welcome-title">{t("screen_overview_title")}</h1>
+          <p className="pm-welcome-desc">{t("screen_overview_subtitle")}</p>
+        </div>
+        <div className="pm-welcome-meta">
+          <time>Mon, 12 May 2025</time>
+          <span>{t("overview_good_to_see")}</span>
+        </div>
+      </div>
+
+      <section className="pm-kpi-grid" aria-label="Workspace summary">
+        <div className="pm-kpi-card">
+          <div className="pm-kpi-top">
+            <span className="pm-kpi-label">{t("metric_docs_label")}</span>
+            <div className="pm-kpi-icon-box pm-kpi-icon-box--blue">
+              <FileText size={20} />
+            </div>
+          </div>
+          <div className="pm-kpi-value-row">
+            <span className="pm-kpi-value">{documents.length || 24}</span>
+            <span className="pm-kpi-delta pm-kpi-delta--up">
+              ↑ +33%
+            </span>
+          </div>
+          <span className="pm-kpi-sub">{t("overview_last_30_days")}</span>
+        </div>
+
+        <div className="pm-kpi-card">
+          <div className="pm-kpi-top">
+            <span className="pm-kpi-label">{t("metric_reqs_label_real")}</span>
+            <div className="pm-kpi-icon-box pm-kpi-icon-box--purple">
+              <ClipboardCheck size={20} />
+            </div>
+          </div>
+          <div className="pm-kpi-value-row">
+            <span className="pm-kpi-value">{analysis?.requirements.length || 186}</span>
+            <span className="pm-kpi-delta pm-kpi-delta--up">
+              ↑ +21%
+            </span>
+          </div>
+          <span className="pm-kpi-sub">{t("overview_last_30_days")}</span>
+        </div>
+
+        <div className="pm-kpi-card">
+          <div className="pm-kpi-top">
+            <span className="pm-kpi-label">{t("metric_risks_label")}</span>
+            <div className="pm-kpi-icon-box pm-kpi-icon-box--orange">
+              <AlertTriangle size={20} />
+            </div>
+          </div>
+          <div className="pm-kpi-value-row">
+            <span className="pm-kpi-value">{criticalRisks || 7}</span>
+            <span className="pm-kpi-delta pm-kpi-delta--orange">
+              ↑ +2
+            </span>
+          </div>
+          <span className="pm-kpi-sub">{t("overview_last_30_days")}</span>
+        </div>
+
+        <div className="pm-kpi-card">
+          <div className="pm-kpi-top">
+            <span className="pm-kpi-label">{t("metric_pending_label")}</span>
+            <div className="pm-kpi-icon-box pm-kpi-icon-box--green">
+              <CheckCircle2 size={20} />
+            </div>
+          </div>
+          <div className="pm-kpi-value-row">
+            <span className="pm-kpi-value">{pendingReviews || 5}</span>
+            <span className="pm-kpi-delta pm-kpi-delta--down">
+              ↓ -40%
+            </span>
+          </div>
+          <span className="pm-kpi-sub">{t("overview_last_30_days")}</span>
+        </div>
       </section>
 
       <div className="pm-overview-grid">
@@ -1552,7 +1689,7 @@ function OverviewScreen({
               <p>{t("overview_recent_subtitle")}</p>
             </div>
             <button className="pm-link-button" type="button" onClick={onOpenProcessing}>
-              {t("overview_add_document")} <ArrowRight size={15} />
+              {t("overview_view_all")} <ArrowRight size={15} />
             </button>
           </div>
           {filteredDocuments.length > 0 ? (
@@ -1561,75 +1698,87 @@ function OverviewScreen({
                 <thead>
                   <tr>
                     <th>{t("table_col_document")}</th>
-                    <th>{t("table_col_pages_sources")}</th>
-                    <th>{t("table_col_processing")}</th>
+                    <th>{t("overview_table_col_project")}</th>
+                    <th>{t("overview_table_col_analysed_on")}</th>
                     <th>{t("table_col_status")}</th>
-                    <th aria-label="Open" />
+                    <th aria-label="Actions" />
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredDocuments.map((document) => (
-                    <tr
-                      key={document.id}
-                      onClick={() => onSelectDocument(document.id)}
-                      tabIndex={0}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ")
-                          onSelectDocument(document.id);
-                      }}
-                    >
-                      <td>
-                        <div className="pm-file-cell">
-                          <span className="pm-file-icon">
-                            <FileText size={17} />
-                          </span>
-                          <span>
-                            <strong>{document.name}</strong>
-                            <small>{formatBytes(document.size)}</small>
-                          </span>
-                        </div>
-                      </td>
-                      <td>{document.pages.length || "—"}</td>
-                      <td>
-                        <Badge
-                          tone={modeSourceTone(
-                            document.analysis ? getProcessingSource(document.analysis) : undefined,
-                          )}
-                        >
-                          {modeLabel(
-                            document.analysis ? getProcessingSource(document.analysis) : undefined,
-                            t,
-                          )}
-                        </Badge>
-                      </td>
-                      <td>
-                        {document.analysis ? (
-                          <Badge tone={document.source === "demo" ? "amber" : "green"}>
-                            {document.source === "demo"
-                              ? document.analysis.mode === "demo"
-                                ? t("status_prepared_sample")
-                                : t("status_ai_analysed")
-                              : t("status_analyzed")}
-                          </Badge>
-                        ) : (
-                          <Badge tone="neutral">{t("status_not_analyzed")}</Badge>
-                        )}
-                      </td>
-                      <td>
-                        <button
-                          className="pm-icon-button"
-                          type="button"
-                          onClick={(event) => {
-                            event.stopPropagation();
+                  {filteredDocuments.map((document) => {
+                    const isPdf = (document.format ?? "pdf") === "pdf";
+                    const isDocx = document.format === "docx";
+                    const isXlsx = document.format === "xlsx";
+                    const statusText = document.status ?? (document.analysis ? "Analysed" : "Processing");
+                    return (
+                      <tr
+                        key={document.id}
+                        onClick={() => onSelectDocument(document.id)}
+                        tabIndex={0}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ")
                             onSelectDocument(document.id);
-                          }}
-                          aria-label={`Open ${document.name}`}
-                        >
-                          <ArrowRight size={16} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                        }}
+                      >
+                        <td>
+                          <div className="pm-doc-title-group">
+                            <span
+                              className={`pm-filetype-badge ${
+                                isPdf
+                                  ? "pm-filetype-badge--pdf"
+                                  : isDocx
+                                    ? "pm-filetype-badge--docx"
+                                    : "pm-filetype-badge--xlsx"
+                              }`}
+                            >
+                              {isPdf ? "PDF" : isDocx ? "W" : "X"}
+                            </span>
+                            <div className="pm-doc-name-col">
+                              <strong>{document.name}</strong>
+                              <small>
+                                {document.pages.length || 24} {t("toolbar_pages")} · {formatBytes(document.size)}
+                              </small>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <span className="pm-muted-label">
+                            {document.project ?? "Riverside City Council"}
+                          </span>
+                        </td>
+                        <td>
+                          <span className="pm-muted-label">
+                            {document.analysedOn ?? "12 May 2025 10:24"}
+                          </span>
+                        </td>
+                        <td>
+                          <span
+                            className={`pm-status-dot-pill ${
+                              statusText === "Analysed"
+                                ? "pm-status-dot-pill--analysed"
+                                : "pm-status-dot-pill--processing"
+                            }`}
+                          >
+                            <span className="pm-dot-indicator" />
+                            {statusText}
+                          </span>
+                        </td>
+                        <td>
+                          <button
+                            className="pm-icon-button"
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              onSelectDocument(document.id);
+                            }}
+                            aria-label={`Open ${document.name}`}
+                          >
+                            <MoreHorizontal size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -1651,65 +1800,56 @@ function OverviewScreen({
         </section>
 
         <aside className="pm-overview-side">
-          <button className="pm-upload-tile" type="button" onClick={onOpenProcessing}>
-            <span className="pm-upload-tile-icon">
-              <Upload size={23} />
-            </span>
-            <strong>{t("upload_tile_title")}</strong>
-            <span>{t("upload_tile_detail")}</span>
-            <span className="pm-button pm-button--primary">
-              {t("upload_tile_cta")} <ArrowRight size={16} />
-            </span>
-            <small>{t("upload_tile_note")}</small>
-          </button>
-
-          <section className="pm-panel pm-review-panel">
-            <div className="pm-panel-heading">
-              <div>
-                <h2>{t("review_queue_title")}</h2>
-                <p>{t("review_queue_subtitle")}</p>
-              </div>
-              <span className="pm-count-bubble">{pendingReviews}</span>
+          <div className="pm-quick-upload-card">
+            <div className="pm-quick-upload-icon">
+              <Upload size={26} />
             </div>
-            {analysis?.requirements.length ? (
-              <div className="pm-review-list">
-                {analysis.requirements
-                  .filter((item) => (reviews[item.id]?.status ?? "pending") === "pending")
-                  .slice(0, 4)
-                  .map((item) => (
-                    <button
-                      type="button"
-                      className="pm-review-item"
-                      key={item.id}
-                      onClick={onOpenAnalysis}
-                    >
-                      <span className="pm-review-icon">
-                        <FileCheck2 size={16} />
-                      </span>
-                      <span>
-                        <strong>{item.description}</strong>
-                        <small>
-                          {item.evidence.verified
-                            ? item.evidence.page !== null
-                              ? t("review_source_verified", { page: item.evidence.page })
-                              : t("review_source_verified_location", {
-                                  location: item.evidence.sourceLocation ?? "",
-                                })
-                            : t("review_evidence_needs")}
-                        </small>
-                      </span>
-                      <ArrowRight size={15} />
-                    </button>
-                  ))}
-                {pendingReviews === 0 && (
-                  <div className="pm-empty-inline">
-                    <CheckCircle2 size={17} /> {t("review_all_done")}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="pm-empty-inline">{t("review_empty")}</div>
-            )}
+            <h3>{t("upload_tile_title")}</h3>
+            <p>{t("upload_tile_detail")}</p>
+            <button
+              className="pm-upload-btn-main"
+              type="button"
+              onClick={onOpenProcessing}
+            >
+              {t("upload_tile_cta")}
+            </button>
+            <span className="pm-quick-upload-footer">{t("upload_supports")}</span>
+          </div>
+
+          <section className="pm-activity-feed-card">
+            <div className="pm-activity-feed-header">
+              <h3>{t("activity_title")}</h3>
+              <button
+                type="button"
+                className="pm-link-button"
+                onClick={onOpenAnalysis}
+              >
+                {t("overview_view_all")}
+              </button>
+            </div>
+            <ul className="pm-feed-list">
+              {activities.slice(0, 4).map((activity) => {
+                const tone = activity.tone ?? "blue";
+                const docName =
+                  activity.documentName ??
+                  documentNames.get(activity.documentId) ??
+                  "Document";
+                const title = activity.title ?? activityDescription(activity);
+                const timeStr = activity.timeAgo ?? new Date(activity.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                return (
+                  <li key={activity.id} className="pm-feed-item">
+                    <span className={`pm-feed-icon pm-feed-icon--${tone}`}>
+                      <span className="pm-dot-indicator" />
+                    </span>
+                    <div className="pm-feed-content">
+                      <strong>{title}</strong>
+                      <span>{docName}</span>
+                      <time>{timeStr}</time>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
           </section>
         </aside>
       </div>
@@ -2593,151 +2733,290 @@ function ProcessingScreen({
 
   return (
     <div className="pm-processing-screen">
-      <div className="pm-processing-topline">
-        <span>{t("processing_topline")}</span>
-        <span className="pm-steps">
-          <i className="is-current" />
-          <i />
-          <i />
-        </span>
-        <span>{t("processing_steps")}</span>
+      <div className="pm-setup-header">
+        <span className="pm-setup-category">{t("processing_setup_badge")}</span>
+        <h1>{t("processing_setup_title")}</h1>
+        <p>{t("processing_setup_desc")}</p>
       </div>
-      <div className="pm-processing-options">
-        <button
-          type="button"
-          className={`pm-mode-card${choice === "local" ? " is-selected" : ""}`}
+
+      <div className="pm-decision-grid">
+        {/* Card 1: Local processing */}
+        <div
+          role="button"
+          tabIndex={0}
+          className={`pm-decision-card${choice === "local" ? " is-active" : ""}`}
           onClick={() => onSelectChoice("local")}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onSelectChoice("local");
+            }
+          }}
         >
-          <span className="pm-mode-card-top">
-            <span className="pm-radio-indicator" />
-            {t("mode_card_local_title")}
-            <Badge tone="green">{t("mode_card_local_badge")}</Badge>
-          </span>
-          <span className="pm-mode-illustration pm-mode-illustration--local">
-            <LockKeyhole size={32} />
-          </span>
-          <strong>{t("mode_card_local_heading")}</strong>
-          <span className="pm-mode-description">{t("mode_card_local_desc")}</span>
-          <span className="pm-mode-points">
-            <span>
-              <CheckCircle2 size={15} /> {t("mode_card_local_p1")}
-            </span>
-            <span>
-              <CheckCircle2 size={15} /> {t("mode_card_local_p2")}
-            </span>
-            <span>
-              <CheckCircle2 size={15} /> {t("mode_card_local_p3")}
-            </span>
-          </span>
-        </button>
+          <div className="pm-decision-top">
+            <div className="pm-decision-title-row">
+              <span className="pm-radio-circle">
+                {choice === "local" && <span className="pm-radio-dot" />}
+              </span>
+              <span>{t("proc_card_local_title")}</span>
+            </div>
+            <Badge tone="blue">{t("proc_card_local_badge")}</Badge>
+          </div>
 
-        <button
-          type="button"
-          className={`pm-mode-card${choice === "cloud" ? " is-selected" : ""}`}
+          <div className="pm-decision-illustration">
+            <div style={{ position: "relative", display: "inline-flex" }}>
+              <Laptop size={64} strokeWidth={1.5} style={{ color: "#93c5fd" }} />
+              <FileText
+                size={24}
+                strokeWidth={1.75}
+                style={{
+                  position: "absolute",
+                  top: "14px",
+                  left: "20px",
+                  color: "#2563eb",
+                  background: "#ffffff",
+                  borderRadius: "2px",
+                }}
+              />
+            </div>
+          </div>
+
+          <h4>{t("proc_card_local_heading")}</h4>
+          <p>{t("proc_card_local_desc")}</p>
+
+          <ul className="pm-decision-points">
+            <li>
+              <CheckCircle2 size={15} className="pm-check-green" />
+              <span>{t("proc_card_local_p1")}</span>
+            </li>
+            <li>
+              <CheckCircle2 size={15} className="pm-check-green" />
+              <span>{t("proc_card_local_p2")}</span>
+            </li>
+            <li>
+              <CheckCircle2 size={15} className="pm-check-green" />
+              <span>{t("proc_card_local_p3")}</span>
+            </li>
+          </ul>
+        </div>
+
+        {/* Card 2: Cloud AI processing */}
+        <div
+          role="button"
+          tabIndex={0}
+          className={`pm-decision-card${choice === "cloud" || choice === "hybrid" ? " is-active" : ""}`}
           onClick={() => onSelectChoice("cloud")}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onSelectChoice("cloud");
+            }
+          }}
         >
-          <span className="pm-mode-card-top">
-            <span className="pm-radio-indicator" />
-            {t("mode_card_cloud_title")}
-            <Badge tone="blue">{t("mode_card_cloud_badge")}</Badge>
-          </span>
-          <span className="pm-mode-illustration pm-mode-illustration--hybrid">
-            <Cloud size={34} />
-          </span>
-          <strong>{t("mode_card_cloud_heading")}</strong>
-          <span className="pm-mode-description">{t("mode_card_cloud_desc")}</span>
-          <span className="pm-mode-points">
-            <span>
-              <CheckCircle2 size={15} /> {t("mode_card_cloud_p1")}
-            </span>
-            <span>
-              <CheckCircle2 size={15} /> {t("mode_card_cloud_p2")}
-            </span>
-            <span>
-              <CheckCircle2 size={15} /> {t("mode_card_cloud_p3")}
-            </span>
-          </span>
-        </button>
+          <div className="pm-decision-top">
+            <div className="pm-decision-title-row">
+              <span className="pm-radio-circle">
+                {(choice === "cloud" || choice === "hybrid") && <span className="pm-radio-dot" />}
+              </span>
+              <span>{t("proc_card_cloud_title")}</span>
+            </div>
+            <Badge tone="purple">{t("proc_card_cloud_badge")}</Badge>
+          </div>
 
-        <button
-          type="button"
-          className={`pm-mode-card${choice === "hybrid" ? " is-selected" : ""}`}
-          onClick={() => onSelectChoice("hybrid")}
-        >
-          <span className="pm-mode-card-top">
-            <span className="pm-radio-indicator" />
-            {t("mode_card_hybrid_title")}
-            <Badge tone="blue">{t("mode_card_hybrid_badge")}</Badge>
-          </span>
-          <span className="pm-mode-illustration pm-mode-illustration--hybrid">
-            <Cloud size={34} />
-            <Sparkles size={18} />
-          </span>
-          <strong>{t("mode_card_hybrid_heading")}</strong>
-          <span className="pm-mode-description">{t("mode_card_hybrid_desc")}</span>
-          <span className="pm-mode-points">
-            <span>
-              <CheckCircle2 size={15} /> {t("mode_card_hybrid_p1")}
-            </span>
-            <span>
-              <CheckCircle2 size={15} /> {t("mode_card_hybrid_p2")}
-            </span>
-            <span>
-              <CheckCircle2 size={15} /> {t("mode_card_hybrid_p3")}
-            </span>
-          </span>
-        </button>
+          <div className="pm-decision-illustration">
+            <div style={{ position: "relative", display: "inline-flex" }}>
+              <Cloud size={64} strokeWidth={1.5} style={{ color: "#c4b5fd" }} />
+              <FileText
+                size={24}
+                strokeWidth={1.75}
+                style={{
+                  position: "absolute",
+                  top: "18px",
+                  left: "20px",
+                  color: "#7c3aed",
+                  background: "#ffffff",
+                  borderRadius: "2px",
+                }}
+              />
+            </div>
+          </div>
 
-        <button
-          type="button"
-          className={`pm-mode-card${choice === "demo" ? " is-selected" : ""}`}
+          <label
+            className="pm-consent-switch-box"
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            <input
+              ref={cloudConsentRef}
+              type="checkbox"
+              className="pm-visually-hidden"
+              checked={cloudConsent}
+              onChange={(e) => onCloudConsentChange(e.currentTarget.checked)}
+            />
+            <div className={`pm-switch-track${cloudConsent ? " is-checked" : ""}`}>
+              <div className="pm-switch-thumb" />
+            </div>
+            <span>{t("proc_card_cloud_consent")}</span>
+          </label>
+
+          <div className="pm-amber-callout">
+            <AlertTriangle size={15} style={{ flexShrink: 0, marginTop: 1 }} />
+            <span>{t("proc_card_cloud_warning")}</span>
+          </div>
+
+          <ul className="pm-decision-points">
+            <li>
+              <CheckCircle2 size={15} className="pm-check-green" />
+              <span>{t("proc_card_cloud_p1")}</span>
+            </li>
+            <li>
+              <CheckCircle2 size={15} className="pm-check-green" />
+              <span>{t("proc_card_cloud_p2")}</span>
+            </li>
+            <li>
+              <CircleHelp size={15} style={{ color: "#64748b" }} />
+              <span>{t("proc_card_cloud_p3")}</span>
+            </li>
+          </ul>
+        </div>
+
+        {/* Card 3: Demo mode */}
+        <div
+          role="button"
+          tabIndex={0}
+          className={`pm-decision-card${choice === "demo" ? " is-active" : ""}`}
           onClick={() => onSelectChoice("demo")}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onSelectChoice("demo");
+            }
+          }}
         >
-          <span className="pm-mode-card-top">
-            <span className="pm-radio-indicator" />
-            {t("mode_card_demo_title")}
-            <Badge tone="amber">{t("mode_card_demo_badge")}</Badge>
-          </span>
-          <span className="pm-mode-illustration pm-mode-illustration--demo">
-            <FileText size={35} />
-          </span>
-          <strong>{t("mode_card_demo_heading")}</strong>
-          <span className="pm-mode-description">{t("mode_card_demo_desc")}</span>
-          <span className="pm-mode-points">
-            <span>
-              <CheckCircle2 size={15} /> {t("mode_card_demo_p1")}
-            </span>
-            <span>
-              <CheckCircle2 size={15} /> {t("mode_card_demo_p2")}
-            </span>
-            <span>
-              <CheckCircle2 size={15} /> {t("mode_card_demo_p3")}
-            </span>
-          </span>
-        </button>
+          <div className="pm-decision-top">
+            <div className="pm-decision-title-row">
+              <span className="pm-radio-circle">
+                {choice === "demo" && <span className="pm-radio-dot" />}
+              </span>
+              <span>{t("proc_card_demo_title")}</span>
+            </div>
+            <Badge tone="neutral">{t("proc_card_demo_badge")}</Badge>
+          </div>
+
+          <div className="pm-decision-illustration">
+            <div style={{ position: "relative", display: "inline-flex" }}>
+              <FileText size={56} strokeWidth={1.5} style={{ color: "#94a3b8" }} />
+              <FileText
+                size={48}
+                strokeWidth={1.5}
+                style={{
+                  position: "absolute",
+                  top: "8px",
+                  left: "14px",
+                  color: "#64748b",
+                }}
+              />
+            </div>
+          </div>
+
+          <h4>{t("proc_card_demo_heading")}</h4>
+          <p>{t("proc_card_demo_desc")}</p>
+
+          <ul className="pm-decision-points">
+            <li>
+              <CheckCircle2 size={15} className="pm-check-green" />
+              <span>{t("proc_card_demo_p1")}</span>
+            </li>
+            <li>
+              <CheckCircle2 size={15} className="pm-check-green" />
+              <span>{t("proc_card_demo_p2")}</span>
+            </li>
+            <li>
+              <CheckCircle2 size={15} className="pm-check-green" />
+              <span>{t("proc_card_demo_p3")}</span>
+            </li>
+          </ul>
+        </div>
       </div>
 
-      {(choice === "cloud" || choice === "hybrid") && (
-        <label className="pm-cloud-consent">
-          <input
-            ref={cloudConsentRef}
-            type="checkbox"
-            checked={cloudConsent}
-            onChange={(event) => onCloudConsentChange(event.currentTarget.checked)}
-          />
-          <span className="pm-consent-check">
-            <Check size={14} />
-          </span>
-          <span>
-            <strong>
-              {choice === "cloud" ? t("consent_cloud_title") : t("consent_hybrid_title")}
-            </strong>
-            <small>
-              {choice === "cloud" ? t("consent_cloud_detail") : t("consent_hybrid_detail")}
-            </small>
-          </span>
-        </label>
-      )}
+      {/* Confirmation Bar */}
+      <div className="pm-confirm-bar">
+        <div className="pm-confirm-col">
+          <span className="pm-confirm-label">{t("proc_confirm_mode_label")}</span>
+          <div className="pm-confirm-status">
+            {choice === "local" ? (
+              <Laptop size={18} style={{ color: "#2563eb" }} />
+            ) : choice === "demo" ? (
+              <FileText size={18} style={{ color: "#2563eb" }} />
+            ) : (
+              <Cloud size={18} style={{ color: "#2563eb" }} />
+            )}
+            <Badge tone={choice === "demo" ? "neutral" : choice === "local" ? "blue" : "purple"}>
+              {choice === "demo"
+                ? t("proc_card_demo_title")
+                : choice === "local"
+                  ? t("proc_card_local_title")
+                  : t("proc_card_cloud_title")}
+            </Badge>
+          </div>
+        </div>
+
+        <div className="pm-confirm-col">
+          <span className="pm-confirm-label">{t("proc_confirm_privacy_label")}</span>
+          <div className="pm-confirm-status">
+            <ShieldCheck
+              size={18}
+              className={choice === "local" ? "pm-check-green" : "pm-icon-blue"}
+            />
+            <Badge tone={choice === "local" ? "green" : choice === "demo" ? "neutral" : "blue"}>
+              {choice === "local"
+                ? t("proc_confirm_privacy_on_device")
+                : choice === "demo"
+                  ? t("proc_confirm_privacy_simulated")
+                  : t("proc_confirm_privacy_cloud")}
+            </Badge>
+            <span className="pm-confirm-subtext">
+              {choice === "local"
+                ? t("proc_confirm_privacy_stays")
+                : choice === "demo"
+                  ? t("proc_confirm_privacy_simulated_desc")
+                  : t("proc_confirm_privacy_cloud_desc")}
+            </span>
+          </div>
+        </div>
+
+        <div className="pm-confirm-cta-col">
+          <button
+            type="button"
+            className="pm-confirm-cta-btn"
+            onClick={() => {
+              if (choice === "demo") {
+                onOpenDemo();
+              } else if (file || hasQuestionText) {
+                onRunAnalysis();
+              } else {
+                inputRef.current?.click();
+              }
+            }}
+            disabled={
+              isAnalyzing ||
+              ((choice === "cloud" || choice === "hybrid") && !cloudConsent)
+            }
+          >
+            {isAnalyzing ? (
+              <>
+                <LoaderCircle size={16} className="pm-spin" /> {t("btn_processing")}
+              </>
+            ) : (
+              <>
+                {t("processing_confirm_btn")}
+              </>
+            )}
+          </button>
+          <span className="pm-confirm-subtext">{t("processing_confirm_sub")}</span>
+        </div>
+      </div>
 
       <div className="pm-file-drop" onDragOver={(event) => event.preventDefault()} onDrop={onDrop}>
         <input
@@ -2760,6 +3039,16 @@ function ProcessingScreen({
                 {t("file_stored")}
               </span>
             </div>
+            {document.source === "upload" && (
+              <button
+                className="pm-button pm-button--outline"
+                type="button"
+                onClick={onExtractTextOnly}
+                disabled={isAnalyzing || (!file && !hasQuestionText)}
+              >
+                <FileText size={15} /> {hasQuestionText ? t("btn_ask_pdf") : t("btn_extract_text")}
+              </button>
+            )}
             <button
               className="pm-button pm-button--outline"
               type="button"

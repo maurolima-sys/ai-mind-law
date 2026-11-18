@@ -19,7 +19,14 @@ export type Category =
   | "Financial"
   | "Eligibility"
   | "Documentation"
-  | "Delivery";
+  | "Delivery"
+  | "Information Security"
+  | "Business Continuity"
+  | "Service Management"
+  | "Supply Chain"
+  | "Legal & Regulatory"
+  | "Environmental"
+  | "Commercial";
 export type Severity = "Critical" | "High" | "Medium" | "Low";
 
 export const CATEGORIES: Category[] = [
@@ -30,6 +37,13 @@ export const CATEGORIES: Category[] = [
   "Eligibility",
   "Documentation",
   "Delivery",
+  "Information Security",
+  "Business Continuity",
+  "Service Management",
+  "Supply Chain",
+  "Legal & Regulatory",
+  "Environmental",
+  "Commercial",
 ];
 export const STATUSES: ReviewStatus[] = ["pending", "reviewed", "satisfied", "unclear"];
 export const SEVERITIES: Severity[] = ["Critical", "High", "Medium", "Low"];
@@ -97,6 +111,9 @@ export interface DocumentRecord {
   size: number;
   source: "demo" | "upload";
   format?: DocumentFormat;
+  project?: string;
+  analysedOn?: string;
+  status?: "Analysed" | "Processing" | "Pending";
   pages: string[];
   sourceLocations?: string[];
   textSource?: DocumentTextSource;
@@ -142,6 +159,10 @@ export interface WorkspaceActivity {
   id: string;
   type: WorkspaceActivityType;
   documentId: string;
+  documentName?: string;
+  title?: string;
+  timeAgo?: string;
+  tone?: "blue" | "purple" | "orange" | "green";
   relatedDocumentId?: string;
   requirementId?: string;
   at: string;

@@ -327,13 +327,264 @@ export function buildDemoDocument(): DocumentRecord {
   };
   return {
     id: DEMO_DOC_ID,
-    name: "NB-2026-114 Smart LED Street Lighting Tender (sample).pdf",
-    size: 1_843_200,
+    name: "Riverside Civic Centre - Construction Tender.pdf",
+    project: "Riverside City Council",
+    size: 8_808_038, // 8.4 MB
     source: "demo",
     format: "pdf",
     pages,
     sourceLocations: pages.map((_, index) => `Page ${index + 1}`),
     addedAt: "2026-11-10T09:00:00.000Z",
+    analysedOn: "12 May 2025 10:24",
+    status: "Analysed",
     analysis,
   };
 }
+
+export const DEFAULT_WORKSPACE_DOCUMENTS: DocumentRecord[] = [
+  {
+    id: "doc-1",
+    name: "City Infrastructure Modernisation RFP.pdf",
+    project: "Riverside City Council",
+    size: 13_002_342, // 12.4 MB
+    source: "demo",
+    format: "pdf",
+    pages: new Array(42).fill("Sample extracted text for infrastructure project."),
+    sourceLocations: new Array(42).fill("").map((_, i) => `Page ${i + 1}`),
+    addedAt: "2025-05-12T10:24:00.000Z",
+    analysedOn: "12 May 2025 10:24",
+    status: "Analysed",
+  },
+  {
+    id: "doc-2",
+    name: "Healthcare Services Tender.docx",
+    project: "Northvale Health",
+    size: 8_493_465, // 8.1 MB
+    source: "demo",
+    format: "docx",
+    pages: new Array(28).fill("Sample extracted text for healthcare services."),
+    sourceLocations: new Array(28).fill("").map((_, i) => `Paragraph ${i + 1}`),
+    addedAt: "2025-05-11T16:03:00.000Z",
+    analysedOn: "11 May 2025 16:03",
+    status: "Analysed",
+  },
+  {
+    id: "doc-3",
+    name: "IT Managed Services RFT.pdf",
+    project: "Brighton Government",
+    size: 15_518_924, // 14.8 MB
+    source: "demo",
+    format: "pdf",
+    pages: new Array(56).fill("Sample extracted text for IT managed services."),
+    sourceLocations: new Array(56).fill("").map((_, i) => `Page ${i + 1}`),
+    addedAt: "2025-05-10T09:17:00.000Z",
+    analysedOn: "10 May 2025 09:17",
+    status: "Analysed",
+  },
+  {
+    id: "doc-4",
+    name: "Facilities Management Schedule.xlsx",
+    project: "Summit University",
+    size: 3_355_443, // 3.2 MB
+    source: "demo",
+    format: "xlsx",
+    pages: new Array(18).fill("Sample sheet data for facilities schedule."),
+    sourceLocations: new Array(18).fill("").map((_, i) => `Sheet 1, Row ${i * 10 + 1}`),
+    addedAt: "2025-05-09T14:38:00.000Z",
+    analysedOn: "9 May 2025 14:38",
+    status: "Processing",
+  },
+  {
+    id: "doc-5",
+    name: "Sustainable Transport Initiative.pdf",
+    project: "Greenfield Authority",
+    size: 12_163_481, // 11.6 MB
+    source: "demo",
+    format: "pdf",
+    pages: new Array(37).fill("Sample extracted text for transport initiative."),
+    sourceLocations: new Array(37).fill("").map((_, i) => `Page ${i + 1}`),
+    addedAt: "2025-05-08T11:52:00.000Z",
+    analysedOn: "8 May 2025 11:52",
+    status: "Analysed",
+  },
+];
+
+export const DEFAULT_ACTIVITIES: WorkspaceActivity[] = [
+  {
+    id: "act-1",
+    type: "analysis-completed",
+    title: "Analysis completed",
+    documentId: "doc-1",
+    documentName: "City Infrastructure Modernisation RFP.pdf",
+    timeAgo: "10 minutes ago",
+    tone: "blue",
+    at: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "act-2",
+    type: "document-added",
+    title: "12 new requirements extracted",
+    documentId: "doc-2",
+    documentName: "Healthcare Services Tender.docx",
+    timeAgo: "2 hours ago",
+    tone: "purple",
+    at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "act-3",
+    type: "analysis-completed",
+    title: "2 critical risks identified",
+    documentId: "doc-3",
+    documentName: "IT Managed Services RFT.pdf",
+    timeAgo: "5 hours ago",
+    tone: "orange",
+    at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "act-4",
+    type: "review-updated",
+    title: "Document marked for review",
+    documentId: "doc-4",
+    documentName: "Facilities Management Schedule.xlsx",
+    timeAgo: "1 day ago",
+    tone: "green",
+    at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+  },
+];
+
+export interface ComplianceMatrixItem {
+  id: string;
+  num: number;
+  requirement: string;
+  category: string;
+  mandatory: boolean;
+  evidenceFile: string;
+  page: number | null;
+  reviewStatus: "satisfied" | "reviewed" | "pending" | "unclear";
+  reviewScore: number | null;
+  notes: string;
+  extractedText: string;
+  relevance: number;
+}
+
+export const DEFAULT_COMPLIANCE_ITEMS: ComplianceMatrixItem[] = [
+  {
+    id: "cm-1",
+    num: 1,
+    requirement: "Provide evidence of ISO 27001 certification or equivalent.",
+    category: "Information Security",
+    mandatory: true,
+    evidenceFile: "security-cert.pdf",
+    page: 12,
+    reviewStatus: "satisfied",
+    reviewScore: 92,
+    notes: "Certificate provided and in date.",
+    extractedText:
+      "... has been assessed and found to comply with the requirements of ISO/IEC 27001:2022. This certificate is valid from 01 Jan 2023 to 31 Dec 2025.",
+    relevance: 92,
+  },
+  {
+    id: "cm-2",
+    num: 2,
+    requirement: "Detail your data backup and disaster recovery arrangements.",
+    category: "Business Continuity",
+    mandatory: true,
+    evidenceFile: "bcp-overview.pdf",
+    page: 18,
+    reviewStatus: "reviewed",
+    reviewScore: 85,
+    notes: "Covers RTO/RPO requirements.",
+    extractedText:
+      "All production data is snapshotted every 15 minutes and asynchronously replicated to a secondary availability zone with 4-hour RTO and 1-hour RPO guarantees.",
+    relevance: 85,
+  },
+  {
+    id: "cm-3",
+    num: 3,
+    requirement: "Confirm availability of 24/7 customer support.",
+    category: "Service Management",
+    mandatory: true,
+    evidenceFile: "service-model.pdf",
+    page: 7,
+    reviewStatus: "pending",
+    reviewScore: null,
+    notes: "Need clearer evidence of 24/7 coverage.",
+    extractedText:
+      "Support operations operate Monday to Friday 08:00 to 18:00 with on-call critical incident escalation for severity 1 outages.",
+    relevance: 70,
+  },
+  {
+    id: "cm-4",
+    num: 4,
+    requirement: "Provide details of sub-contractors used in service delivery.",
+    category: "Supply Chain",
+    mandatory: false,
+    evidenceFile: "suppliers-list.pdf",
+    page: 24,
+    reviewStatus: "unclear",
+    reviewScore: 56,
+    notes: "Partial list provided. More detail required.",
+    extractedText:
+      "Specialist cabling sub-contractors and logistics handlers are engaged as needed under standard non-disclosure frameworks.",
+    relevance: 56,
+  },
+  {
+    id: "cm-5",
+    num: 5,
+    requirement: "Demonstrate compliance with data protection regulations (e.g. GDPR).",
+    category: "Legal & Regulatory",
+    mandatory: true,
+    evidenceFile: "privacy-policy.pdf",
+    page: 15,
+    reviewStatus: "satisfied",
+    reviewScore: 88,
+    notes: "Policy aligns with GDPR requirements.",
+    extractedText:
+      "All processing of personal data is carried out in strict accordance with the General Data Protection Regulation (EU 2016/679) and applicable UK laws.",
+    relevance: 88,
+  },
+  {
+    id: "cm-6",
+    num: 6,
+    requirement: "Provide a statement of financial stability (last 3 years).",
+    category: "Financial",
+    mandatory: true,
+    evidenceFile: "financials-2023.pdf",
+    page: 31,
+    reviewStatus: "reviewed",
+    reviewScore: 83,
+    notes: "Financial statements provided.",
+    extractedText:
+      "Independent auditor's report confirms healthy solvency, positive net cash flows from operating activities, and zero debt defaults over the 2021-2023 period.",
+    relevance: 83,
+  },
+  {
+    id: "cm-7",
+    num: 7,
+    requirement: "Outline your approach to environmental sustainability.",
+    category: "Environmental",
+    mandatory: false,
+    evidenceFile: "—",
+    page: null,
+    reviewStatus: "pending",
+    reviewScore: null,
+    notes: "No evidence provided yet.",
+    extractedText: "",
+    relevance: 0,
+  },
+  {
+    id: "cm-8",
+    num: 8,
+    requirement: "Confirm agreement to standard contract terms and conditions.",
+    category: "Commercial",
+    mandatory: true,
+    evidenceFile: "tcs-acceptance.pdf",
+    page: 5,
+    reviewStatus: "unclear",
+    reviewScore: 62,
+    notes: "Minor deviations noted. Requires legal review.",
+    extractedText:
+      "Bidder agrees in principle to the Model Services Agreement clauses, reserving commentary on limitation of liability in Section 18.4.",
+    relevance: 62,
+  },
+];
