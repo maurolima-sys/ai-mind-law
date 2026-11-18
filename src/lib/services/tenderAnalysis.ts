@@ -328,6 +328,7 @@ export async function analyzeTender(
   const models = new Map<GeminiModelName, ReturnType<typeof createTenderModel>["model"]>([
     [PRIMARY_GEMINI_MODEL, model],
   ]);
+  const cloudModels = new Map<GeminiModelName, ReturnType<typeof createTenderModel>["model"]>();
   for (const [index, chunk] of chunks.entries()) {
     onProgress({
       phase: "analyzing",
@@ -339,28 +340,53 @@ export async function analyzeTender(
           : `Analyzing text section ${index + 1} of ${chunks.length}`,
     });
     const prompt = buildPrompt(chunk, preference);
-    const { result, modelName } = await generateWithModelFallback(
-      preference,
-      (candidate, signal) => {
-        let currentModel = models.get(candidate);
-        if (!currentModel) {
-          currentModel = createTenderModel(preference, candidate).model;
-          models.set(candidate, currentModel);
-        }
-        return currentModel.generateContent(prompt, signal ? { signal } : undefined);
+    let forcedCloudFallback = false;
+    const generateSection = (candidate: GeminiModelName, signal?: AbortSignal) => {
+      const cache = forcedCloudFallback ? cloudModels : models;
+      let currentModel = cache.get(candidate);
+      if (!currentModel) {
+        currentModel = createTenderModel(
+          forcedCloudFallback ? "cloud" : preference,
+          candidate,
+        ).model;
+        cache.set(candidate, currentModel);
+      }
+      return currentModel.generateContent(prompt, signal ? { signal } : undefined);
+    };
+    const fallbackOptions = {
+      onRetry: ({
+        modelName: nextModel,
+        status,
+        attempt,
+      }: {
+        modelName: GeminiModelName;
+        status?: number;
+        attempt: number;
+      }) => {
+        const action = nextModel === PRIMARY_GEMINI_MODEL ? "Retrying" : "Switching to fallback";
+        onProgress({
+          phase: "analyzing",
+          completed: index,
+          total: chunks.length,
+          detail: `${status === undefined ? "Gemini request timed out" : `Gemini returned HTTP ${status}`}. ${action} ${geminiModelLabel(nextModel)} (${attempt}/${TOTAL_MODEL_ATTEMPTS}).`,
+        });
       },
-      {
-        onRetry: ({ modelName: nextModel, status, attempt }) => {
-          const action = nextModel === PRIMARY_GEMINI_MODEL ? "Retrying" : "Switching to fallback";
-          onProgress({
-            phase: "analyzing",
-            completed: index,
-            total: chunks.length,
-            detail: `${status === undefined ? "Gemini request timed out" : `Gemini returned HTTP ${status}`}. ${action} ${geminiModelLabel(nextModel)} (${attempt}/${TOTAL_MODEL_ATTEMPTS}).`,
-          });
-        },
-      },
-    );
+    };
+    let generated: Awaited<ReturnType<typeof generateWithModelFallback>>;
+    try {
+      generated = await generateWithModelFallback(preference, generateSection, fallbackOptions);
+    } catch (error) {
+      if (preference !== "hybrid") throw error;
+      forcedCloudFallback = true;
+      onProgress({
+        phase: "analyzing",
+        completed: index,
+        total: chunks.length,
+        detail: "The on-device session could not be created; retrying this section with Cloud AI.",
+      });
+      generated = await generateWithModelFallback("cloud", generateSection, fallbackOptions);
+    }
+    const { result, modelName } = generated;
     const source = requireInferenceSource(result.response.inferenceSource);
     sources.add(source);
     if (source === "IN_CLOUD") cloudModelNames.add(modelName);
