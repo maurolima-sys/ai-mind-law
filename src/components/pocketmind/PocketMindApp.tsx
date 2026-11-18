@@ -142,14 +142,6 @@ type Finding = {
   mandatory?: boolean;
 };
 
-const NAVIGATION_IDS: Array<{ id: Screen; icon: LucideIcon }> = [
-  { id: "overview", icon: LayoutDashboard },
-  { id: "library", icon: FolderOpen },
-  { id: "analysis", icon: FileText },
-  { id: "compliance", icon: Table2 },
-  { id: "processing", icon: ShieldCheck },
-];
-
 function getProcessingSource(analysis: Analysis): ProcessingSource {
   if (analysis.processingSource) return analysis.processingSource;
   return analysis.mode === "local" ? "on-device" : analysis.mode;
@@ -1160,46 +1152,31 @@ export function PocketMindApp() {
           ))}
           <button
             type="button"
-            className="pm-nav-item"
-            onClick={() => {
-              setActiveFinding("risk");
-              setScreen("analysis");
-            }}
+            className={`pm-nav-item${activeFinding === "risk" && screen === "analysis" ? " is-active" : ""}`}
+            onClick={() => { setActiveFinding("risk"); setScreen("analysis"); }}
           >
             <AlertTriangle size={19} strokeWidth={1.9} aria-hidden="true" />
             <span>{t("sidebar_nav_risks")}</span>
           </button>
-          <button
-            type="button"
-            className="pm-nav-item"
-            onClick={() => setScreen("library")}
-          >
+          <button type="button" className="pm-nav-item pm-nav-item--disabled" disabled aria-disabled="true" title={t("nav_coming_soon")}>
             <Folder size={19} strokeWidth={1.9} aria-hidden="true" />
             <span>{t("sidebar_nav_projects")}</span>
+            <span className="pm-nav-soon">{t("nav_coming_soon")}</span>
           </button>
-          <button
-            type="button"
-            className="pm-nav-item"
-            onClick={() => setScreen("overview")}
-          >
+          <button type="button" className="pm-nav-item pm-nav-item--disabled" disabled aria-disabled="true" title={t("nav_coming_soon")}>
             <Users size={19} strokeWidth={1.9} aria-hidden="true" />
             <span>{t("sidebar_nav_team")}</span>
+            <span className="pm-nav-soon">{t("nav_coming_soon")}</span>
           </button>
-          <button
-            type="button"
-            className="pm-nav-item"
-            onClick={() => setScreen("processing")}
-          >
+          <button type="button" className="pm-nav-item pm-nav-item--disabled" disabled aria-disabled="true" title={t("nav_coming_soon")}>
             <BrainCircuit size={19} strokeWidth={1.9} aria-hidden="true" />
             <span>{t("sidebar_nav_integrations")}</span>
+            <span className="pm-nav-soon">{t("nav_coming_soon")}</span>
           </button>
-          <button
-            type="button"
-            className="pm-nav-item"
-            onClick={() => setScreen("processing")}
-          >
+          <button type="button" className="pm-nav-item pm-nav-item--disabled" disabled aria-disabled="true" title={t("nav_coming_soon")}>
             <Settings size={19} strokeWidth={1.9} aria-hidden="true" />
             <span>{t("sidebar_nav_settings")}</span>
+            <span className="pm-nav-soon">{t("nav_coming_soon")}</span>
           </button>
         </nav>
 
@@ -1985,20 +1962,7 @@ function AnalysisScreen({
     if (document.pages.some((page) => page.trim())) {
       return (
         <div className="pm-analysis-screen">
-          <div className="pm-page-heading">
-            <div>
-              <h1>{t("pre_analysis_title")}</h1>
-              <p>{t("pre_analysis_subtitle")}</p>
-            </div>
-            <button
-              className="pm-button pm-button--primary"
-              type="button"
-              onClick={onOpenProcessing}
-            >
-              {t("pre_analysis_cta")} <ArrowRight size={16} />
-            </button>
-          </div>
-          <div className="pm-analysis-layout">
+            <div className="pm-analysis-layout">
             <section className="pm-panel pm-source-panel">
               <div className="pm-panel-heading pm-source-heading">
                 <div>

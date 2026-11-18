@@ -241,6 +241,22 @@
   background: var(--pm-blue-pale);
   color: var(--pm-blue);
 }
+.pm-nav-item--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.pm-nav-soon {
+  margin-left: auto;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--pm-soft);
+  background: #f1f5f9;
+  padding: 2px 5px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
 .pm-sidebar-spacer {
   flex: 1;
   min-height: 40px;

@@ -1,0 +1,29 @@
+          <button
+            type="button"
+            className={`pm-nav-item${activeFinding === "risk" && screen === "analysis" ? " is-active" : ""}`}
+            onClick={() => { setActiveFinding("risk"); setScreen("analysis"); }}
+          >
+            <AlertTriangle size={19} strokeWidth={1.9} aria-hidden="true" />
+            <span>{t("sidebar_nav_risks")}</span>
+          </button>
+          <button type="button" className="pm-nav-item pm-nav-item--disabled" disabled aria-disabled="true" title={t("nav_coming_soon")}>
+            <Folder size={19} strokeWidth={1.9} aria-hidden="true" />
+            <span>{t("sidebar_nav_projects")}</span>
+            <span className="pm-nav-soon">{t("nav_coming_soon")}</span>
+          </button>
+          <button type="button" className="pm-nav-item pm-nav-item--disabled" disabled aria-disabled="true" title={t("nav_coming_soon")}>
+            <Users size={19} strokeWidth={1.9} aria-hidden="true" />
+            <span>{t("sidebar_nav_team")}</span>
+            <span className="pm-nav-soon">{t("nav_coming_soon")}</span>
+          </button>
+          <button type="button" className="pm-nav-item pm-nav-item--disabled" disabled aria-disabled="true" title={t("nav_coming_soon")}>
+            <BrainCircuit size={19} strokeWidth={1.9} aria-hidden="true" />
+            <span>{t("sidebar_nav_integrations")}</span>
+            <span className="pm-nav-soon">{t("nav_coming_soon")}</span>
+          </button>
+          <button type="button" className="pm-nav-item pm-nav-item--disabled" disabled aria-disabled="true" title={t("nav_coming_soon")}>
+            <Settings size={19} strokeWidth={1.9} aria-hidden="true" />
+            <span>{t("sidebar_nav_settings")}</span>
+            <span className="pm-nav-soon">{t("nav_coming_soon")}</span>
+          </button>
+        </nav>

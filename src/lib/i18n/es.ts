@@ -575,6 +575,7 @@ export const es: Translations = {
   sidebar_nav_team: "Equipo",
   sidebar_nav_integrations: "Integraciones",
   sidebar_nav_settings: "Configuración",
+  nav_coming_soon: "Próximamente",
   sidebar_upgrade_title: "Mejora a Pro",
   sidebar_upgrade_desc: "Desbloquea análisis avanzado y colaboración en equipo.",
   sidebar_view_plans: "Ver planes",
