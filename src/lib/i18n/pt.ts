@@ -351,6 +351,8 @@ export const pt: Translations = {
   ocr_extracting: "A extrair e a analisar...",
 
   error_dismiss: "Dispensar erro",
+  firebase_app_check_token_error:
+    "O Firebase recusou o token de segurança, por isso a análise em direto não foi concluída. Recarregue e tente novamente ou use o modo Sample. Se persistir, peça ao administrador da implantação para verificar a chave de site do reCAPTCHA Enterprise, o domínio autorizado e o registro do Firebase App Check; alterações nas variáveis VITE_* exigem um novo build e deploy.",
   on_device_init_timeout_error:
     "O Chrome não preparou o modelo no dispositivo durante 60 segundos sem progresso. Use o Chrome para computador numa versão compatível e mantenha esta página aberta enquanto o modelo é descarregado. Esta tentativa não enviou texto extraído para o serviço de nuvem do Firebase.",
   on_device_generation_timeout_error:

@@ -71,7 +71,11 @@ import {
 } from "@/lib/services/localWorkspace";
 import { compareEvidenceToRequirement } from "@/lib/services/evidenceComparison";
 import { isExternalOcrAvailable, runExternalOcr } from "@/lib/services/externalOcr";
-import { getOnDeviceTimeoutStage, isFirebaseConfigured } from "@/lib/services/firebaseAi";
+import {
+  getOnDeviceTimeoutStage,
+  isFirebaseConfigured,
+  isInvalidFirebaseAppCheckTokenError,
+} from "@/lib/services/firebaseAi";
 import { markUnpaginatedEvidenceUnverified } from "@/lib/services/ocrEvidence";
 import { shouldOfferExternalOcr } from "@/lib/services/ocrNormalize";
 import { analyzeTender } from "@/lib/services/tenderAnalysis";
@@ -891,6 +895,10 @@ export function PocketMindApp() {
     }
     if (timeoutStage === "generation") {
       setErrorMessage(t("on_device_generation_timeout_error"));
+      return;
+    }
+    if (isInvalidFirebaseAppCheckTokenError(error)) {
+      setErrorMessage(t("firebase_app_check_token_error"));
       return;
     }
     const detail = error instanceof Error ? error.message : "An unexpected error occurred.";

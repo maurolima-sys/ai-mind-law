@@ -369,6 +369,8 @@ export const en = {
 
   // ── Processing — error / progress ─────────────────────────────────────────────
   error_dismiss: "Dismiss error",
+  firebase_app_check_token_error:
+    "Firebase rejected its security token, so live analysis could not be completed. Reload and try again, or use Sample mode. If it persists, ask the deployment administrator to verify the reCAPTCHA Enterprise site key, allowed domain, and Firebase App Check registration; changes to VITE_* settings require a new build and deployment.",
   on_device_init_timeout_error:
     "Chrome did not finish preparing its on-device model within 60 seconds without progress. Use supported desktop Chrome and keep this page open while the model downloads. This attempt did not send extracted text to Firebase's cloud service.",
   on_device_generation_timeout_error:

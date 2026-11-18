@@ -105,6 +105,21 @@ export function getFirebaseAiHttpStatus(error: unknown): number | undefined {
   return candidate.cause ? getFirebaseAiHttpStatus(candidate.cause) : undefined;
 }
 
+export function isInvalidFirebaseAppCheckTokenError(error: unknown): boolean {
+  if (typeof error !== "object" || error === null) return false;
+  const candidate = error as {
+    customErrorData?: { message?: unknown };
+    message?: unknown;
+    cause?: unknown;
+  };
+  const matches = [candidate.message, candidate.customErrorData?.message].some(
+    (message) =>
+      typeof message === "string" && /firebase app check token is invalid/i.test(message),
+  );
+  if (matches) return true;
+  return candidate.cause ? isInvalidFirebaseAppCheckTokenError(candidate.cause) : false;
+}
+
 export function isRetryableFirebaseAiError(error: unknown): boolean {
   if (
     typeof error === "object" &&
@@ -254,9 +269,9 @@ function firebaseConfiguration() {
     VITE_FIREBASE_APP_ID,
   } = import.meta.env;
   const config = {
-    apiKey: VITE_FIREBASE_API_KEY,
-    authDomain: VITE_FIREBASE_AUTH_DOMAIN,
-    appId: VITE_FIREBASE_APP_ID,
+    apiKey: VITE_FIREBASE_API_KEY?.trim(),
+    authDomain: VITE_FIREBASE_AUTH_DOMAIN?.trim(),
+    appId: VITE_FIREBASE_APP_ID?.trim(),
     projectId: VITE_FIREBASE_PROJECT_ID?.trim(),
   };
 
@@ -285,11 +300,11 @@ export function isFirebaseConfigured() {
     VITE_FIREBASE_PROJECT_ID,
     VITE_FIREBASE_APP_ID,
   } = import.meta.env;
-  const appCheckSiteKey = import.meta.env["VITE_FIREBASE_APPCHECK_RECAPTCHA_SITE_KEY"];
+  const appCheckSiteKey = import.meta.env["VITE_FIREBASE_APPCHECK_RECAPTCHA_SITE_KEY"]?.trim();
   return Boolean(
-    VITE_FIREBASE_API_KEY &&
-    VITE_FIREBASE_AUTH_DOMAIN &&
-    VITE_FIREBASE_APP_ID &&
+    VITE_FIREBASE_API_KEY?.trim() &&
+    VITE_FIREBASE_AUTH_DOMAIN?.trim() &&
+    VITE_FIREBASE_APP_ID?.trim() &&
     VITE_FIREBASE_PROJECT_ID?.trim() &&
     (import.meta.env.DEV || appCheckSiteKey),
   );
@@ -309,7 +324,7 @@ function getFirebaseRuntime(): FirebaseRuntime {
     ? getApp()
     : initializeApp(firebaseConfiguration());
 
-  const siteKey = import.meta.env["VITE_FIREBASE_APPCHECK_RECAPTCHA_SITE_KEY"];
+  const siteKey = import.meta.env["VITE_FIREBASE_APPCHECK_RECAPTCHA_SITE_KEY"]?.trim();
   if (!siteKey) {
     throw new Error(
       "Firebase App Check is not configured. Set VITE_FIREBASE_APPCHECK_RECAPTCHA_SITE_KEY for this deployment.",
@@ -320,7 +335,9 @@ function getFirebaseRuntime(): FirebaseRuntime {
   // activates the App Check debug bypass — the reCAPTCHA call is skipped
   // and the registered debug token is used instead.
   if (import.meta.env.DEV) {
-    const debugToken = import.meta.env["VITE_FIREBASE_APPCHECK_DEBUG_TOKEN"] as string | undefined;
+    const debugToken = (
+      import.meta.env["VITE_FIREBASE_APPCHECK_DEBUG_TOKEN"] as string | undefined
+    )?.trim();
     if (debugToken) {
       window.FIREBASE_APPCHECK_DEBUG_TOKEN = debugToken;
     }

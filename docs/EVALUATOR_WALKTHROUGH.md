@@ -26,7 +26,7 @@
 6. Watch the progress status. If the call succeeds, the badge reads **Connected · a response was received** and the inference source (**cloud** or **cloud-fallback**) appears next to the model name. A configured badge alone does not prove a successful live analysis.
 7. After a successful analysis, navigate to **Document analysis** to inspect findings, then **Compliance matrix** to see the review workflow.
 
-> The production deployment uses reCAPTCHA Enterprise; a successful Firebase AI Logic response is still the evidence that the full hosted path worked. The last reported Cloud test failed after reaching Gemini, and the production configuration was corrected and redeployed afterward. Repeat this live test before describing the Cloud path as verified.
+> The latest reported Cloud test was rejected with HTTP 401 because the Firebase App Check token was invalid; no model response was received. Confirm the production site key, authorized domain, and App Check registration/provider before describing the hosted Cloud path as verified.
 
 ---
 
@@ -145,10 +145,10 @@ The submission is honest about its current state:
 
 | Item | Status |
 |---|---|
-| Cloud AI analysis with structured-output validation passing end-to-end | Pending live retest after the production configuration correction and redeploy; the last reported call returned HTTP 500 |
+| Cloud AI analysis with structured-output validation passing end-to-end | Blocked: the latest reported request returned HTTP 401 for an invalid App Check token; no model response was received |
 | On-device inference (Chrome Prompt API) | The last reported sample timed out after 60 seconds. Local chunking and recovery guidance have been improved; a live Chrome retest is still pending. On-device-only mode never falls back to cloud. |
 | LlamaParse OCR with a real scanned PDF | Not yet tested end-to-end |
-| App Check in production | reCAPTCHA Enterprise configured for `ai-mind-law.vercel.app`; successful token acceptance on a live AI request still needs verification |
+| App Check in production | reCAPTCHA Enterprise is configured, but the latest reported token was rejected; verify site key, domain, Firebase app, and provider alignment |
 | Responsive layout with PT/ES longer strings on small screens | Not yet validated |
 
 The **Connected · a response was received** badge confirms a Firebase AI Logic response arrived. A successful structured-output analysis (findings displayed) confirms full validation passed.

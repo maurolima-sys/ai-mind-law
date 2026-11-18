@@ -355,6 +355,8 @@ export const es: Translations = {
   ocr_extracting: "Extrayendo y analizando...",
 
   error_dismiss: "Descartar error",
+  firebase_app_check_token_error:
+    "Firebase rechazó el token de seguridad, por lo que no se pudo completar el análisis en vivo. Recarga e inténtalo de nuevo o usa el modo Sample. Si persiste, pide al administrador del despliegue que compruebe la clave de sitio de reCAPTCHA Enterprise, el dominio autorizado y el registro de Firebase App Check; los cambios en variables VITE_* requieren una nueva compilación y publicación.",
   on_device_init_timeout_error:
     "Chrome no terminó de preparar el modelo en el dispositivo tras 60 segundos sin progreso. Usa Chrome de escritorio compatible y mantén esta página abierta mientras se descarga el modelo. Este intento no envió texto extraído al servicio en la nube de Firebase.",
   on_device_generation_timeout_error:

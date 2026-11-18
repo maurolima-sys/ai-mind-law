@@ -5,6 +5,7 @@ import {
   generateWithModelFallback,
   getOnDeviceTimeoutStage,
   getFirebaseAiHttpStatus,
+  isInvalidFirebaseAppCheckTokenError,
   isRetryableFirebaseAiError,
   ON_DEVICE_GENERATION_TIMEOUT_MS,
   PRIMARY_GEMINI_MODEL,
@@ -25,6 +26,20 @@ describe("Firebase AI retry policy", () => {
     expect(isRetryableFirebaseAiError({ customErrorData: { status: 503 } })).toBe(true);
     expect(isRetryableFirebaseAiError({ customErrorData: { status: 403 } })).toBe(false);
     expect(isRetryableFirebaseAiError(new Error("Network request failed"))).toBe(false);
+  });
+
+  it("recognizes invalid App Check tokens without classifying unrelated 401s", () => {
+    expect(
+      isInvalidFirebaseAppCheckTokenError(
+        new Error("[401] Firebase App Check token is invalid (AI/fetch-error)"),
+      ),
+    ).toBe(true);
+    expect(
+      isInvalidFirebaseAppCheckTokenError({
+        cause: new Error("firebase app check token is invalid"),
+      }),
+    ).toBe(true);
+    expect(isInvalidFirebaseAppCheckTokenError(new Error("[401] Unauthorized"))).toBe(false);
   });
 
   it("walks the documented fallback chain after retryable failures", async () => {
