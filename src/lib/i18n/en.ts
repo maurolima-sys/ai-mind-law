@@ -1,12 +1,12 @@
 ﻿export const en = {
-  // â”€â”€ Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Navigation ───────────────────────────────────────────────────────────────
   nav_dashboard: "Dashboard",
   nav_library: "Documents",
   nav_analysis: "Analysis",
   nav_compliance: "Compliance matrix",
   nav_processing: "Processing",
 
-  // â”€â”€ Screen titles / subtitles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Screen titles / subtitles ────────────────────────────────────────────────
   screen_overview_title: "Your document intelligence workspace",
   screen_overview_subtitle:
     "Turn complex tenders into reviewable findings, with source evidence attached.",
@@ -70,7 +70,7 @@
   risk_csv_source: "Source location",
   risk_csv_demo: "Illustrative sample",
 
-  // â”€â”€ Processing mode labels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Processing mode labels ───────────────────────────────────────────────────
   mode_on_device: "On-device",
   mode_cloud: "Cloud",
   mode_cloud_fallback: "Cloud fallback",
@@ -78,28 +78,28 @@
   mode_demo: "Demo mode",
   mode_not_analyzed: "Not analyzed",
 
-  // â”€â”€ Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Sidebar ──────────────────────────────────────────────────────────────────
   sidebar_workspace: "Workspace",
   sidebar_privacy_title: "Privacy by choice",
   sidebar_privacy_note: "Cloud use is always explicit.",
   sidebar_user_workspace: "Procurement workspace",
   sidebar_user_session: "Local browser workspace",
 
-  // â”€â”€ Topbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Topbar ───────────────────────────────────────────────────────────────────
   search_placeholder: "Search documents, requirements, risks...",
   search_aria: "Search current workspace",
   search_clear: "Clear search",
   firebase_not_configured: "Firebase setup required",
   firebase_connected: "Firebase AI Logic: Connected",
-  firebase_configured: "Firebase configured Â· not yet verified",
+  firebase_configured: "Firebase configured · not yet verified",
 
-  // â”€â”€ Global button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Global button ────────────────────────────────────────────────────────────
   btn_add_document: "Add a document",
 
-  // â”€â”€ Demo banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Demo banner ──────────────────────────────────────────────────────────────
   demo_banner_title: "Illustrative sample",
 
-  // â”€â”€ Overview â€” metrics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Overview — metrics ───────────────────────────────────────────────────────
   metric_docs_label: "Documents in workspace",
   metric_docs_detail: "Files in this browser session",
   metric_reqs_label_sample: "Sample requirements",
@@ -113,7 +113,7 @@
   metric_pending_detail: "Requirements awaiting a decision",
   metric_workspace_empty: "No uploaded tenders yet",
 
-  // â”€â”€ Overview â€” documents table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Overview — documents table ───────────────────────────────────────────────
   table_col_document: "Document",
   table_col_pages_sources: "Pages / sections",
   table_col_processing: "Processing",
@@ -161,23 +161,23 @@
   docs_showing: "Showing {{shown}} of {{total}} documents",
   docs_open_analysis: "Open current analysis",
 
-  // â”€â”€ Overview â€” upload tile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Overview — upload tile ───────────────────────────────────────────────────
   upload_tile_title: "Upload a tender",
   upload_tile_detail:
     "Extract PDF, DOCX, and XLSX text locally; scanned PDFs may use optional external OCR.",
   upload_tile_cta: "Choose processing mode",
-  upload_tile_note: "PDF, DOCX, or XLSX Â· maximum 50 MB Â· optional external OCR for scanned PDFs",
+  upload_tile_note: "PDF, DOCX, or XLSX · maximum 50 MB · optional external OCR for scanned PDFs",
 
-  // â”€â”€ Overview â€” review queue â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Overview — review queue ──────────────────────────────────────────────────
   review_queue_title: "Review queue",
   review_queue_subtitle: "Findings that need human attention.",
-  review_source_verified: "Source verified Â· page {{page}}",
-  review_source_verified_location: "Source verified Â· {{location}}",
+  review_source_verified: "Source verified · page {{page}}",
+  review_source_verified_location: "Source verified · {{location}}",
   review_evidence_needs: "Evidence needs verification",
   review_all_done: "All requirements are reviewed.",
   review_empty: "Analyze a document to create a review queue.",
 
-  // â”€â”€ Analysis â€” filter chips â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Analysis — filter chips ──────────────────────────────────────────────────
   filter_all: "All findings",
   filter_requirements: "Requirements",
   filter_deadlines: "Deadlines",
@@ -185,7 +185,7 @@
   filter_risks: "Risks",
   filter_missing: "Missing & inconsistencies",
 
-  // â”€â”€ Analysis â€” source panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Analysis — source panel ──────────────────────────────────────────────────
   source_panel_title: "Extracted source text",
   source_panel_title_full: "Source document",
   source_llamaparse_paginated: "Text extracted by LlamaParse.",
@@ -203,17 +203,17 @@
   source_disclaimer: "Extracted text may need manual verification against the original PDF.",
   source_page_rendering_region: "Rendered source page",
   source_rendered_page: "Rendered page {{page}} of the original PDF",
-  source_rendering: "Rendering the original PDF pageâ€¦",
+  source_rendering: "Rendering the original PDF page…",
   source_render_error:
     "The original page could not be rendered. Extracted text remains available. {{detail}}",
 
-  // â”€â”€ Analysis â€” pre-analysis â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Analysis — pre-analysis ──────────────────────────────────────────────────
   pre_analysis_title: "Ask about this document",
   pre_analysis_subtitle:
     "Review the text extracted in your browser and ask a question before running a full analysis.",
   pre_analysis_cta: "Run full analysis",
 
-  // â”€â”€ Analysis â€” document toolbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Analysis — document toolbar ──────────────────────────────────────────────
   toolbar_fictional_sample: "Fictional sample",
   toolbar_pdf_document: "PDF document",
   toolbar_docx_document: "DOCX document",
@@ -224,30 +224,30 @@
   toolbar_llamaparse_badge: "Text: external OCR (LlamaParse)",
   toolbar_export_json: "Export JSON",
 
-  // â”€â”€ Analysis â€” warnings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Analysis — warnings ──────────────────────────────────────────────────────
   warning_demo_prepared:
     "This prepared analysis is simulated and illustrative; it was not generated from the sample text.",
   warning_demo_ai: "This AI analysis uses fictional sample text, not a real procurement document.",
   warning_llamaparse_no_pages:
     "LlamaParse did not provide page numbers. Citations cannot be page-verified; findings are flagged for human review.",
 
-  // â”€â”€ Analysis â€” inference report â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Analysis — inference report ──────────────────────────────────────────────
   inference_title: "Analysis run",
   inference_processing_source: "Processing source:",
   inference_firebase_label: "Firebase AI Logic",
   inference_firebase_not_used: "Not used",
-  inference_firebase_connected: "Connected Â· response received",
+  inference_firebase_connected: "Connected · response received",
   inference_model_label: "Model",
   inference_evidence_label: "Evidence mode",
-  inference_evidence_value: "Page-linked excerpts Â· checked against extracted text",
+  inference_evidence_value: "Page-linked excerpts · checked against extracted text",
   inference_demo_label: "Demo data",
   inference_yes: "Yes",
   inference_no: "No",
 
-  // â”€â”€ Analysis â€” summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Analysis — summary ───────────────────────────────────────────────────────
   summary_title: "Document summary",
 
-  // â”€â”€ Analysis â€” finding cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Analysis — finding cards ─────────────────────────────────────────────────
   finding_date_not_specified: "Date not specified",
   finding_no_source_page: "No source page",
   finding_source_location: "Source: {{location}}",
@@ -255,24 +255,24 @@
   finding_verify_source: "Verify source",
   finding_confidence: "{{pct}}% confidence",
 
-  // â”€â”€ Analysis â€” findings panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Analysis — findings panel ─────────────────────────────────────────────────
   findings_title: "Findings",
-  findings_count: "{{shown}} shown Â· {{total}} total",
+  findings_count: "{{shown}} shown · {{total}} total",
   findings_illustrative: "Illustrative",
-  findings_ai_generated: "AI-generated Â· review required",
+  findings_ai_generated: "AI-generated · review required",
   findings_empty_search: "No findings match your search",
   findings_empty_category: "No findings in this category",
   findings_empty_hint: "Change the filter or search a different term.",
   findings_disclaimer:
     "AI findings are suggestions. Verify every cited passage before relying on it.",
 
-  // â”€â”€ Analysis â€” empty state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Analysis — empty state ────────────────────────────────────────────────────
   empty_analysis_title: "No analysis for this document yet",
   empty_analysis_detail:
     "Choose an on-device, cloud, or hybrid mode to extract findings from a PDF, DOCX, or XLSX file.",
   empty_analysis_cta: "Open processing options",
 
-  // â”€â”€ Compliance â€” toolbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Compliance — toolbar ──────────────────────────────────────────────────────
   compliance_search_hint: "Search from the workspace bar...",
   compliance_all_categories: "All categories",
   compliance_all_statuses: "All statuses",
@@ -282,7 +282,7 @@
   compliance_status_unclear: "Unclear",
   compliance_export_csv: "Export CSV",
 
-  // â”€â”€ Compliance â€” matrix â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Compliance — matrix ───────────────────────────────────────────────────────
   compliance_col_requirement: "Requirement",
   compliance_col_category: "Category",
   compliance_col_mandatory: "Mandatory",
@@ -302,7 +302,7 @@
   compliance_empty_detail: "Adjust the filters or search terms.",
   compliance_demo_warning: "Sample requirements and review results are fictional and illustrative.",
 
-  // â”€â”€ Compliance â€” evidence panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Compliance — evidence panel ───────────────────────────────────────────────
   evidence_panel_title: "Source evidence",
   evidence_panel_subtitle: "Selected requirement",
   evidence_no_excerpt: "No source excerpt was returned. Verify this requirement manually.",
@@ -331,21 +331,21 @@
   evidence_compare_cloud_consent: "Allow cloud processing for this evidence file",
   evidence_compare_cloud_consent_detail:
     "The extracted text from {{name}} may be sent to Gemini through Firebase AI Logic during this comparison. This consent is separate from tender analysis and resets on reload.",
-  evidence_compare_running: "Comparingâ€¦",
+  evidence_compare_running: "Comparing…",
   evidence_compare_action: "Compare evidence",
-  evidence_compare_ai_estimate: "AI estimate Â· {{confidence}}% confidence",
+  evidence_compare_ai_estimate: "AI estimate · {{confidence}}% confidence",
   evidence_compare_unknown_file: "Evidence file",
   evidence_compare_quote_verified: "Excerpt verified in extracted text",
-  evidence_compare_quote_unverified: "Excerpt not verified Â· human review required",
+  evidence_compare_quote_unverified: "Excerpt not verified · human review required",
   evidence_assessment_supports: "May support the requirement",
   evidence_assessment_contradicts: "May conflict with the requirement",
   evidence_assessment_insufficient: "Evidence is insufficient",
 
-  // â”€â”€ Processing â€” topline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Processing — topline ──────────────────────────────────────────────────────
   processing_topline: "Processing options",
   processing_steps: "01 / 03",
 
-  // â”€â”€ Processing â€” mode cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Processing — mode cards ───────────────────────────────────────────────────
   mode_card_local_title: "On-device only",
   mode_card_local_badge: "PRIVATE",
   mode_card_local_heading: "Keep inference on this device",
@@ -382,7 +382,7 @@
   mode_card_demo_p2: "No real document processed",
   mode_card_demo_p3: "Sample clearly labeled",
 
-  // â”€â”€ Processing â€” cloud consent â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Processing — cloud consent ────────────────────────────────────────────────
   consent_cloud_title: "I explicitly allow cloud AI processing for this session.",
   consent_cloud_detail:
     "Extracted text from this tender will be sent to Gemini through Firebase AI Logic. Bidder evidence needs its own separate consent. This setting resets when the page is reloaded.",
@@ -390,16 +390,16 @@
   consent_hybrid_detail:
     "If the on-device model is unavailable, extracted text from this tender may be sent to Google's Gemini service through Firebase AI Logic. Bidder evidence needs its own separate consent. This setting resets when the page is reloaded.",
 
-  // â”€â”€ Processing â€” file drop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Processing — file drop ────────────────────────────────────────────────────
   file_input_aria: "Choose a PDF, DOCX, or XLSX document",
   file_replace: "Replace",
   file_stored: "stored in this browser",
   drop_title: "Drop a tender PDF, DOCX, or XLSX here",
   drop_or: "or select a file from your device",
   drop_choose: "Choose document",
-  drop_note: "PDF, DOCX, or XLSX Â· maximum 50 MB Â· scanned PDFs may use optional external OCR",
+  drop_note: "PDF, DOCX, or XLSX · maximum 50 MB · scanned PDFs may use optional external OCR",
 
-  // â”€â”€ Processing â€” external OCR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Processing — external OCR ─────────────────────────────────────────────────
   ocr_scanned_title: "This looks like a scanned PDF.",
   ocr_scanned_desc:
     "You can send this file to LlamaParse for external text extraction. Firebase AI Logic will analyze the extracted text afterward.",
@@ -416,7 +416,7 @@
   ocr_extract_btn: "Extract with LlamaParse",
   ocr_extracting: "Extracting and analyzing...",
 
-  // â”€â”€ Processing â€” error / progress â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Processing — error / progress ─────────────────────────────────────────────
   error_dismiss: "Dismiss error",
   firebase_app_check_token_error:
     "Firebase rejected its security token, so live analysis could not be completed. Reload and try again, or use Sample mode. If it persists, ask the deployment administrator to verify the reCAPTCHA Enterprise site key, allowed domain, and Firebase App Check registration; changes to VITE_* settings require a new build and deployment.",
@@ -427,29 +427,29 @@
   on_device_timeout_choose_cloud: "Choose Cloud AI",
   progress_default: "Preparing analysis...",
 
-  // â”€â”€ Processing â€” Firebase setup notice â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Processing — Firebase setup notice ────────────────────────────────────────
   firebase_setup_title: "Firebase setup is needed for live analysis.",
   firebase_setup_desc:
     "Configure a Firebase web app, enable Firebase AI Logic, and set App Check before running a live model call. Follow the setup steps in README.md.",
 
-  // â”€â”€ Processing â€” runtime status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Processing — runtime status ───────────────────────────────────────────────
   runtime_firebase_label: "Firebase AI Logic",
   runtime_not_configured: "Not configured",
-  runtime_connected: "Connected Â· a response was received",
-  runtime_configured_no_response: "Configured Â· no live response yet",
+  runtime_connected: "Connected · a response was received",
+  runtime_configured_no_response: "Configured · no live response yet",
   runtime_processing_source: "Processing source",
-  runtime_demo_mode: "Demo mode Â· AI not used",
+  runtime_demo_mode: "Demo mode · AI not used",
   runtime_not_run: "Not run",
   runtime_demo_data: "Demo data",
 
-  // â”€â”€ Processing â€” footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Processing — footer ───────────────────────────────────────────────────────
   footer_selected_mode: "Selected mode",
   footer_source_reporting: "Source reporting",
   footer_source_reporting_value: "Actual inference source appears with the results",
   footer_mode_demo: "Sample data",
   footer_mode_local: "On-device only",
-  footer_mode_cloud: "Cloud AI Â· consent required",
-  footer_mode_hybrid: "Hybrid Â· consent required",
+  footer_mode_cloud: "Cloud AI · consent required",
+  footer_mode_hybrid: "Hybrid · consent required",
   footer_status_demo: "No real document is processed.",
   footer_status_local: "No cloud fallback will be used.",
   footer_status_cloud_ok: "Cloud processing consent is enabled for this session.",
@@ -457,7 +457,7 @@
   footer_status_hybrid_ok: "Cloud fallback consent is enabled for this session.",
   footer_status_hybrid_pending: "Enable cloud consent above to continue.",
 
-  // â”€â”€ Processing â€” footer actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Processing — footer actions ───────────────────────────────────────────────
   btn_explore_sample: "Explore sample analysis",
   btn_ask_pdf: "Ask about this document",
   btn_extract_text: "Extract text only",
@@ -465,7 +465,7 @@
   btn_analyze_pdf: "Analyze PDF",
   btn_processing: "Processing...",
 
-  // â”€â”€ Processing â€” process flow â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Processing — process flow ─────────────────────────────────────────────────
   flow_title: "From document to reviewable findings",
   flow_subtitle: "Every finding links back to a source excerpt so a person can verify it.",
   flow_step1_title: "Choose document",
@@ -478,7 +478,7 @@
   flow_step4_detail: "Decisions stay yours",
   flow_current_sample: "Current workspace document:",
 
-  // â”€â”€ Hardcoded strings (previously missed) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Hardcoded strings (previously missed) ────────────────────────────────────
   overview_recent_title: "Recent tender documents",
   overview_recent_subtitle: "Files saved in this browser workspace.",
   overview_add_document: "Add document",
@@ -501,7 +501,7 @@
   open_processing_aria: "Open processing options",
   ocr_analyze_browser: "Analyze the text available in this browser",
 
-  // â”€â”€ DocumentQaPanel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── DocumentQaPanel ───────────────────────────────────────────────────────────
   qa_title: "Ask this document",
   qa_subtitle: "Ask follow-up questions and review every answer against its sources.",
   qa_document_grounded: "Document-grounded",
@@ -530,21 +530,21 @@
   qa_page_unavailable: "Source location unavailable",
   qa_citation_verified: "Verified in extracted text",
   qa_citation_unverified: "Verify against the PDF",
-  qa_research_title: "Search results Â· verify authority and current status",
+  qa_research_title: "Search results · verify authority and current status",
   qa_research_cited: "Cited in answer",
   qa_research_not_cited: "Not cited in answer",
   qa_research_no_date: "Publication date not provided",
   qa_research_no_sources: "Firecrawl returned no sources; this answer uses the document only.",
-  qa_sending_research: "Searching sources and preparing an evidence-based answerâ€¦",
-  qa_sending_document: "Checking the document and preparing an answerâ€¦",
-  qa_research_checking: "Checking availabilityâ€¦",
-  qa_research_available: "Optional Â· requires separate consent",
+  qa_sending_research: "Searching sources and preparing an evidence-based answer…",
+  qa_sending_document: "Checking the document and preparing an answer…",
+  qa_research_checking: "Checking availability…",
+  qa_research_available: "Optional · requires separate consent",
   qa_research_unavailable: "Not configured on the server",
   qa_research_error_status: "Availability could not be checked",
   qa_research_error_msg:
     "External research availability could not be checked. Try reloading or ask from the document only.",
   qa_jurisdiction_label: "Research jurisdiction",
-  qa_jurisdiction_placeholder: "e.g. Brazil â€” State of Amazonas; Law 1,762/1986",
+  qa_jurisdiction_placeholder: "e.g. Brazil — State of Amazonas; Law 1,762/1986",
   qa_country_label: "Country code",
   qa_country_placeholder: "BR",
   qa_research_privacy1:
@@ -554,7 +554,7 @@
   qa_research_consent:
     "I consent to sending this question, country code, and jurisdiction to Firecrawl for external research.",
   qa_composer_aria: "Ask a question about this document",
-  qa_composer_placeholder: "Ask a question about this documentâ€¦",
+  qa_composer_placeholder: "Ask a question about this document…",
   qa_voice_title: "Use voice to draft a question",
   qa_voice_unsupported: "Voice input is not supported by this browser",
   qa_voice_stop: "Stop listening",
@@ -569,7 +569,7 @@
   qa_pagination_note:
     "This document has no verified page mapping. Answers may quote extracted text, but page citations are withheld.",
 
-  // â”€â”€ Suggested questions dropdown â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Suggested questions dropdown ─────────────────────────────────────────────
   qa_suggestions_btn: "Suggested questions",
   qa_suggestions_q1: "What are the mandatory eligibility requirements to submit a bid?",
   qa_suggestions_q2: "What are the key submission deadlines and what happens if they are missed?",
@@ -578,7 +578,7 @@
   qa_suggestions_q5: "What information or annexes appear to be missing from this document?",
   qa_suggestions_q6: "What are the highest-severity risks identified in this tender?",
 
-  // â”€â”€ GuidedTour â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── GuidedTour ────────────────────────────────────────────────────────────────
   tour_badge_welcome: "Welcome",
   tour_badge_step: "Step {{step}} of {{total}}",
   tour_close: "Close tour",
@@ -591,7 +591,7 @@
 
   tour_step0_title: "Welcome to PocketMind AI",
   tour_step0_body:
-    "Turn complex tender PDFs into reviewable findings â€” with a link to the source page for each one. This short tour walks the full flow in about 90 seconds, using the preloaded sample tender. No setup needed.",
+    "Turn complex tender PDFs into reviewable findings — with a link to the source page for each one. This short tour walks the full flow in about 90 seconds, using the preloaded sample tender. No setup needed.",
   tour_step1_title: "Six areas, one workspace",
   tour_step1_body:
     "Move between Dashboard, Library, Document analysis, Compliance matrix, Risks, and Processing & privacy from this sidebar.",
@@ -603,24 +603,24 @@
     "Documents in the session, requirements extracted, critical risks flagged for review, and pending reviews.",
   tour_step3_title: "The sample tender is ready",
   tour_step3_body:
-    "NB-2026-114 Smart LED Street Lighting is preloaded and labeled illustrative â€” no Firebase setup needed to explore it.",
+    "NB-2026-114 Smart LED Street Lighting is preloaded and labeled illustrative — no Firebase setup needed to explore it.",
   tour_step4_title: "Choose how it's processed",
   tour_step4_body:
-    "On-device, Cloud, Hybrid, or Sample data. Cloud and hybrid need your explicit consent. The tour uses Sample data â€” no upload, no model call.",
+    "On-device, Cloud, Hybrid, or Sample data. Cloud and hybrid need your explicit consent. The tour uses Sample data — no upload, no model call.",
   tour_step5_title: "Findings, beside their source",
   tour_step5_body:
-    "Requirements, deadlines, specifications, risks, and missing information â€” each quotes its excerpt. Click the Page link to jump to the source. Green means verified against the text.",
+    "Requirements, deadlines, specifications, risks, and missing information — each quotes its excerpt. Click the Page link to jump to the source. Green means verified against the text.",
   tour_step6_title: "Verify against the original",
   tour_step6_body:
-    "The source page sits beside the findings so you can confirm every excerpt yourself. AI findings are suggestions â€” verify before you rely on them.",
+    "The source page sits beside the findings so you can confirm every excerpt yourself. AI findings are suggestions — verify before you rely on them.",
   tour_step7_title: "Track every requirement",
   tour_step7_body:
-    "Filter by category, inspect the evidence, set a review status (Pending â†’ Reviewed â†’ Satisfied, or Unclear), add notes, and export to CSV.",
+    "Filter by category, inspect the evidence, set a review status (Pending → Reviewed → Satisfied, or Unclear), add notes, and export to CSV.",
   tour_step8_title: "Privacy by choice. Decisions stay yours.",
   tour_step8_body:
     "PDF text is extracted in your browser; cloud use is always your explicit choice. When you're ready, choose Sample data and Explore sample analysis to try the full flow yourself.",
 
-  // â”€â”€ CSV export â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── CSV export ────────────────────────────────────────────────────────────────
   csv_col_requirement: "Requirement",
   csv_col_category: "Category",
   csv_col_mandatory: "Mandatory",
@@ -635,7 +635,7 @@
   csv_yes: "Yes",
   csv_no: "No",
 
-  // â”€â”€ Aligned Visual Design Keys â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Aligned Visual Design Keys ───────────────────────────────────────────────
   sidebar_nav_risks: "Risks",
   sidebar_nav_projects: "Projects",
   sidebar_nav_team: "Team",
@@ -656,7 +656,7 @@
   processing_setup_title: "Choose how your document is processed",
   processing_setup_desc:
     "PocketMind AI gives you flexible processing options. You control your data, every step of the way.",
-  processing_confirm_btn: "Confirm and continue â†’",
+  processing_confirm_btn: "Confirm and continue →",
   processing_confirm_sub: "You can change this later in Settings.",
   processing_flow_title: "From document to verified insights",
   processing_flow_desc: "A simple, transparent flow from your document to structured results.",

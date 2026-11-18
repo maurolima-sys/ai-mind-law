@@ -192,7 +192,7 @@ function findAnalysisItems(analysis: Analysis, t: TFn): Finding[] {
       id: item.id,
       kind: "Requirement" as const,
       title: item.description,
-      description: `${item.category} Â· ${item.mandatory ? t("finding_mandatory") : t("finding_optional")}`,
+      description: `${item.category} · ${item.mandatory ? t("finding_mandatory") : t("finding_optional")}`,
       page: item.evidence.page,
       sourceIndex: item.evidence.sourceIndex ?? item.evidence.page,
       sourceLocation: item.evidence.sourceLocation ?? null,
@@ -216,7 +216,7 @@ function findAnalysisItems(analysis: Analysis, t: TFn): Finding[] {
       id: item.id,
       kind: "Specification" as const,
       title: item.item,
-      description: [item.quantity, item.unit, item.details].filter(Boolean).join(" Â· "),
+      description: [item.quantity, item.unit, item.details].filter(Boolean).join(" · "),
       page: item.evidence.page,
       sourceIndex: item.evidence.sourceIndex ?? item.evidence.page,
       sourceLocation: item.evidence.sourceLocation ?? null,
@@ -1263,9 +1263,9 @@ export function PocketMindApp() {
             rel="noreferrer"
             className="pm-build-info-link"
           >
-            GitHub â†—
+            GitHub ↗
           </a>
-          <span>Â·</span>
+          <span>·</span>
           {buildLabel()}
         </div>
       </aside>
@@ -1286,7 +1286,7 @@ export function PocketMindApp() {
               placeholder={t("search_placeholder")}
               aria-label={t("search_aria")}
             />
-            <kbd className="pm-kbd">âŒ˜K</kbd>
+            <kbd className="pm-kbd">⌘K</kbd>
             {search && (
               <button type="button" onClick={() => setSearch("")} aria-label={t("search_clear")}>
                 <X size={15} />
@@ -1658,7 +1658,7 @@ function OverviewScreen({
           </div>
           <div className="pm-kpi-value-row">
             <span className="pm-kpi-value">{documents.length || 24}</span>
-            <span className="pm-kpi-delta pm-kpi-delta--up">â†‘ +33%</span>
+            <span className="pm-kpi-delta pm-kpi-delta--up">↑ +33%</span>
           </div>
           <span className="pm-kpi-sub">{t("overview_last_30_days")}</span>
         </div>
@@ -1672,7 +1672,7 @@ function OverviewScreen({
           </div>
           <div className="pm-kpi-value-row">
             <span className="pm-kpi-value">{analysis?.requirements.length || 186}</span>
-            <span className="pm-kpi-delta pm-kpi-delta--up">â†‘ +21%</span>
+            <span className="pm-kpi-delta pm-kpi-delta--up">↑ +21%</span>
           </div>
           <span className="pm-kpi-sub">{t("overview_last_30_days")}</span>
         </div>
@@ -1686,7 +1686,7 @@ function OverviewScreen({
           </div>
           <div className="pm-kpi-value-row">
             <span className="pm-kpi-value">{criticalRisks || 7}</span>
-            <span className="pm-kpi-delta pm-kpi-delta--orange">â†‘ +2</span>
+            <span className="pm-kpi-delta pm-kpi-delta--orange">↑ +2</span>
           </div>
           <span className="pm-kpi-sub">{t("overview_last_30_days")}</span>
         </div>
@@ -1700,7 +1700,7 @@ function OverviewScreen({
           </div>
           <div className="pm-kpi-value-row">
             <span className="pm-kpi-value">{pendingReviews || 5}</span>
-            <span className="pm-kpi-delta pm-kpi-delta--down">â†“ -40%</span>
+            <span className="pm-kpi-delta pm-kpi-delta--down">↓ -40%</span>
           </div>
           <span className="pm-kpi-sub">{t("overview_last_30_days")}</span>
         </div>
@@ -1762,7 +1762,7 @@ function OverviewScreen({
                             <div className="pm-doc-name-col">
                               <strong>{document.name}</strong>
                               <small>
-                                {document.pages.length || 24} {t("toolbar_pages")} Â·{" "}
+                                {document.pages.length || 24} {t("toolbar_pages")} ·{" "}
                                 {formatBytes(document.size)}
                               </small>
                             </div>
@@ -2104,13 +2104,13 @@ function AnalysisScreen({
                       ? t("toolbar_docx_document")
                       : t("toolbar_xlsx_document")}
               </span>
-              <span>Â·</span>
+              <span>·</span>
               <span>
                 {hasPdfPagination
                   ? `${document.pages.length} ${t("toolbar_pages")}`
                   : `${document.pages.length} ${t("toolbar_source_sections")}`}
               </span>
-              <span>Â·</span>
+              <span>·</span>
               <span>{formatBytes(document.size)}</span>
               <Badge tone={modeSourceTone(processingSource)}>
                 {modeLabel(processingSource, t)}
@@ -2519,7 +2519,7 @@ function ComplianceScreen({
         <div className="pm-compliance-sub-left">
           <ClipboardCheck size={15} />
           <span>{t("compliance_col_requirement")}</span>
-          <span style={{ color: "var(--pm-soft)" }}>Â·</span>
+          <span style={{ color: "var(--pm-soft)" }}>·</span>
           <span>
             {requirements.length} {t("compliance_summary_reqs", { count: requirements.length })}
           </span>
@@ -2655,7 +2655,7 @@ function ComplianceScreen({
                             <span className="pm-muted-label">{t("compliance_not_provided")}</span>
                           )}
                         </td>
-                        <td>{req.evidence.page ?? "â€”"}</td>
+                        <td>{req.evidence.page ?? "—"}</td>
                         <td>
                           <label className="pm-status-select">
                             <span className="sr-only">
@@ -2709,7 +2709,7 @@ function ComplianceScreen({
               <div className="pm-drawer-doc-badge">
                 <span style={{ fontWeight: 700, color: "var(--pm-ink)", fontSize: "0.8rem" }}>
                   {selectedRequirement.description.slice(0, 60)}
-                  {selectedRequirement.description.length > 60 ? "â€¦" : ""}
+                  {selectedRequirement.description.length > 60 ? "…" : ""}
                 </span>
                 <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
                   <Badge tone="purple">{selectedRequirement.category}</Badge>
@@ -2730,7 +2730,7 @@ function ComplianceScreen({
                   <h5>{t("compliance_verified").toUpperCase()}</h5>
                   <p>{t("evidence_panel_subtitle")}</p>
                   <small>
-                    {t("compliance_col_page")} {selectedRequirement.evidence.page ?? "â€”"}
+                    {t("compliance_col_page")} {selectedRequirement.evidence.page ?? "—"}
                   </small>
                 </div>
               )}
@@ -3143,7 +3143,7 @@ function ProcessingScreen({
             <div>
               <strong>{file.name}</strong>
               <span>
-                {formatBytes(file.size)} Â· {getDocumentFormat(file.name)?.toUpperCase()} Â·{" "}
+                {formatBytes(file.size)} · {getDocumentFormat(file.name)?.toUpperCase()} ·{" "}
                 {t("file_stored")}
               </span>
             </div>
