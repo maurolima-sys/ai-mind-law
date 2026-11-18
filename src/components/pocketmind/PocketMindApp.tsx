@@ -1601,6 +1601,13 @@ function OverviewScreen({
     }
   }
 
+  const todayLabel = new Date().toLocaleDateString("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
   return (
     <div className="pm-screen">
       <div className="pm-welcome-banner">
@@ -1610,7 +1617,7 @@ function OverviewScreen({
           <p className="pm-welcome-desc">{t("screen_overview_subtitle")}</p>
         </div>
         <div className="pm-welcome-meta">
-          <time>Mon, 12 May 2025</time>
+          <time>{todayLabel}</time>
           <span>{t("overview_good_to_see")}</span>
         </div>
       </div>
@@ -1836,10 +1843,17 @@ function OverviewScreen({
                   "Document";
                 const title = activity.title ?? activityDescription(activity);
                 const timeStr = activity.timeAgo ?? new Date(activity.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const FeedIcon =
+                  activity.type === "analysis-completed" ? BrainCircuit
+                  : activity.type === "document-added" ? FilePlus2
+                  : activity.type === "evidence-added" ? FileCheck2
+                  : activity.type === "evidence-compared" ? BadgeCheck
+                  : activity.type === "review-updated" ? ClipboardCheck
+                  : FileText;
                 return (
                   <li key={activity.id} className="pm-feed-item">
                     <span className={`pm-feed-icon pm-feed-icon--${tone}`}>
-                      <span className="pm-dot-indicator" />
+                      <FeedIcon size={11} strokeWidth={2.2} />
                     </span>
                     <div className="pm-feed-content">
                       <strong>{title}</strong>
@@ -1854,27 +1868,6 @@ function OverviewScreen({
         </aside>
       </div>
 
-      <section className="pm-panel pm-activity-panel">
-        <div className="pm-panel-heading">
-          <div>
-            <h2>{t("activity_title")}</h2>
-            <p>{t("activity_detail")}</p>
-          </div>
-        </div>
-        {activities.length ? (
-          <ol className="pm-activity-list">
-            {activities.slice(0, 8).map((activity) => (
-              <li key={activity.id}>
-                <span className="pm-activity-marker" aria-hidden="true" />
-                <span>{activityDescription(activity)}</span>
-                <time dateTime={activity.at}>{new Date(activity.at).toLocaleString()}</time>
-              </li>
-            ))}
-          </ol>
-        ) : (
-          <p className="pm-activity-empty">{t("activity_empty")}</p>
-        )}
-      </section>
     </div>
   );
 }
