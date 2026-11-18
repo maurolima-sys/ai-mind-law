@@ -229,7 +229,7 @@ function firebaseConfiguration() {
     apiKey: VITE_FIREBASE_API_KEY,
     authDomain: VITE_FIREBASE_AUTH_DOMAIN,
     appId: VITE_FIREBASE_APP_ID,
-    projectId: VITE_FIREBASE_PROJECT_ID,
+    projectId: VITE_FIREBASE_PROJECT_ID?.trim(),
   };
 
   const missing = Object.entries({
@@ -262,7 +262,7 @@ export function isFirebaseConfigured() {
     VITE_FIREBASE_API_KEY &&
     VITE_FIREBASE_AUTH_DOMAIN &&
     VITE_FIREBASE_APP_ID &&
-    VITE_FIREBASE_PROJECT_ID &&
+    VITE_FIREBASE_PROJECT_ID?.trim() &&
     (import.meta.env.DEV || appCheckSiteKey),
   );
 }
