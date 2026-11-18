@@ -24,6 +24,9 @@ export const es: Translations = {
   screen_risks_title: "Registro de riesgos",
   screen_risks_subtitle:
     "Revisa los riesgos de los análisis guardados, verifica la evidencia de origen y registra una respuesta.",
+  screen_settings_title: "Configuración",
+  screen_settings_subtitle:
+    "Elige tus valores predeterminados, los controles de voz y cómo se gestionan los datos locales.",
 
   risk_summary_label: "Resumen de riesgos",
   risk_summary_total: "Riesgos",
@@ -723,4 +726,45 @@ export const es: Translations = {
   proc_sample_vendor: "Proveedor",
   proc_sample_verified: "Verificado",
   proc_sample_uncertain: "Incierto",
+  settings_preferences_title: "Preferencias",
+  settings_preferences_detail:
+    "Se guardan solo en este navegador. Cambiar una preferencia no concede consentimiento para la nube.",
+  settings_language_label: "Idioma de la interfaz",
+  settings_language_detail: "Se usa en toda la interfaz de PocketMind.",
+  settings_processing_label: "Modo de procesamiento predeterminado",
+  settings_processing_detail:
+    "Se aplica al iniciar un documento nuevo. Nube e híbrido aún requieren consentimiento por sesión.",
+  settings_mode_local: "Solo en el dispositivo",
+  settings_mode_cloud: "Cloud AI",
+  settings_mode_hybrid: "Híbrido · dispositivo primero",
+  settings_mode_cloud_warning:
+    "Los modos en la nube pueden enviar texto extraído a un modelo externo. El consentimiento nunca se guarda.",
+  settings_voice_title: "Voz y narración",
+  settings_voice_detail:
+    "Las funciones de voz del navegador y la narración del tour son opcionales y se controlan por separado.",
+  settings_tour_narration_label: "Narración del tour guiado",
+  settings_tour_narration_detail: "Permitir la voz opcional generada por el servidor para el tour.",
+  settings_voice_input_label: "Entrada de voz en Q&A",
+  settings_voice_input_detail:
+    "Mostrar los controles de micrófono cuando el navegador admita reconocimiento de voz.",
+  settings_answer_speech_label: "Leer respuestas de Q&A en voz alta",
+  settings_answer_speech_detail:
+    "Mostrar los controles de síntesis de voz del navegador para las respuestas.",
+  settings_local_data_title: "Gobernanza de datos locales",
+  settings_local_data_detail:
+    "Documentos, texto extraído, evidencias, análisis y revisiones permanecen solo en este navegador.",
+  settings_local_data_summary:
+    "{{documents}} documentos · {{evidence}} archivos de evidencia · {{size}}",
+  settings_local_data_warning:
+    "Los datos de IndexedDB no están cifrados ni sincronizados. Borrar los datos del navegador puede eliminarlos permanentemente.",
+  settings_delete_label: "Eliminar datos locales del espacio de trabajo",
+  settings_delete_detail:
+    "Elimina documentos cargados, evidencias, análisis, vínculos, revisiones y actividad. Las preferencias se conservan.",
+  settings_delete_confirm:
+    "Entiendo que esta acción elimina permanentemente los datos locales de este navegador.",
+  settings_delete_action: "Eliminar datos locales",
+  settings_save: "Guardar cambios",
+  settings_saved: "Configuración guardada.",
+  settings_save_error: "No se pudo guardar la configuración.",
+  settings_delete_error: "No se pudieron eliminar los datos locales.",
 };

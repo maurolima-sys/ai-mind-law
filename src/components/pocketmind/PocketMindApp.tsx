@@ -72,6 +72,7 @@ import { GuidedTour } from "@/components/pocketmind/GuidedTour";
 import { LanguageSelector } from "@/components/pocketmind/LanguageSelector";
 import { LocalWorkspaceLibrary } from "@/components/pocketmind/LocalWorkspaceLibrary";
 import { RiskScreen } from "@/components/pocketmind/RiskScreen";
+import { SettingsScreen } from "@/components/pocketmind/SettingsScreen";
 import { SourceDocumentViewer } from "@/components/pocketmind/SourceDocumentViewer";
 import { complianceCsv, downloadText } from "@/lib/services/csv";
 import {
@@ -121,6 +122,12 @@ import {
 import { markUnpaginatedEvidenceUnverified } from "@/lib/services/ocrEvidence";
 import { shouldOfferExternalOcr } from "@/lib/services/ocrNormalize";
 import { analyzeTender } from "@/lib/services/tenderAnalysis";
+import {
+  defaultPreferences,
+  loadPreferences,
+  savePreferences,
+  type PocketMindPreferences,
+} from "@/lib/preferences";
 import { Link } from "@tanstack/react-router";
 import {
   CATEGORIES,
@@ -137,7 +144,8 @@ import {
   type WorkspaceActivity,
 } from "@/lib/types";
 
-type Screen = "overview" | "library" | "analysis" | "compliance" | "processing" | "risks";
+type Screen =
+  "overview" | "library" | "analysis" | "compliance" | "processing" | "risks" | "settings";
 type ProcessingChoice = "demo" | InferencePreference;
 type ExternalOcrAvailability = "checking" | "enabled" | "disabled" | "error";
 type FindingKind = "Requirement" | "Deadline" | "Specification" | "Risk" | "Missing information";
@@ -300,7 +308,11 @@ function EvidenceStatus({ evidence }: { evidence: Evidence }) {
 
 export function PocketMindApp() {
   const t = useT();
-  const { locale } = useLocale();
+  const { locale, setLocale } = useLocale();
+  const configuredDefaultMode = isFirebaseConfigured() ? "hybrid" : "local";
+  const [preferences, setPreferences] = useState<PocketMindPreferences>(() =>
+    defaultPreferences(configuredDefaultMode),
+  );
   const [documents, setDocuments] = useState<DocumentRecord[]>(() => [buildDemoDocument()]);
   const [selectedDocumentId, setSelectedDocumentId] = useState(DEMO_DOC_ID);
   const [screen, setScreen] = useState<Screen>("overview");
@@ -316,15 +328,14 @@ export function PocketMindApp() {
   const [activities, setActivities] = useState<WorkspaceActivity[]>([]);
   const [workspaceReady, setWorkspaceReady] = useState(false);
   const [workspaceError, setWorkspaceError] = useState("");
+  const [preferencesError, setPreferencesError] = useState("");
   const [selectedEvidenceId, setSelectedEvidenceId] = useState("");
   const [evidenceCloudConsent, setEvidenceCloudConsent] = useState(false);
   const [isComparingEvidence, setIsComparingEvidence] = useState(false);
   const [isAddingEvidence, setIsAddingEvidence] = useState(false);
   const [evidenceComparisonProgress, setEvidenceComparisonProgress] = useState("");
   const [evidenceComparisonError, setEvidenceComparisonError] = useState("");
-  const [processingChoice, setProcessingChoice] = useState<ProcessingChoice>(() =>
-    isFirebaseConfigured() ? "hybrid" : "local",
-  );
+  const [processingChoice, setProcessingChoice] = useState<ProcessingChoice>(configuredDefaultMode);
   const [cloudConsent, setCloudConsent] = useState(false);
   const [externalOcrConsentDocumentId, setExternalOcrConsentDocumentId] = useState<string | null>(
     null,
@@ -352,6 +363,18 @@ export function PocketMindApp() {
   const [tourRequestedByUser, setTourRequestedByUser] = useState(false);
   const tourButtonRef = useRef<HTMLButtonElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    try {
+      const stored = loadPreferences(configuredDefaultMode);
+      setPreferences(stored);
+      setProcessingChoice(stored.defaultProcessingMode);
+    } catch (error) {
+      const detail =
+        error instanceof Error ? error.message : "Browser preferences could not be loaded.";
+      setPreferencesError(`Preferences could not be loaded. ${detail}`);
+    }
+  }, [configuredDefaultMode]);
 
   useEffect(() => {
     let active = true;
@@ -460,6 +483,10 @@ export function PocketMindApp() {
     compliance: { title: t("screen_compliance_title"), subtitle: t("screen_compliance_subtitle") },
     processing: { title: t("screen_processing_title"), subtitle: t("screen_processing_subtitle") },
     risks: { title: t("screen_risks_title"), subtitle: t("screen_risks_subtitle") },
+    settings: {
+      title: t("screen_settings_title"),
+      subtitle: t("screen_settings_subtitle"),
+    },
   };
   const currentScreenCopy = screenTitles[screen];
   const navigation = [
@@ -537,7 +564,7 @@ export function PocketMindApp() {
     setEvidenceCloudConsent(false);
     setActivePage(1);
     setActiveExcerpt(null);
-    setProcessingChoice("local");
+    setProcessingChoice(preferences.defaultProcessingMode);
     setCloudConsent(false);
     setExternalOcrConsentDocumentId(null);
     setScannedDocumentId(null);
@@ -849,7 +876,18 @@ export function PocketMindApp() {
       const detail =
         error instanceof Error ? error.message : "Local workspace could not be cleared.";
       setWorkspaceError(`Local files could not be deleted. ${detail}`);
+      throw error;
     }
+  }
+
+  function applyPreferences(next: PocketMindPreferences) {
+    savePreferences(next);
+    setPreferences(next);
+    setPreferencesError("");
+    setLocale(next.locale);
+    setProcessingChoice(next.defaultProcessingMode);
+    setCloudConsent(false);
+    setEvidenceCloudConsent(false);
   }
 
   async function checkExternalOcrStatus() {
@@ -1199,14 +1237,12 @@ export function PocketMindApp() {
           </button>
           <button
             type="button"
-            className="pm-nav-item pm-nav-item--disabled"
-            disabled
-            aria-disabled="true"
-            title={t("nav_coming_soon")}
+            className={`pm-nav-item${screen === "settings" ? " is-active" : ""}`}
+            aria-current={screen === "settings" ? "page" : undefined}
+            onClick={() => setScreen("settings")}
           >
             <Settings size={19} strokeWidth={1.9} aria-hidden="true" />
             <span>{t("sidebar_nav_settings")}</span>
-            <span className="pm-nav-soon">{t("nav_coming_soon")}</span>
           </button>
         </nav>
 
@@ -1325,7 +1361,7 @@ export function PocketMindApp() {
               <h1>{currentScreenCopy.title}</h1>
               <p>{currentScreenCopy.subtitle}</p>
             </div>
-            {screen !== "processing" && (
+            {screen !== "processing" && screen !== "settings" && (
               <button
                 className="pm-button pm-button--primary"
                 type="button"
@@ -1397,7 +1433,7 @@ export function PocketMindApp() {
                     : "processing",
                 );
               }}
-              onClearWorkspace={() => void clearWorkspace()}
+              onClearWorkspace={() => void clearWorkspace().catch(() => undefined)}
             />
           )}
           {screen === "analysis" && (
@@ -1466,6 +1502,8 @@ export function PocketMindApp() {
               onEvidenceCloudConsentChange={(checked) => setEvidenceCloudConsent(checked)}
               onOpenProcessing={() => setScreen("processing")}
               onModelResponse={recordInferenceResponse}
+              voiceInputEnabled={preferences.voiceInputEnabled}
+              answerSpeechEnabled={preferences.answerSpeechEnabled}
               onExport={exportAnalysis}
             />
           )}
@@ -1561,11 +1599,28 @@ export function PocketMindApp() {
               onClearError={() => setErrorMessage("")}
             />
           )}
+          {screen === "settings" && (
+            <SettingsScreen
+              preferences={preferences}
+              documentCount={documents.filter((document) => document.source === "upload").length}
+              evidenceCount={evidenceDocuments.length}
+              storageBytes={
+                documents
+                  .filter((document) => document.source === "upload")
+                  .reduce((total, document) => total + document.size, 0) +
+                evidenceDocuments.reduce((total, document) => total + document.size, 0)
+              }
+              storageError={[workspaceError, preferencesError].filter(Boolean).join(" ")}
+              onSave={applyPreferences}
+              onClearWorkspace={clearWorkspace}
+            />
+          )}
         </main>
       </div>
       <GuidedTour
         active={tourActive}
-        screen={screen}
+        screen={screen === "settings" ? "overview" : screen}
+        narrationEnabled={preferences.tourNarrationEnabled}
         onNavigate={(s) => setScreen(s)}
         onEnd={() => {
           setTourRequestedByUser(false);
@@ -1959,6 +2014,8 @@ function AnalysisScreen({
   onEvidenceCloudConsentChange,
   onOpenProcessing,
   onModelResponse,
+  voiceInputEnabled,
+  answerSpeechEnabled,
   onExport,
 }: {
   document: DocumentRecord;
@@ -2000,6 +2057,8 @@ function AnalysisScreen({
   onEvidenceCloudConsentChange: (checked: boolean) => void;
   onOpenProcessing: () => void;
   onModelResponse: (source: InferenceSource) => void;
+  voiceInputEnabled: boolean;
+  answerSpeechEnabled: boolean;
   onExport: () => void;
 }) {
   const t = useT();
@@ -2102,6 +2161,8 @@ function AnalysisScreen({
               onOpenProcessing={onOpenProcessing}
               onSelectPage={(index, excerpt) => onSelectSource(index, excerpt ?? null)}
               onModelResponse={onModelResponse}
+              voiceInputEnabled={voiceInputEnabled}
+              answerSpeechEnabled={answerSpeechEnabled}
             />
           </div>
         </div>
@@ -2448,6 +2509,8 @@ function AnalysisScreen({
               onOpenProcessing={onOpenProcessing}
               onSelectPage={(index, excerpt) => onSelectSource(index, excerpt ?? null)}
               onModelResponse={onModelResponse}
+              voiceInputEnabled={voiceInputEnabled}
+              answerSpeechEnabled={answerSpeechEnabled}
             />
           )}
 

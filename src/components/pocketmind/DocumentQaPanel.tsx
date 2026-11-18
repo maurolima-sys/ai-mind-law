@@ -19,7 +19,7 @@ import {
 import type { LegalResearchSource } from "@/lib/services/legalResearch";
 import type { ChatCitation, DocumentFormat, InferencePreference } from "@/lib/types";
 import type { InferenceSource } from "@/lib/services/inferenceSource";
-import { useT } from "@/lib/i18n";
+import { useLocale, useT } from "@/lib/i18n";
 
 type SpeechRecognitionEventLike = {
   results: ArrayLike<ArrayLike<{ transcript: string }>>;
@@ -163,6 +163,8 @@ export function DocumentQaPanel({
   onOpenProcessing,
   onSelectPage,
   onModelResponse,
+  voiceInputEnabled = true,
+  answerSpeechEnabled = true,
 }: {
   documentName: string;
   pages: string[];
@@ -176,8 +178,10 @@ export function DocumentQaPanel({
   onOpenProcessing: () => void;
   onSelectPage: (page: number, excerpt?: string) => void;
   onModelResponse: (source: InferenceSource) => void;
+  voiceInputEnabled?: boolean;
+  answerSpeechEnabled?: boolean;
 }) {
-  const t = useT();
+  const { locale, t } = useLocale();
   const [messages, setMessages] = useState<QaMessage[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -219,9 +223,22 @@ export function DocumentQaPanel({
     };
   }, []);
 
+  useEffect(() => {
+    if (voiceInputEnabled) return;
+    recognitionRef.current?.abort();
+    setIsListening(false);
+  }, [voiceInputEnabled]);
+
+  useEffect(() => {
+    if (answerSpeechEnabled) return;
+    window.speechSynthesis?.cancel();
+    setSpeakingMessageId(null);
+  }, [answerSpeechEnabled]);
+
   const needsCloudConsent = preference === "cloud" || preference === "hybrid";
 
   function startVoiceInput() {
+    if (!voiceInputEnabled) return;
     if (isListening) {
       recognitionRef.current?.stop();
       return;
@@ -233,7 +250,7 @@ export function DocumentQaPanel({
 
     try {
       const recognition = new Recognition();
-      recognition.lang = navigator.language;
+      recognition.lang = locale === "pt" ? "pt-PT" : locale === "es" ? "es-ES" : "en-US";
       recognition.continuous = false;
       recognition.interimResults = false;
       recognition.onresult = (event) => {
@@ -263,7 +280,7 @@ export function DocumentQaPanel({
   }
 
   function toggleAnswerSpeech(message: Extract<QaMessage, { role: "assistant" }>) {
-    if (!speechOutputAvailable) return;
+    if (!answerSpeechEnabled || !speechOutputAvailable) return;
     if (speakingMessageId === message.id) {
       window.speechSynthesis.cancel();
       setSpeakingMessageId(null);
@@ -272,7 +289,7 @@ export function DocumentQaPanel({
 
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(message.content);
-    utterance.lang = navigator.language;
+    utterance.lang = locale === "pt" ? "pt-PT" : locale === "es" ? "es-ES" : "en-US";
     utterance.onend = () => setSpeakingMessageId(null);
     utterance.onerror = () => {
       setSpeakingMessageId(null);
@@ -435,24 +452,26 @@ export function DocumentQaPanel({
                       {message.engine} · {t("inference_processing_source")}{" "}
                       {t(message.inferenceSource === "ON_DEVICE" ? "mode_on_device" : "mode_cloud")}
                     </span>
-                    <button
-                      type="button"
-                      className="pm-icon-button pm-qa-speak"
-                      onClick={() => toggleAnswerSpeech(message)}
-                      disabled={!speechOutputAvailable}
-                      aria-label={
-                        speakingMessageId === message.id ? t("qa_speak_stop") : t("qa_speak_read")
-                      }
-                      title={
-                        speakingMessageId === message.id ? t("qa_speak_stop") : t("qa_speak_read")
-                      }
-                    >
-                      {speakingMessageId === message.id ? (
-                        <VolumeX size={15} />
-                      ) : (
-                        <Volume2 size={15} />
-                      )}
-                    </button>
+                    {answerSpeechEnabled && (
+                      <button
+                        type="button"
+                        className="pm-icon-button pm-qa-speak"
+                        onClick={() => toggleAnswerSpeech(message)}
+                        disabled={!speechOutputAvailable}
+                        aria-label={
+                          speakingMessageId === message.id ? t("qa_speak_stop") : t("qa_speak_read")
+                        }
+                        title={
+                          speakingMessageId === message.id ? t("qa_speak_stop") : t("qa_speak_read")
+                        }
+                      >
+                        {speakingMessageId === message.id ? (
+                          <VolumeX size={15} />
+                        ) : (
+                          <Volume2 size={15} />
+                        )}
+                      </button>
+                    )}
                   </>
                 )}
               </div>
@@ -605,18 +624,24 @@ export function DocumentQaPanel({
         />
         <div className="pm-qa-compose-tools">
           <div className="pm-qa-compose-options">
-            <button
-              type="button"
-              className={`pm-button pm-button--outline${isListening ? " is-listening" : ""}`}
-              onClick={startVoiceInput}
-              disabled={!speechInputAvailable || isSending}
-              aria-pressed={isListening}
-              title={speechInputAvailable ? t("qa_voice_title") : t("qa_voice_unsupported")}
-            >
-              {isListening ? <MicOff size={15} /> : <Mic size={15} />}
-              {isListening ? t("qa_voice_stop") : t("qa_voice_use")}
-            </button>
-            {speechInputAvailable && <span className="pm-qa-mic-note">{t("qa_voice_note")}</span>}
+            {voiceInputEnabled && (
+              <>
+                <button
+                  type="button"
+                  className={`pm-button pm-button--outline${isListening ? " is-listening" : ""}`}
+                  onClick={startVoiceInput}
+                  disabled={!speechInputAvailable || isSending}
+                  aria-pressed={isListening}
+                  title={speechInputAvailable ? t("qa_voice_title") : t("qa_voice_unsupported")}
+                >
+                  {isListening ? <MicOff size={15} /> : <Mic size={15} />}
+                  {isListening ? t("qa_voice_stop") : t("qa_voice_use")}
+                </button>
+                {speechInputAvailable && (
+                  <span className="pm-qa-mic-note">{t("qa_voice_note")}</span>
+                )}
+              </>
+            )}
           </div>
           <button
             type="submit"
@@ -651,8 +676,10 @@ export function DocumentQaPanel({
                   : t("qa_research_error_status")}
           </span>
         </div>
-        {!speechInputAvailable && <p className="pm-qa-mic-note">{t("qa_voice_unavailable")}</p>}
-        {!speechOutputAvailable && (
+        {voiceInputEnabled && !speechInputAvailable && (
+          <p className="pm-qa-mic-note">{t("qa_voice_unavailable")}</p>
+        )}
+        {answerSpeechEnabled && !speechOutputAvailable && (
           <p className="pm-qa-mic-note">{t("qa_voice_output_unavailable")}</p>
         )}
       </form>

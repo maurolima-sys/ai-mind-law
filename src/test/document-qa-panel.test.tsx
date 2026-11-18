@@ -104,4 +104,32 @@ describe("DocumentQaPanel", () => {
     );
     expect(screen.getByRole("log", { name: "Answer" }).textContent).toContain("ON_DEVICE");
   });
+
+  it("hides voice controls when disabled in preferences", () => {
+    render(
+      <LocaleProvider>
+        <DocumentQaPanel
+          documentName="sample.pdf"
+          pages={["Extracted document text"]}
+          format="pdf"
+          sourceLocations={["Page 1"]}
+          draft=""
+          onDraftChange={vi.fn()}
+          preference="local"
+          cloudConsent={false}
+          paginationVerified
+          voiceInputEnabled={false}
+          answerSpeechEnabled={false}
+          onOpenProcessing={vi.fn()}
+          onSelectPage={vi.fn()}
+          onModelResponse={vi.fn()}
+        />
+      </LocaleProvider>,
+    );
+
+    expect(screen.queryByRole("button", { name: "Use microphone" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Voice input is unavailable in this browser; you can type."),
+    ).not.toBeInTheDocument();
+  });
 });

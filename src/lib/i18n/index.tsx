@@ -3,8 +3,9 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import { en, type TranslationKey, type Translations } from "./en";
 import { pt } from "./pt";
 import { es } from "./es";
+import { loadPreferences, saveLocalePreference, type PreferenceLocale } from "../preferences";
 
-export type Locale = "en" | "pt" | "es";
+export type Locale = PreferenceLocale;
 
 export const LOCALES: { value: Locale; label: string; flag: string }[] = [
   { value: "en", label: "English", flag: "🇬🇧" },
@@ -34,19 +35,18 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem("pocketmind.locale");
-      if (stored === "en" || stored === "pt" || stored === "es") setLocale(stored);
+      setLocale(loadPreferences().locale);
     } catch {
-      /* ignore */
+      setLocale("en");
     }
   }, []);
 
   const handleSetLocale = useCallback((next: Locale) => {
     setLocale(next);
     try {
-      localStorage.setItem("pocketmind.locale", next);
+      saveLocalePreference(next);
     } catch {
-      /* ignore */
+      // Keep the language for this session when browser storage is unavailable.
     }
   }, []);
 

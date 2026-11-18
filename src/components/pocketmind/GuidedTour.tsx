@@ -121,7 +121,7 @@ type NarrationStatus = "idle" | "loading" | "playing" | "error";
  * - Respects mute preference persisted to localStorage.
  * - Cleans up Blob URLs and Audio on unmount / tour end.
  */
-function useNarration(active: boolean, locale: "en" | "pt" | "es") {
+function useNarration(active: boolean, locale: "en" | "pt" | "es", narrationEnabled: boolean) {
   const [available, setAvailable] = useState<boolean | null>(null);
   const [muted, setMuted] = useState<boolean>(() => {
     try {
@@ -139,11 +139,17 @@ function useNarration(active: boolean, locale: "en" | "pt" | "es") {
 
   // Check availability once when the tour opens.
   useEffect(() => {
-    if (!active || available !== null) return;
+    if (!active || !narrationEnabled || available !== null) return;
     checkTourNarrationAvailability()
       .then((ok) => setAvailable(ok))
       .catch(() => setAvailable(false));
-  }, [active, available]);
+  }, [active, available, narrationEnabled]);
+
+  useEffect(() => {
+    if (narrationEnabled) return;
+    stopAudio();
+    setAvailable(null);
+  }, [narrationEnabled]);
 
   // Reset availability check when tour is opened again after being closed.
   useEffect(() => {
@@ -175,6 +181,7 @@ function useNarration(active: boolean, locale: "en" | "pt" | "es") {
   }
 
   function toggleMute() {
+    if (!narrationEnabled) return;
     const next = !muted;
     setMuted(next);
     try {
@@ -190,7 +197,7 @@ function useNarration(active: boolean, locale: "en" | "pt" | "es") {
    * Uses the cache when available; fetches from the server function otherwise.
    */
   async function playStep(stepIndex: number, title: string, body: string) {
-    if (!available || muted) return;
+    if (!narrationEnabled || !available || muted) return;
     stopAudio();
 
     const cached = cacheRef.current.get(stepIndex);
@@ -246,12 +253,20 @@ interface Rect {
 interface GuidedTourProps {
   active: boolean;
   screen: TourScreen;
+  narrationEnabled?: boolean;
   onNavigate: (screen: TourScreen) => void;
   onEnd: () => void;
   returnFocusRef?: React.RefObject<HTMLElement | null>;
 }
 
-export function GuidedTour({ active, screen, onNavigate, onEnd, returnFocusRef }: GuidedTourProps) {
+export function GuidedTour({
+  active,
+  screen,
+  narrationEnabled = true,
+  onNavigate,
+  onEnd,
+  returnFocusRef,
+}: GuidedTourProps) {
   const { locale, t } = useLocale();
   const [step, setStep] = useState(0);
   const [spotlight, setSpotlight] = useState<Rect | null>(null);
@@ -260,7 +275,7 @@ export function GuidedTour({ active, screen, onNavigate, onEnd, returnFocusRef }
   const popoverRef = useRef<HTMLDivElement | null>(null);
   const primaryBtnRef = useRef<HTMLButtonElement | null>(null);
 
-  const narration = useNarration(active, locale);
+  const narration = useNarration(active, locale, narrationEnabled);
 
   // ── lifecycle ────────────────────────────────────────────────────────────────
 
@@ -429,7 +444,7 @@ export function GuidedTour({ active, screen, onNavigate, onEnd, returnFocusRef }
     ? { left: "50%", top: "50%", transform: "translate(-50%, -50%)" }
     : { left: popover?.left ?? -9999, top: popover?.top ?? -9999 };
 
-  const showNarrationBtn = narration.available === true;
+  const showNarrationBtn = narrationEnabled && narration.available === true;
 
   return (
     <div className="pm-tour-overlay" aria-hidden={false}>

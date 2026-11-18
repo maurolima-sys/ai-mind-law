@@ -23,6 +23,9 @@
   screen_risks_title: "Risk register",
   screen_risks_subtitle:
     "Review risks from saved document analyses, verify their source evidence, and record a response.",
+  screen_settings_title: "Settings",
+  screen_settings_subtitle:
+    "Choose your defaults, voice controls, and how local workspace data is handled.",
 
   risk_summary_label: "Risk summary",
   risk_summary_total: "Risks",
@@ -738,6 +741,46 @@
   proc_sample_vendor: "Vendor",
   proc_sample_verified: "Verified",
   proc_sample_uncertain: "Uncertain",
+
+  settings_preferences_title: "Preferences",
+  settings_preferences_detail:
+    "Saved only in this browser. Changing a preference does not grant cloud consent.",
+  settings_language_label: "Interface language",
+  settings_language_detail: "Used across the PocketMind interface.",
+  settings_processing_label: "Default processing mode",
+  settings_processing_detail:
+    "Applied when a new document starts. Cloud and hybrid still require per-session consent.",
+  settings_mode_local: "On-device only",
+  settings_mode_cloud: "Cloud AI",
+  settings_mode_hybrid: "Hybrid · on-device first",
+  settings_mode_cloud_warning:
+    "Cloud modes may send extracted document text to an external model. Consent is never saved.",
+  settings_voice_title: "Voice and narration",
+  settings_voice_detail:
+    "Browser voice features and tour narration are optional and can be controlled separately.",
+  settings_tour_narration_label: "Guided-tour narration",
+  settings_tour_narration_detail: "Allow the optional server-generated tour voice.",
+  settings_voice_input_label: "Voice input in Q&A",
+  settings_voice_input_detail:
+    "Show microphone controls when the browser supports speech recognition.",
+  settings_answer_speech_label: "Read Q&A answers aloud",
+  settings_answer_speech_detail: "Show browser text-to-speech controls for assistant answers.",
+  settings_local_data_title: "Local data governance",
+  settings_local_data_detail:
+    "Documents, extracted text, evidence, analyses, and reviews are stored only in this browser.",
+  settings_local_data_summary: "{{documents}} documents · {{evidence}} evidence files · {{size}}",
+  settings_local_data_warning:
+    "IndexedDB data is not encrypted or synced. Clearing browser data can remove it permanently.",
+  settings_delete_label: "Delete local workspace data",
+  settings_delete_detail:
+    "Removes uploaded documents, evidence, analyses, links, reviews, and activity. Preferences are preserved.",
+  settings_delete_confirm:
+    "I understand that this permanently deletes the local workspace data in this browser.",
+  settings_delete_action: "Delete local data",
+  settings_save: "Save changes",
+  settings_saved: "Settings saved.",
+  settings_save_error: "Settings could not be saved.",
+  settings_delete_error: "Local workspace data could not be deleted.",
 } as const;
 
 export type TranslationKey = keyof typeof en;
