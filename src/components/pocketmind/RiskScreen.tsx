@@ -21,6 +21,7 @@ import {
 } from "@/lib/types";
 
 type SeverityFilter = Severity | "all";
+type OriginFilter = DocumentRecord["source"] | "all";
 
 type RiskRow = {
   document: DocumentRecord;
@@ -110,6 +111,7 @@ export function RiskScreen({
   const t = useT();
   const [severityFilter, setSeverityFilter] = useState<SeverityFilter>("all");
   const [documentFilter, setDocumentFilter] = useState("all");
+  const [originFilter, setOriginFilter] = useState<OriginFilter>("all");
 
   const rows: RiskRow[] = documents.flatMap((document) =>
     (document.analysis?.risks ?? []).map((risk) => ({
@@ -122,20 +124,25 @@ export function RiskScreen({
     ({ document }) => documentFilter === "all" || document.id === documentFilter,
   );
   const query = search.trim().toLocaleLowerCase();
-  const matchingRows = documentRows.filter(
+  const queryRows = documentRows.filter(
     ({ document, risk, mitigation }) =>
       !query ||
       [document.name, risk.title, risk.explanation, risk.evidence.excerpt ?? "", mitigation].some(
         (value) => value.toLocaleLowerCase().includes(query),
       ),
   );
+  const uploadedRiskCount = queryRows.filter(({ document }) => document.source === "upload").length;
+  const demoRiskCount = queryRows.filter(({ document }) => document.source === "demo").length;
+  const matchingRows = queryRows.filter(
+    ({ document }) => originFilter === "all" || document.source === originFilter,
+  );
   const visibleRows =
     severityFilter === "all"
       ? matchingRows
       : matchingRows.filter(({ risk }) => risk.severity === severityFilter);
-  const criticalCount = documentRows.filter(({ risk }) => risk.severity === "Critical").length;
-  const highCount = documentRows.filter(({ risk }) => risk.severity === "High").length;
-  const needsReviewCount = documentRows.filter(({ risk }) => !risk.evidence.verified).length;
+  const criticalCount = matchingRows.filter(({ risk }) => risk.severity === "Critical").length;
+  const highCount = matchingRows.filter(({ risk }) => risk.severity === "High").length;
+  const needsReviewCount = matchingRows.filter(({ risk }) => !risk.evidence.verified).length;
   const analysedDocuments = documents.filter((document) => document.analysis);
 
   if (!rows.length) {
@@ -157,7 +164,7 @@ export function RiskScreen({
   function exportRisks() {
     const rowsForExport = visibleRows.map(({ document, risk, mitigation }) => ({
       documentName: document.name,
-      isDemo: document.source === "demo",
+      source: document.source,
       risk,
       mitigation,
     }));
@@ -175,8 +182,16 @@ export function RiskScreen({
 
       <div className="pm-risk-summary" aria-label={t("risk_summary_label")}>
         <div>
-          <strong>{documentRows.length}</strong>
+          <strong>{matchingRows.length}</strong>
           <span>{t("risk_summary_total")}</span>
+        </div>
+        <div>
+          <strong>{uploadedRiskCount}</strong>
+          <span>{t("risk_summary_uploaded")}</span>
+        </div>
+        <div className="pm-risk-summary--demo">
+          <strong>{demoRiskCount}</strong>
+          <span>{t("risk_summary_demo")}</span>
         </div>
         <div className="pm-risk-summary--critical">
           <strong>{criticalCount}</strong>
@@ -206,6 +221,20 @@ export function RiskScreen({
                   {document.name}
                 </option>
               ))}
+            </select>
+          </label>
+          <label className="pm-risk-document-filter">
+            <span>{t("risk_origin_filter")}</span>
+            <select
+              value={originFilter}
+              onChange={(event) => {
+                const value = event.currentTarget.value;
+                setOriginFilter(value === "upload" || value === "demo" ? value : "all");
+              }}
+            >
+              <option value="all">{t("risk_origin_all")}</option>
+              <option value="upload">{t("data_origin_upload")}</option>
+              <option value="demo">{t("data_origin_demo")}</option>
             </select>
           </label>
           <div
@@ -275,11 +304,13 @@ export function RiskScreen({
                       <FileText size={13} aria-hidden="true" />
                       {document.name}
                     </span>
-                    {document.source === "demo" && (
-                      <span className="pm-badge pm-badge--amber">
-                        {t("toolbar_fictional_sample")}
-                      </span>
-                    )}
+                    <span
+                      className={`pm-badge pm-origin-badge ${
+                        document.source === "demo" ? "pm-badge--amber" : "pm-badge--blue"
+                      }`}
+                    >
+                      {t(document.source === "demo" ? "data_origin_demo" : "data_origin_upload")}
+                    </span>
                   </div>
                   <div className="pm-risk-content">
                     <div className="pm-risk-main">

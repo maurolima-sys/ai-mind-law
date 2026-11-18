@@ -60,9 +60,7 @@ import {
 
 import {
   buildDemoDocument,
-  DEFAULT_ACTIVITIES,
   DEFAULT_COMPLIANCE_ITEMS,
-  DEFAULT_WORKSPACE_DOCUMENTS,
   DEMO_DOC_ID,
   DEMO_LABEL,
   type ComplianceMatrixItem,
@@ -95,6 +93,10 @@ import {
   saveLocalWorkspaceState,
 } from "@/lib/services/localWorkspace";
 import { riskReviewKey } from "@/lib/services/riskReview";
+import {
+  getUploadedDocumentActivities,
+  summarizeWorkspaceBySource,
+} from "@/lib/services/workspaceMetrics";
 import { compareEvidenceToRequirement } from "@/lib/services/evidenceComparison";
 import { isExternalOcrAvailable, runExternalOcr } from "@/lib/services/externalOcr";
 import {
@@ -357,16 +359,14 @@ export function PocketMindApp() {
         if (!active) return;
         const demo = buildDemoDocument();
         const savedDocs = workspace.documents.filter((document) => document.id !== DEMO_DOC_ID);
-        setDocuments(
-          savedDocs.length > 0 ? [demo, ...savedDocs] : [demo, ...DEFAULT_WORKSPACE_DOCUMENTS],
-        );
+        setDocuments([demo, ...savedDocs]);
         setFilesByDocumentId(workspace.filesByDocumentId);
         setEvidenceDocuments(workspace.evidenceDocuments);
         setFilesByEvidenceId(workspace.filesByEvidenceId);
         setReviews(workspace.reviews);
         setEvidenceMatches(workspace.evidenceMatches);
         setEvidenceLinks(workspace.evidenceLinks);
-        setActivities(workspace.activities.length > 0 ? workspace.activities : DEFAULT_ACTIVITIES);
+        setActivities(workspace.activities);
       })
       .catch((error) => {
         if (!active) return;
@@ -441,9 +441,6 @@ export function PocketMindApp() {
     return matchesTab && matchesSearch;
   });
   const requirements = analysis?.requirements ?? [];
-  const pendingReviews = requirements.filter(
-    (requirement) => (reviews[requirement.id]?.status ?? "pending") === "pending",
-  ).length;
   const selectedRequirement =
     requirements.find((requirement) => requirement.id === selectedRequirementId) ?? requirements[0];
   const currentPageText = selectedDocument?.pages[activePage - 1] ?? "";
@@ -1352,9 +1349,6 @@ export function PocketMindApp() {
           {screen === "overview" && (
             <OverviewScreen
               documents={documents}
-              selectedDocument={selectedDocument}
-              analysis={analysis}
-              pendingReviews={pendingReviews}
               reviews={reviews}
               activities={activities}
               search={search}
@@ -1575,9 +1569,6 @@ export function PocketMindApp() {
 
 function OverviewScreen({
   documents,
-  selectedDocument,
-  analysis,
-  pendingReviews,
   reviews,
   activities,
   search,
@@ -1586,9 +1577,6 @@ function OverviewScreen({
   onSelectDocument,
 }: {
   documents: DocumentRecord[];
-  selectedDocument: DocumentRecord;
-  analysis: Analysis | undefined;
-  pendingReviews: number;
   reviews: Record<string, Review>;
   activities: WorkspaceActivity[];
   search: string;
@@ -1597,13 +1585,12 @@ function OverviewScreen({
   onSelectDocument: (id: string) => void;
 }) {
   const t = useT();
+  const metrics = summarizeWorkspaceBySource(documents, reviews);
   const filteredDocuments = documents.filter((document) =>
     document.name.toLowerCase().includes(search.toLowerCase()),
   );
-  const criticalRisks = analysis?.risks.filter((risk) => risk.severity === "Critical").length ?? 0;
-  const verifiedRequirements =
-    analysis?.requirements.filter((requirement) => requirement.evidence.verified).length ?? 0;
   const documentNames = new Map(documents.map((document) => [document.id, document.name]));
+  const visibleActivities = getUploadedDocumentActivities(documents, activities).slice(0, 4);
 
   function activityDescription(activity: WorkspaceActivity) {
     const documentId =
@@ -1657,10 +1644,12 @@ function OverviewScreen({
             </div>
           </div>
           <div className="pm-kpi-value-row">
-            <span className="pm-kpi-value">{documents.length || 24}</span>
-            <span className="pm-kpi-delta pm-kpi-delta--up">↑ +33%</span>
+            <span className="pm-kpi-value">{metrics.upload.documentCount}</span>
           </div>
-          <span className="pm-kpi-sub">{t("overview_last_30_days")}</span>
+          <span className="pm-kpi-sub">{t("metric_docs_detail")}</span>
+          <span className="pm-kpi-demo-count">
+            {t("metric_demo_count", { count: metrics.demo.documentCount })}
+          </span>
         </div>
 
         <div className="pm-kpi-card">
@@ -1671,10 +1660,12 @@ function OverviewScreen({
             </div>
           </div>
           <div className="pm-kpi-value-row">
-            <span className="pm-kpi-value">{analysis?.requirements.length || 186}</span>
-            <span className="pm-kpi-delta pm-kpi-delta--up">↑ +21%</span>
+            <span className="pm-kpi-value">{metrics.upload.requirementCount}</span>
           </div>
-          <span className="pm-kpi-sub">{t("overview_last_30_days")}</span>
+          <span className="pm-kpi-sub">{t("metric_reqs_detail_real")}</span>
+          <span className="pm-kpi-demo-count">
+            {t("metric_demo_count", { count: metrics.demo.requirementCount })}
+          </span>
         </div>
 
         <div className="pm-kpi-card">
@@ -1685,10 +1676,12 @@ function OverviewScreen({
             </div>
           </div>
           <div className="pm-kpi-value-row">
-            <span className="pm-kpi-value">{criticalRisks || 7}</span>
-            <span className="pm-kpi-delta pm-kpi-delta--orange">↑ +2</span>
+            <span className="pm-kpi-value">{metrics.upload.criticalRiskCount}</span>
           </div>
-          <span className="pm-kpi-sub">{t("overview_last_30_days")}</span>
+          <span className="pm-kpi-sub">{t("metric_risks_detail")}</span>
+          <span className="pm-kpi-demo-count">
+            {t("metric_demo_count", { count: metrics.demo.criticalRiskCount })}
+          </span>
         </div>
 
         <div className="pm-kpi-card">
@@ -1699,10 +1692,12 @@ function OverviewScreen({
             </div>
           </div>
           <div className="pm-kpi-value-row">
-            <span className="pm-kpi-value">{pendingReviews || 5}</span>
-            <span className="pm-kpi-delta pm-kpi-delta--down">↓ -40%</span>
+            <span className="pm-kpi-value">{metrics.upload.pendingReviewCount}</span>
           </div>
-          <span className="pm-kpi-sub">{t("overview_last_30_days")}</span>
+          <span className="pm-kpi-sub">{t("metric_pending_detail")}</span>
+          <span className="pm-kpi-demo-count">
+            {t("metric_demo_count", { count: metrics.demo.pendingReviewCount })}
+          </span>
         </div>
       </section>
 
@@ -1735,7 +1730,13 @@ function OverviewScreen({
                     const isDocx = document.format === "docx";
                     const isXlsx = document.format === "xlsx";
                     const statusText =
-                      document.status ?? (document.analysis ? "Analysed" : "Processing");
+                      document.source === "demo"
+                        ? t("status_prepared_sample")
+                        : document.status === "Processing"
+                          ? t("status_processing")
+                          : document.analysis
+                            ? t("status_analyzed")
+                            : t("status_not_analyzed");
                     return (
                       <tr
                         key={document.id}
@@ -1761,29 +1762,40 @@ function OverviewScreen({
                             </span>
                             <div className="pm-doc-name-col">
                               <strong>{document.name}</strong>
+                              <span
+                                className={`pm-badge pm-origin-badge ${
+                                  document.source === "demo" ? "pm-badge--amber" : "pm-badge--blue"
+                                }`}
+                              >
+                                {t(
+                                  document.source === "demo"
+                                    ? "data_origin_demo"
+                                    : "data_origin_upload",
+                                )}
+                              </span>
                               <small>
-                                {document.pages.length || 24} {t("toolbar_pages")} ·{" "}
+                                {document.pages.length} {t("toolbar_pages")} ·{" "}
                                 {formatBytes(document.size)}
                               </small>
                             </div>
                           </div>
                         </td>
                         <td>
-                          <span className="pm-muted-label">
-                            {document.project ?? "Riverside City Council"}
-                          </span>
+                          <span className="pm-muted-label">{document.project ?? "—"}</span>
                         </td>
                         <td>
                           <span className="pm-muted-label">
-                            {document.analysedOn ?? "12 May 2025 10:24"}
+                            {document.source === "demo" ? "—" : (document.analysedOn ?? "—")}
                           </span>
                         </td>
                         <td>
                           <span
                             className={`pm-status-dot-pill ${
-                              statusText === "Analysed"
+                              document.source === "demo" || document.analysis
                                 ? "pm-status-dot-pill--analysed"
-                                : "pm-status-dot-pill--processing"
+                                : document.status === "Processing"
+                                  ? "pm-status-dot-pill--processing"
+                                  : "pm-status-dot-pill--pending"
                             }`}
                           >
                             <span className="pm-dot-indicator" />
@@ -1847,42 +1859,48 @@ function OverviewScreen({
               </button>
             </div>
             <ul className="pm-feed-list">
-              {activities.slice(0, 4).map((activity) => {
-                const tone = activity.tone ?? "blue";
-                const docName =
-                  activity.documentName ?? documentNames.get(activity.documentId) ?? "Document";
-                const title = activity.title ?? activityDescription(activity);
-                const timeStr =
-                  activity.timeAgo ??
-                  new Date(activity.at).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  });
-                const FeedIcon =
-                  activity.type === "analysis-completed"
-                    ? BrainCircuit
-                    : activity.type === "document-added"
-                      ? FilePlus2
-                      : activity.type === "evidence-added"
-                        ? FileCheck2
-                        : activity.type === "evidence-compared"
-                          ? BadgeCheck
-                          : activity.type === "review-updated"
-                            ? ClipboardCheck
-                            : FileText;
-                return (
-                  <li key={activity.id} className="pm-feed-item">
-                    <span className={`pm-feed-icon pm-feed-icon--${tone}`}>
-                      <FeedIcon size={11} strokeWidth={2.2} />
-                    </span>
-                    <div className="pm-feed-content">
-                      <strong>{title}</strong>
-                      <span>{docName}</span>
-                      <time>{timeStr}</time>
-                    </div>
-                  </li>
-                );
-              })}
+              {visibleActivities.length ? (
+                visibleActivities.map((activity) => {
+                  const tone = activity.tone ?? "blue";
+                  const docName =
+                    activity.documentName ??
+                    documentNames.get(activity.documentId) ??
+                    t("activity_unknown_document");
+                  const title = activity.title ?? activityDescription(activity);
+                  const timeStr =
+                    activity.timeAgo ??
+                    new Date(activity.at).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    });
+                  const FeedIcon =
+                    activity.type === "analysis-completed"
+                      ? BrainCircuit
+                      : activity.type === "document-added"
+                        ? FilePlus2
+                        : activity.type === "evidence-added"
+                          ? FileCheck2
+                          : activity.type === "evidence-compared"
+                            ? BadgeCheck
+                            : activity.type === "review-updated"
+                              ? ClipboardCheck
+                              : FileText;
+                  return (
+                    <li key={activity.id} className="pm-feed-item">
+                      <span className={`pm-feed-icon pm-feed-icon--${tone}`}>
+                        <FeedIcon size={11} strokeWidth={2.2} />
+                      </span>
+                      <div className="pm-feed-content">
+                        <strong>{title}</strong>
+                        <span>{docName}</span>
+                        <time>{timeStr}</time>
+                      </div>
+                    </li>
+                  );
+                })
+              ) : (
+                <li className="pm-feed-empty">{t("activity_empty")}</li>
+              )}
             </ul>
           </section>
         </aside>

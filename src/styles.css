@@ -48,6 +48,11 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 }
+.pm-feed-empty {
+  color: var(--pm-muted);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
 
 :root {
   --radius: 0.7rem;
@@ -1425,7 +1430,7 @@
 }
 .pm-risk-summary {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   overflow: hidden;
   border: 1px solid var(--pm-line);
   border-radius: 11px;
@@ -1460,6 +1465,17 @@
 }
 .pm-risk-summary--review strong {
   color: var(--pm-blue);
+}
+@media (max-width: 960px) {
+  .pm-risk-summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .pm-risk-summary > div:nth-child(3n + 1) {
+    border-left: 0;
+  }
+  .pm-risk-summary > div:nth-child(n + 4) {
+    border-top: 1px solid var(--pm-line);
+  }
 }
 .pm-risk-register {
   overflow: hidden;
@@ -1763,7 +1779,7 @@
   .pm-risk-summary > div {
     padding: 12px;
   }
-  .pm-risk-summary > div:nth-child(3) {
+  .pm-risk-summary > div:nth-child(odd) {
     border-left: 0;
   }
   .pm-risk-summary > div:nth-child(n + 3) {
@@ -4676,6 +4692,11 @@
   font-size: 0.72rem;
   color: var(--pm-soft);
 }
+.pm-kpi-demo-count {
+  color: #97600f;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
 
 /* File format badges */
 .pm-filetype-badge {
@@ -4716,6 +4737,12 @@
   font-size: 0.84rem;
   color: var(--pm-ink);
   font-weight: 600;
+}
+.pm-origin-badge {
+  align-self: flex-start;
+  min-height: 18px;
+  padding: 2px 6px;
+  font-size: 9px;
 }
 .pm-doc-name-col small {
   font-size: 0.72rem;

@@ -1,11 +1,11 @@
-import type { Requirement, Review, Risk } from "../types";
+import type { DocumentRecord, Requirement, Review, Risk } from "../types";
 import type { TranslationKey } from "../i18n/en";
 
 type TFn = (key: TranslationKey) => string;
 
 export interface RiskCsvEntry {
   documentName: string;
-  isDemo: boolean;
+  source: DocumentRecord["source"];
   risk: Risk;
   mitigation: string;
 }
@@ -59,9 +59,9 @@ export function risksCsv(entries: RiskCsvEntry[], t: TFn): string {
     t("risk_csv_evidence"),
     t("risk_csv_source"),
     t("csv_col_evidence_verified"),
-    t("risk_csv_demo"),
+    t("risk_csv_origin"),
   ];
-  const rows = entries.map(({ documentName, isDemo, risk, mitigation }) =>
+  const rows = entries.map(({ documentName, source, risk, mitigation }) =>
     [
       documentName,
       risk.severity,
@@ -72,7 +72,7 @@ export function risksCsv(entries: RiskCsvEntry[], t: TFn): string {
       risk.evidence.excerpt ?? "",
       risk.evidence.sourceLocation ?? risk.evidence.page?.toString() ?? "",
       risk.evidence.verified ? t("csv_yes") : t("csv_no"),
-      isDemo ? t("csv_yes") : t("csv_no"),
+      t(source === "demo" ? "data_origin_demo" : "data_origin_upload"),
     ]
       .map(esc)
       .join(","),

@@ -24,7 +24,7 @@ describe("complianceCsv", () => {
   });
 
   describe("risksCsv", () => {
-    it("exports risks with source and local response while escaping formula-like values", () => {
+    it("exports the document origin and local response while escaping formula-like values", () => {
       const t = (key: TranslationKey) => key;
       const risk: Risk = {
         id: "risk-1",
@@ -43,17 +43,26 @@ describe("complianceCsv", () => {
         [
           {
             documentName: "Tender.pdf",
-            isDemo: false,
+            source: "upload",
             risk,
             mitigation: "+Review with legal",
+          },
+          {
+            documentName: "Sample.pdf",
+            source: "demo",
+            risk,
+            mitigation: "",
           },
         ],
         t,
       );
 
       expect(csv).toContain("risk_csv_document,risk_csv_severity");
+      expect(csv.split("\n")[0]).toContain("risk_csv_origin");
       expect(csv).toContain(`Tender.pdf,Critical,detected,'=1+1,"A ""quoted"" explanation"`);
-      expect(csv).toContain(`'+Review with legal,Verified excerpt,2,csv_yes,csv_no`);
+      expect(csv).toContain(`'+Review with legal,Verified excerpt,2,csv_yes,data_origin_upload`);
+      expect(csv).toContain(`Sample.pdf,Critical,detected,'=1+1,"A ""quoted"" explanation"`);
+      expect(csv).toContain(`Verified excerpt,2,csv_yes,data_origin_demo`);
     });
   });
 });

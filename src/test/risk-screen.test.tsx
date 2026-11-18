@@ -5,7 +5,11 @@ import { RiskScreen } from "@/components/pocketmind/RiskScreen";
 import { LocaleProvider } from "@/lib/i18n";
 import type { Analysis, DocumentRecord, Risk } from "@/lib/types";
 
-function documentWithRisk(id: string, risk: Risk): DocumentRecord {
+function documentWithRisk(
+  id: string,
+  risk: Risk,
+  source: DocumentRecord["source"] = "upload",
+): DocumentRecord {
   const analysis: Analysis = {
     mode: "local",
     engine: "test",
@@ -23,7 +27,7 @@ function documentWithRisk(id: string, risk: Risk): DocumentRecord {
     id,
     name: `${id}.pdf`,
     size: 12,
-    source: "upload",
+    source,
     format: "pdf",
     pages: ["Source page one", "Source page two"],
     addedAt: "2026-01-01T00:00:00.000Z",
@@ -105,5 +109,38 @@ describe("RiskScreen", () => {
       "risk-1",
       "Confirm the schedule with the project team.",
     );
+  });
+
+  it("filters risks by origin and keeps uploaded and demo totals distinct", () => {
+    const documents = [
+      documentWithRisk("uploaded-tender", makeRisk("uploaded-risk", "High", "Uploaded risk")),
+      documentWithRisk("demo-tender", makeRisk("demo-risk", "Critical", "Demo risk"), "demo"),
+    ];
+
+    render(
+      <LocaleProvider>
+        <RiskScreen
+          documents={documents}
+          reviews={{}}
+          search=""
+          storageError=""
+          onOpenProcessing={vi.fn()}
+          onOpenSource={vi.fn()}
+          onSaveMitigation={vi.fn()}
+        />
+      </LocaleProvider>,
+    );
+
+    const summary = screen.getByLabelText("Risk summary");
+    expect(summary.children[0].textContent).toBe("2Risks");
+    expect(summary.children[1].textContent).toBe("1Uploaded");
+    expect(summary.children[2].textContent).toBe("1Demo");
+
+    fireEvent.change(screen.getByLabelText("Origin"), {
+      target: { value: "demo" },
+    });
+
+    expect(screen.getByText("Demo risk")).toBeTruthy();
+    expect(screen.queryByText("Uploaded risk")).toBeNull();
   });
 });
