@@ -2655,7 +2655,12 @@
   font-variant-numeric: tabular-nums;
 }
 .pm-matrix-table {
-  min-width: 740px;
+  min-width: 940px;
+}
+.pm-compliance-dimensions {
+  color: var(--pm-muted);
+  font-size: 0.8rem;
+  margin: 0;
 }
 .pm-matrix-table td {
   font-size: 10px;
@@ -3144,7 +3149,7 @@
     font-size: 9px;
   }
   .pm-matrix-table {
-    min-width: 700px;
+    min-width: 940px;
   }
 }
 

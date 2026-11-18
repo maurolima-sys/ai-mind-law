@@ -1,4 +1,5 @@
 import type { DocumentRecord, Review, WorkspaceActivity } from "../types";
+import { humanReviewStatus } from "./compliance";
 
 export interface WorkspaceMetrics {
   documentCount: number;
@@ -28,7 +29,7 @@ function summarizeDocuments(
     requirementCount: requirements.length,
     criticalRiskCount,
     pendingReviewCount: requirements.filter(
-      (requirement) => (reviews[requirement.id]?.status ?? "pending") === "pending",
+      (requirement) => humanReviewStatus(reviews[requirement.id]) === "pending",
     ).length,
   };
 }

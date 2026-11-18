@@ -5,9 +5,20 @@ Format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
-## [Unreleased] — i18n EN / PT / ES
+## [Unreleased]
 
-Working tree — not yet committed.
+### Fixed
+- `f715a2a` — repaired corrupted UTF-8 literals in the interface and English translations.
+- `c65bee6` — separated uploaded and demonstration document metrics and activity; risk filters, counts and CSV identify each origin. The local library continues to show uploaded documents only.
+
+### Changed
+- Compliance now separates source verification, human compliance assessment and review state in the matrix and CSV. Existing reviews and notes remain available; old “unclear” statuses are identified explicitly.
+
+### Limitations
+- Firebase AI Logic production inference has not been verified successfully. Selecting a processing mode does not establish a working connection.
+- This is a local browser workspace, not a multiuser service; AI output requires human review.
+
+### Earlier changes — i18n EN / PT / ES
 
 ### Added
 - `src/lib/i18n/` — translation system with `en.ts` (200+ keys, source of truth), `pt.ts`, `es.ts`, and `index.tsx` (`LocaleProvider`, `useLocale()`, `useT()`, `interpolate()`).

@@ -4,6 +4,10 @@ export type ProcessingSource = "demo" | "on-device" | "cloud" | "cloud-fallback"
 export type DocumentFormat = "pdf" | "docx" | "xlsx";
 export type DocumentTextSource = "pdfjs" | "llamaparse" | "browser";
 export type ReviewStatus = "pending" | "reviewed" | "satisfied" | "unclear";
+export type HumanReviewStatus = "pending" | "reviewed" | "approved";
+export type ComplianceAssessment =
+  "not-assessed" | "compliant" | "partially-compliant" | "non-compliant";
+export type EvidenceVerification = "verified" | "not-found" | "unverified";
 export type EvidenceAssessment = "supports" | "contradicts" | "insufficient";
 export type WorkspaceActivityType =
   | "document-added"
@@ -171,6 +175,8 @@ export interface WorkspaceActivity {
 export interface Review {
   status: ReviewStatus;
   notes: string;
+  humanReview?: HumanReviewStatus;
+  assessment?: ComplianceAssessment;
 }
 export interface ChatCitation {
   page: number | null;

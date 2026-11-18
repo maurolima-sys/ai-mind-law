@@ -289,6 +289,20 @@
   compliance_status_reviewed: "Reviewed",
   compliance_status_satisfied: "Satisfied",
   compliance_status_unclear: "Unclear",
+  compliance_status_approved: "Approved",
+  compliance_col_evidence_verification: "Evidence verification",
+  compliance_col_assessment: "Compliance assessment",
+  compliance_assessment_not_assessed: "Not assessed",
+  compliance_assessment_compliant: "Compliant",
+  compliance_assessment_partial: "Partially compliant",
+  compliance_assessment_noncompliant: "Non-compliant",
+  compliance_evidence_not_found: "Not found",
+  compliance_evidence_unverified: "Unverified",
+  compliance_assessment_sr: "Compliance assessment for {{description}}",
+  compliance_dimensions_detail:
+    "Source verification checks the quotation, not whether the requirement is met or approved. Assessment and human review are recorded independently.",
+  compliance_legacy_unclear: "Previous status: unclear",
+  compliance_legacy_status: "Previous status",
   compliance_export_csv: "Export CSV",
 
   // ── Compliance — matrix ───────────────────────────────────────────────────────

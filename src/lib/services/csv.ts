@@ -1,5 +1,13 @@
 import type { DocumentRecord, Requirement, Review, Risk } from "../types";
 import type { TranslationKey } from "../i18n/en";
+import {
+  assessmentKeys,
+  complianceAssessment,
+  evidenceVerification,
+  evidenceVerificationKeys,
+  humanReviewKeys,
+  humanReviewStatus,
+} from "./compliance";
 
 type TFn = (key: TranslationKey) => string;
 
@@ -19,6 +27,7 @@ export function complianceCsv(
   reqs: Requirement[],
   reviews: Record<string, Review | undefined>,
   t: TFn,
+  document?: DocumentRecord,
 ): string {
   const columns = [
     t("csv_col_requirement"),
@@ -26,8 +35,10 @@ export function complianceCsv(
     t("csv_col_mandatory"),
     t("csv_col_evidence"),
     t("csv_col_page"),
-    t("csv_col_evidence_verified"),
+    t("compliance_col_evidence_verification"),
+    t("compliance_col_assessment"),
     t("csv_col_review_status"),
+    t("compliance_legacy_status"),
     t("csv_col_notes"),
   ];
   const rows = reqs.map((r) => {
@@ -37,9 +48,11 @@ export function complianceCsv(
       r.category,
       r.mandatory ? t("csv_mandatory") : t("csv_optional"),
       r.evidence.excerpt ?? t("csv_evidence_na"),
-      r.evidence.page?.toString() ?? "",
-      r.evidence.verified ? t("csv_yes") : t("csv_no"),
-      rv?.status ?? "pending",
+      r.evidence.sourceLocation ?? r.evidence.page?.toString() ?? "",
+      t(evidenceVerificationKeys[evidenceVerification(r.evidence, document)]),
+      t(assessmentKeys[complianceAssessment(rv)]),
+      t(humanReviewKeys[humanReviewStatus(rv)]),
+      rv?.status === "unclear" ? t("compliance_status_unclear") : "",
       rv?.notes ?? "",
     ]
       .map(esc)

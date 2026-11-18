@@ -74,6 +74,14 @@ import { LocalWorkspaceLibrary } from "@/components/pocketmind/LocalWorkspaceLib
 import { RiskScreen } from "@/components/pocketmind/RiskScreen";
 import { SourceDocumentViewer } from "@/components/pocketmind/SourceDocumentViewer";
 import { complianceCsv, downloadText } from "@/lib/services/csv";
+import {
+  assessmentKeys,
+  complianceAssessment,
+  evidenceVerification,
+  evidenceVerificationKeys,
+  humanReviewKeys,
+  humanReviewStatus,
+} from "@/lib/services/compliance";
 import { useLocale, useT } from "@/lib/i18n";
 import {
   extractDocxText,
@@ -110,7 +118,6 @@ import { analyzeTender } from "@/lib/services/tenderAnalysis";
 import { Link } from "@tanstack/react-router";
 import {
   CATEGORIES,
-  STATUSES,
   type Analysis,
   type DocumentRecord,
   type DocumentFormat,
@@ -119,7 +126,6 @@ import {
   type Evidence,
   type RequirementEvidenceLink,
   type Review,
-  type ReviewStatus,
   type SupportingEvidenceDocument,
   type InferencePreference,
   type ProcessingSource,
@@ -659,9 +665,13 @@ export function PocketMindApp() {
     const previous = reviews[id];
     setReviews((current) => ({
       ...current,
-      [id]: { status: current[id]?.status ?? "pending", notes: current[id]?.notes ?? "", ...patch },
+      [id]: { status: "pending", notes: "", ...current[id], ...patch },
     }));
-    if (patch.status && patch.status !== (previous?.status ?? "pending") && selectedDocument) {
+    if (
+      patch.humanReview &&
+      patch.humanReview !== humanReviewStatus(previous) &&
+      selectedDocument
+    ) {
       recordActivity("review-updated", selectedDocument.id, undefined, id);
     }
   }
@@ -1486,6 +1496,7 @@ export function PocketMindApp() {
           {screen === "compliance" && (
             <ComplianceScreen
               analysis={analysis}
+              document={selectedDocument}
               reviews={reviews}
               search={search}
               selectedRequirement={selectedRequirement}
@@ -1496,7 +1507,7 @@ export function PocketMindApp() {
                 if (!analysis) return;
                 downloadText(
                   "pocketmind-compliance.csv",
-                  complianceCsv(analysis.requirements, reviews, t),
+                  complianceCsv(analysis.requirements, reviews, t, selectedDocument),
                 );
               }}
               onOpenProcessing={() => setScreen("processing")}
@@ -2486,8 +2497,9 @@ function EmptyAnalysis({ onOpenProcessing }: { onOpenProcessing: () => void }) {
   );
 }
 
-function ComplianceScreen({
+export function ComplianceScreen({
   analysis,
+  document,
   reviews,
   search,
   selectedRequirement,
@@ -2498,6 +2510,7 @@ function ComplianceScreen({
   onOpenProcessing,
 }: {
   analysis: Analysis | undefined;
+  document: DocumentRecord;
   reviews: Record<string, Review>;
   search: string;
   selectedRequirement: Analysis["requirements"][number] | undefined;
@@ -2512,7 +2525,7 @@ function ComplianceScreen({
   const [statusFilter, setStatusFilter] = useState("all");
   const requirements = analysis?.requirements ?? [];
   const filteredRequirements = requirements.filter((requirement) => {
-    const review = reviews[requirement.id]?.status ?? "pending";
+    const review = humanReviewStatus(reviews[requirement.id]);
     const matchesCategory = categoryFilter === "all" || requirement.category === categoryFilter;
     const matchesStatus = statusFilter === "all" || review === statusFilter;
     const matchesSearch =
@@ -2527,7 +2540,7 @@ function ComplianceScreen({
 
   const verifiedCount = requirements.filter((r) => r.evidence.verified).length;
   const pendingCount = requirements.filter(
-    (r) => (reviews[r.id]?.status ?? "pending") === "pending",
+    (r) => humanReviewStatus(reviews[r.id]) === "pending",
   ).length;
 
   return (
@@ -2560,6 +2573,7 @@ function ComplianceScreen({
           <span>{t("compliance_demo_inline")}</span>
         </div>
       )}
+      <p className="pm-compliance-dimensions">{t("compliance_dimensions_detail")}</p>
 
       {/* Toolbar */}
       <div className="pm-compliance-toolbar">
@@ -2585,8 +2599,7 @@ function ComplianceScreen({
             <option value="all">{t("compliance_all_statuses")}</option>
             <option value="pending">{t("compliance_status_pending")}</option>
             <option value="reviewed">{t("compliance_status_reviewed")}</option>
-            <option value="satisfied">{t("compliance_status_satisfied")}</option>
-            <option value="unclear">{t("compliance_status_unclear")}</option>
+            <option value="approved">{t("compliance_status_approved")}</option>
           </select>
           <ChevronDown size={15} />
         </label>
@@ -2615,25 +2628,28 @@ function ComplianceScreen({
             </span>
           </div>
           {filteredRequirements.length ? (
-            <div className="pm-table-wrap">
+            <div
+              className="pm-table-wrap"
+              role="region"
+              aria-label={t("screen_compliance_title")}
+              tabIndex={0}
+            >
               <table className="pm-table pm-matrix-table">
                 <thead>
                   <tr>
                     <th>{t("compliance_col_requirement")}</th>
                     <th>{t("compliance_col_category")}</th>
                     <th>{t("compliance_col_mandatory")}</th>
-                    <th>{t("compliance_col_evidence")}</th>
+                    <th>{t("compliance_col_evidence_verification")}</th>
                     <th>{t("compliance_col_page")}</th>
+                    <th>{t("compliance_col_assessment")}</th>
                     <th>{t("compliance_col_review_status")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredRequirements.map((req) => {
-                    const review = reviews[req.id] ?? {
-                      status: "pending" as ReviewStatus,
-                      notes: "",
-                    };
-                    const statusClass = `pm-status-pill-score pm-status-pill-score--${review.status}`;
+                    const review = reviews[req.id];
+                    const verification = evidenceVerification(req.evidence, document);
                     return (
                       <tr
                         key={req.id}
@@ -2659,40 +2675,74 @@ function ComplianceScreen({
                           </Badge>
                         </td>
                         <td>
-                          {req.evidence.excerpt ? (
-                            <span
-                              className={
-                                req.evidence.verified ? "pm-verified-text" : "pm-unverified-text"
-                              }
-                            >
-                              {req.evidence.verified
-                                ? t("compliance_verified")
-                                : t("compliance_check_excerpt")}
-                            </span>
-                          ) : (
-                            <span className="pm-muted-label">{t("compliance_not_provided")}</span>
-                          )}
+                          <span
+                            className={
+                              verification === "verified"
+                                ? "pm-verified-text"
+                                : "pm-unverified-text"
+                            }
+                          >
+                            {t(evidenceVerificationKeys[verification])}
+                          </span>
                         </td>
-                        <td>{req.evidence.page ?? "—"}</td>
+                        <td>{req.evidence.sourceLocation ?? req.evidence.page ?? "—"}</td>
+                        <td>
+                          <label className="pm-status-select">
+                            <span className="sr-only">
+                              {t("compliance_assessment_sr", { description: req.description })}
+                            </span>
+                            <select
+                              value={complianceAssessment(review)}
+                              onChange={(e) => {
+                                const value = e.currentTarget.value;
+                                if (
+                                  value === "not-assessed" ||
+                                  value === "compliant" ||
+                                  value === "partially-compliant" ||
+                                  value === "non-compliant"
+                                ) {
+                                  onUpdateReview(req.id, { assessment: value });
+                                }
+                              }}
+                            >
+                              {Object.entries(assessmentKeys).map(([value, key]) => (
+                                <option key={value} value={value}>
+                                  {t(key)}
+                                </option>
+                              ))}
+                            </select>
+                            <ChevronDown size={14} />
+                          </label>
+                        </td>
                         <td>
                           <label className="pm-status-select">
                             <span className="sr-only">
                               {t("review_status_sr", { description: req.description })}
                             </span>
                             <select
-                              value={review.status}
+                              value={humanReviewStatus(review)}
                               onChange={(e) => {
-                                const status = STATUSES.find((s) => s === e.currentTarget.value);
-                                if (status) onUpdateReview(req.id, { status });
+                                const value = e.currentTarget.value;
+                                if (
+                                  value === "pending" ||
+                                  value === "reviewed" ||
+                                  value === "approved"
+                                ) {
+                                  onUpdateReview(req.id, { humanReview: value });
+                                }
                               }}
                             >
-                              <option value="pending">{t("compliance_status_pending")}</option>
-                              <option value="reviewed">{t("compliance_status_reviewed")}</option>
-                              <option value="satisfied">{t("compliance_status_satisfied")}</option>
-                              <option value="unclear">{t("compliance_status_unclear")}</option>
+                              {Object.entries(humanReviewKeys).map(([value, key]) => (
+                                <option key={value} value={value}>
+                                  {t(key)}
+                                </option>
+                              ))}
                             </select>
                             <ChevronDown size={14} />
                           </label>
+                          {review?.status === "unclear" && (
+                            <small>{t("compliance_legacy_unclear")}</small>
+                          )}
                         </td>
                       </tr>
                     );
@@ -2764,19 +2814,6 @@ function ComplianceScreen({
                 </div>
               ) : (
                 <div className="pm-evidence-missing">{t("evidence_no_excerpt")}</div>
-              )}
-
-              {/* Relevance bar */}
-              {selectedRequirement.evidence.verified && (
-                <div className="pm-relevance-bar-wrap" style={{ marginBottom: "14px" }}>
-                  <div className="pm-relevance-label-row">
-                    <span style={{ color: "var(--pm-ink)" }}>Relevance</span>
-                    <span style={{ color: "#16a34a" }}>High</span>
-                  </div>
-                  <div className="pm-relevance-progress-track">
-                    <div className="pm-relevance-progress-fill" style={{ width: "82%" }} />
-                  </div>
-                </div>
               )}
 
               {/* Review notes */}
