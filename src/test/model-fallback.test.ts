@@ -3,8 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 import {
   GEMINI_MODEL_FALLBACK_CHAIN,
   generateWithModelFallback,
+  getOnDeviceTimeoutStage,
   getFirebaseAiHttpStatus,
   isRetryableFirebaseAiError,
+  ON_DEVICE_GENERATION_TIMEOUT_MS,
   PRIMARY_GEMINI_MODEL,
   SECONDARY_GEMINI_MODEL,
   TERTIARY_GEMINI_MODEL,
@@ -47,11 +49,7 @@ describe("Firebase AI retry policy", () => {
       result: "completed",
       modelName: TERTIARY_GEMINI_MODEL,
     });
-    expect(calls).toEqual([
-      PRIMARY_GEMINI_MODEL,
-      SECONDARY_GEMINI_MODEL,
-      TERTIARY_GEMINI_MODEL,
-    ]);
+    expect(calls).toEqual([PRIMARY_GEMINI_MODEL, SECONDARY_GEMINI_MODEL, TERTIARY_GEMINI_MODEL]);
     expect([...new Set(calls)]).toEqual([...GEMINI_MODEL_FALLBACK_CHAIN]);
   });
 
@@ -94,9 +92,18 @@ describe("Firebase AI retry policy", () => {
   it("rejects local-only requests that ignore the abort signal", async () => {
     vi.useFakeTimers();
     const request = generateWithModelFallback("local", () => new Promise(() => {}));
-    const rejection = expect(request).rejects.toThrow(/timed out/);
-    await vi.advanceTimersByTimeAsync(60_000);
-    await rejection;
+    const errorResult = request.catch((error: unknown) => error);
+
+    await vi.advanceTimersByTimeAsync(ON_DEVICE_GENERATION_TIMEOUT_MS);
+    const error = await errorResult;
+
+    expect(getOnDeviceTimeoutStage(error)).toBe("generation");
+    expect(error).toBeInstanceOf(Error);
+    if (error instanceof Error) {
+      expect(error.message).toContain(
+        `On-device inference timed out after ${ON_DEVICE_GENERATION_TIMEOUT_MS / 1000} seconds.`,
+      );
+    }
   });
 
   it("does not fall back to cloud when local times out", async () => {
@@ -142,11 +149,7 @@ describe("Firebase AI retry policy", () => {
       result: "completed",
       modelName: TERTIARY_GEMINI_MODEL,
     });
-    expect(calls).toEqual([
-      PRIMARY_GEMINI_MODEL,
-      SECONDARY_GEMINI_MODEL,
-      TERTIARY_GEMINI_MODEL,
-    ]);
+    expect(calls).toEqual([PRIMARY_GEMINI_MODEL, SECONDARY_GEMINI_MODEL, TERTIARY_GEMINI_MODEL]);
     expect(retryUpdates).toEqual([
       { modelName: SECONDARY_GEMINI_MODEL, status: undefined },
       { modelName: TERTIARY_GEMINI_MODEL, status: undefined },

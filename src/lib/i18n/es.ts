@@ -289,7 +289,7 @@ export const es: Translations = {
   mode_card_local_badge: "PRIVADO",
   mode_card_local_heading: "Mantener la inferencia en este dispositivo",
   mode_card_local_desc:
-    "El texto de PDF, DOCX y XLSX se extrae en tu navegador. Firebase AI Logic pide al modelo en el dispositivo de Chrome que lo analice. Si ese modelo no está disponible, la solicitud falla en lugar de pasar a la nube.",
+    "El texto de PDF, DOCX y XLSX se extrae en tu navegador. Firebase AI Logic pide al modelo en el dispositivo de Chrome que lo analice. La primera vez puede ser necesario descargar el modelo; se muestra el progreso cuando está disponible. Si el modelo no está disponible, la solicitud falla sin pasar a la nube.",
   mode_card_local_p1: "Sin fallback a la nube",
   mode_card_local_p2: "Requiere Chrome de escritorio compatible",
   mode_card_local_p3: "Firebase App Check sigue aplicándose",
@@ -355,6 +355,11 @@ export const es: Translations = {
   ocr_extracting: "Extrayendo y analizando...",
 
   error_dismiss: "Descartar error",
+  on_device_init_timeout_error:
+    "Chrome no terminó de preparar el modelo en el dispositivo tras 60 segundos sin progreso. Usa Chrome de escritorio compatible y mantén esta página abierta mientras se descarga el modelo. Este intento no envió texto extraído al servicio en la nube de Firebase.",
+  on_device_generation_timeout_error:
+    "El modelo en el dispositivo no devolvió un resultado en 120 segundos. Este intento no envió texto extraído al servicio en la nube de Firebase. Prueba con un documento más corto o elige IA en la nube y autoriza explícitamente el procesamiento.",
+  on_device_timeout_choose_cloud: "Elegir IA en la nube",
   progress_default: "Preparando análisis...",
 
   firebase_setup_title: "Se necesita configuración de Firebase para el análisis en vivo.",

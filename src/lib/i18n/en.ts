@@ -301,7 +301,7 @@ export const en = {
   mode_card_local_badge: "PRIVATE",
   mode_card_local_heading: "Keep inference on this device",
   mode_card_local_desc:
-    "PDF, DOCX, and XLSX text is extracted in your browser. Firebase AI Logic asks Chrome's on-device model to analyze it. If that model is unavailable, the request fails instead of moving to cloud.",
+    "PDF, DOCX, and XLSX text is extracted in your browser. Firebase AI Logic asks Chrome's on-device model to analyze it. First use may download the model, with progress shown when available. If the model is unavailable, the request fails instead of moving to cloud.",
   mode_card_local_p1: "No cloud fallback",
   mode_card_local_p2: "Requires supported desktop Chrome",
   mode_card_local_p3: "Firebase App Check still applies",
@@ -369,6 +369,11 @@ export const en = {
 
   // ── Processing — error / progress ─────────────────────────────────────────────
   error_dismiss: "Dismiss error",
+  on_device_init_timeout_error:
+    "Chrome did not finish preparing its on-device model within 60 seconds without progress. Use supported desktop Chrome and keep this page open while the model downloads. This attempt did not send extracted text to Firebase's cloud service.",
+  on_device_generation_timeout_error:
+    "The on-device model did not return a result within 120 seconds. This attempt did not send extracted text to Firebase's cloud service. Try a shorter document, or choose Cloud AI and explicitly allow cloud processing.",
+  on_device_timeout_choose_cloud: "Choose Cloud AI",
   progress_default: "Preparing analysis...",
 
   // ── Processing — Firebase setup notice ────────────────────────────────────────

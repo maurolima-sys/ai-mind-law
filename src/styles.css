@@ -1232,16 +1232,27 @@
   flex: 0 0 auto;
   margin-top: 1px;
 }
-.pm-error-banner > span {
+.pm-error-content {
+  min-width: 0;
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
 }
-.pm-error-banner button {
+.pm-error-banner > .pm-error-dismiss {
   display: grid;
   place-items: center;
   border: 0;
   background: transparent;
   color: inherit;
   cursor: pointer;
+}
+.pm-error-action {
+  min-height: 32px;
+  color: var(--pm-text);
+  font-size: 11px;
+  white-space: normal;
 }
 .pm-setup-notice {
   border-color: #f0dfb9;

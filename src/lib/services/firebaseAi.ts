@@ -27,6 +27,7 @@ export type GeminiModelName = (typeof GEMINI_MODEL_FALLBACK_CHAIN)[number];
 const RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503]);
 const TIMEOUT_ERROR_CODE = "TIMEOUT";
 const GENERATION_TIMEOUT_MS = 60_000;
+export const ON_DEVICE_GENERATION_TIMEOUT_MS = 120_000;
 const TOTAL_GENERATION_BUDGET_MS = 180_000;
 const RETRY_STEPS = [
   { modelName: PRIMARY_GEMINI_MODEL, delayMs: 0, jitterMs: 0 },
@@ -35,29 +36,54 @@ const RETRY_STEPS = [
 ] as const;
 
 export const DEVICE_MODEL_INIT_TIMEOUT_MS = 60_000;
+const DEVICE_MODEL_INIT_TIMEOUT_CODE = "DEVICE_MODEL_INIT_TIMEOUT";
+const ON_DEVICE_GENERATION_TIMEOUT_CODE = "ON_DEVICE_GENERATION_TIMEOUT";
 
 export const TOTAL_MODEL_ATTEMPTS = RETRY_STEPS.length;
+
+export type OnDeviceTimeoutStage = "initialization" | "generation";
+
+export function getOnDeviceTimeoutStage(error: unknown): OnDeviceTimeoutStage | undefined {
+  if (typeof error !== "object" || error === null || !("code" in error)) return undefined;
+  if (error.code === DEVICE_MODEL_INIT_TIMEOUT_CODE) return "initialization";
+  if (error.code === ON_DEVICE_GENERATION_TIMEOUT_CODE) return "generation";
+  return undefined;
+}
 
 export async function initializeDeviceModelWithTimeout(
   initialize: (onProgress: (progress: number) => void) => Promise<void>,
   onProgress: (progress: number) => void,
 ): Promise<void> {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
-  try {
-    const initialization = initialize(onProgress);
-    const timeout = new Promise<never>((_, reject) => {
-      timeoutId = setTimeout(
-        () =>
-          reject(
-            new Error(
-              `On-device model initialisation timed out after ${DEVICE_MODEL_INIT_TIMEOUT_MS / 1000} seconds.`,
-            ),
+  let active = true;
+  let rejectTimeout!: (error: Error) => void;
+  const timeout = new Promise<never>((_, reject) => {
+    rejectTimeout = reject;
+  });
+  const resetTimeout = () => {
+    if (!active) return;
+    if (timeoutId) clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      rejectTimeout(
+        Object.assign(
+          new Error(
+            `On-device model initialisation timed out after ${DEVICE_MODEL_INIT_TIMEOUT_MS / 1000} seconds.`,
           ),
-        DEVICE_MODEL_INIT_TIMEOUT_MS,
+          { code: DEVICE_MODEL_INIT_TIMEOUT_CODE },
+        ),
       );
+    }, DEVICE_MODEL_INIT_TIMEOUT_MS);
+  };
+
+  try {
+    resetTimeout();
+    const initialization = initialize((progress) => {
+      onProgress(progress);
+      resetTimeout();
     });
     await Promise.race([initialization, timeout]);
   } finally {
+    active = false;
     if (timeoutId) clearTimeout(timeoutId);
   }
 }
@@ -118,13 +144,15 @@ export async function generateWithModelFallback<T>(
     try {
       const timeout = new Promise<never>((_, reject) => {
         timeoutId = setTimeout(() => {
-          const timeoutError = new Error(
-            `Firebase AI Logic request timed out after ${GENERATION_TIMEOUT_MS / 1000} seconds.`,
+          const timeoutError = Object.assign(
+            new Error(
+              `On-device inference timed out after ${ON_DEVICE_GENERATION_TIMEOUT_MS / 1000} seconds.`,
+            ),
+            { code: ON_DEVICE_GENERATION_TIMEOUT_CODE },
           );
-          Object.assign(timeoutError, { code: TIMEOUT_ERROR_CODE });
           reject(timeoutError);
           controller.abort(timeoutError);
-        }, GENERATION_TIMEOUT_MS);
+        }, ON_DEVICE_GENERATION_TIMEOUT_MS);
       });
       const result = await Promise.race([
         generate(PRIMARY_GEMINI_MODEL, controller.signal),

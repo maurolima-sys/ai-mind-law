@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  chunkTenderText,
   parseTenderResponse,
   requireInferenceSource,
   resolveProcessingSource,
@@ -125,6 +126,20 @@ describe("parseTenderResponse", () => {
     expect(parsed.requirements[0]?.confidence).toBe(0.85);
     expect(parsed.specifications[0]).toMatchObject({ quantity: "3", unit: "1" });
   });
+
+  it("keeps local-sized text chunks within the configured limit without losing source text", () => {
+    const chunks = chunkTenderText(["abcdefghij"], ["Page 4"], 4);
+
+    expect(chunks.flatMap((chunk) => chunk.pages.map((page) => page.text)).join("")).toBe(
+      "abcdefghij",
+    );
+    expect(
+      chunks.every((chunk) => chunk.pages.reduce((size, page) => size + page.text.length, 0) <= 4),
+    ).toBe(true);
+    expect(chunks.flatMap((chunk) => chunk.pages.map((page) => page.sourceIndex))).toEqual([
+      1, 1, 1,
+    ]);
+  });
 });
 
 describe("resolveProcessingSource", () => {
@@ -167,6 +182,27 @@ describe("on-device model initialization timeout", () => {
     );
 
     await vi.advanceTimersByTimeAsync(DEVICE_MODEL_INIT_TIMEOUT_MS);
+    await rejection;
+  });
+
+  it("keeps initialization alive while the SDK reports model-download progress", async () => {
+    vi.useFakeTimers();
+    let reportProgress: ((progress: number) => void) | undefined;
+    const initialization = initializeDeviceModelWithTimeout(
+      (onProgress) => {
+        reportProgress = onProgress;
+        return new Promise<void>(() => {});
+      },
+      () => {},
+    );
+    const rejection = expect(initialization).rejects.toThrow(
+      `On-device model initialisation timed out after ${DEVICE_MODEL_INIT_TIMEOUT_MS / 1000} seconds.`,
+    );
+
+    await vi.advanceTimersByTimeAsync(DEVICE_MODEL_INIT_TIMEOUT_MS - 1_000);
+    reportProgress?.(0.5);
+    await vi.advanceTimersByTimeAsync(DEVICE_MODEL_INIT_TIMEOUT_MS - 1_000);
+    await vi.advanceTimersByTimeAsync(1_000);
     await rejection;
   });
 });

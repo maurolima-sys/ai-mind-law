@@ -97,6 +97,7 @@ This is the most important decision in the workflow. On **Processing & privacy**
 - No cloud fallback
 - Requires supported desktop Chrome
 - Firebase App Check still applies
+- The latest reported sample timed out during local generation. The app now uses shorter prompts and 3,000-character sections, with up to 120 seconds per on-device section. This has not yet been retested in Chrome.
 
 **2. Cloud AI** — badge *GEMINI*
 > “Send extracted PDF text to Google's cloud through Firebase AI Logic. This mode uses cloud inference only and does not fall back to on-device processing.”
@@ -105,10 +106,12 @@ This is the most important decision in the workflow. On **Processing & privacy**
 - Firebase App Check required
 
 **3. Hybrid inference** — badge *ON-DEVICE FIRST*
-> “Firebase AI Logic tries the available on-device model first. If unavailable, the SDK may send extracted text to Gemini 3.8 Flash in Google's cloud. If a cloud request gets a transient 429, 500, 502, or 503, PocketMind retries Gemini 3.8 Flash and then switches to Gemini 3.5 Flash-Lite, with a 60-second maximum per text section.”
+> “Firebase AI Logic tries the available on-device model first. If unavailable, the SDK may send extracted text to Gemini in Google's cloud. Cloud retries use Gemini 3.5 Flash-Lite, Gemini 3.5 Flash, then Gemini 3.8 Flash after transient errors.”
 - Actual source shown after analysis
 - Cloud use requires your consent
 - App Check required
+
+Cloud attempts are limited to 60 seconds each, with a 180-second total budget per text section. On-device-only mode never uses this cloud retry chain.
 
 **4. Sample data** — badge *DEMO*
 > “View the fictional Northbridge street-lighting tender and its prepared analysis. No upload or model call occurs in this mode.”

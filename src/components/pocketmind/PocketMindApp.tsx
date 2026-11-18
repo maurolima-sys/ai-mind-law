@@ -71,7 +71,7 @@ import {
 } from "@/lib/services/localWorkspace";
 import { compareEvidenceToRequirement } from "@/lib/services/evidenceComparison";
 import { isExternalOcrAvailable, runExternalOcr } from "@/lib/services/externalOcr";
-import { isFirebaseConfigured } from "@/lib/services/firebaseAi";
+import { getOnDeviceTimeoutStage, isFirebaseConfigured } from "@/lib/services/firebaseAi";
 import { markUnpaginatedEvidenceUnverified } from "@/lib/services/ocrEvidence";
 import { shouldOfferExternalOcr } from "@/lib/services/ocrNormalize";
 import { analyzeTender } from "@/lib/services/tenderAnalysis";
@@ -883,6 +883,20 @@ export function PocketMindApp() {
     recordActivity("analysis-completed", selectedDocument.id);
   }
 
+  function reportAnalysisError(error: unknown, prefix: string) {
+    const timeoutStage = processingChoice === "local" ? getOnDeviceTimeoutStage(error) : undefined;
+    if (timeoutStage === "initialization") {
+      setErrorMessage(t("on_device_init_timeout_error"));
+      return;
+    }
+    if (timeoutStage === "generation") {
+      setErrorMessage(t("on_device_generation_timeout_error"));
+      return;
+    }
+    const detail = error instanceof Error ? error.message : "An unexpected error occurred.";
+    setErrorMessage(`${prefix} ${detail}`);
+  }
+
   async function runAnalysis() {
     if (!selectedDocument || (!file && selectedDocument.source !== "demo")) {
       setErrorMessage("Choose an uploaded document before starting an analysis.");
@@ -967,8 +981,7 @@ export function PocketMindApp() {
       }
       await analyzePages(pages, textSource, paginated, locations);
     } catch (error) {
-      const detail = error instanceof Error ? error.message : "An unexpected error occurred.";
-      setErrorMessage(`Analysis could not be completed. ${detail}`);
+      reportAnalysisError(error, "Analysis could not be completed.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -996,8 +1009,7 @@ export function PocketMindApp() {
       const sourceLocations = pages.map((_, index) => `Page ${index + 1}`);
       await analyzePages(pages, "pdfjs", true, sourceLocations);
     } catch (error) {
-      const detail = error instanceof Error ? error.message : "An unexpected error occurred.";
-      setErrorMessage(`Analysis could not be completed. ${detail}`);
+      reportAnalysisError(error, "Analysis could not be completed.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -1064,8 +1076,7 @@ export function PocketMindApp() {
       );
       await analyzePages(result.pages, "llamaparse", result.paginated, sourceLocations);
     } catch (error) {
-      const detail = error instanceof Error ? error.message : "An unexpected error occurred.";
-      setErrorMessage(`External text extraction could not be completed. ${detail}`);
+      reportAnalysisError(error, "External text extraction could not be completed.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -1380,6 +1391,11 @@ export function PocketMindApp() {
               isAnalyzing={isAnalyzing}
               progressDetail={progressDetail}
               errorMessage={errorMessage}
+              onDeviceTimeout={
+                processingChoice === "local" &&
+                (errorMessage === t("on_device_init_timeout_error") ||
+                  errorMessage === t("on_device_generation_timeout_error"))
+              }
               inputRef={fileInputRef}
               onFileChange={handleFileChange}
               onDrop={handleDrop}
@@ -2520,6 +2536,7 @@ function ProcessingScreen({
   isAnalyzing,
   progressDetail,
   errorMessage,
+  onDeviceTimeout,
   inputRef,
   onFileChange,
   onDrop,
@@ -2547,6 +2564,7 @@ function ProcessingScreen({
   isAnalyzing: boolean;
   progressDetail: string;
   errorMessage: string;
+  onDeviceTimeout: boolean;
   inputRef: RefObject<HTMLInputElement | null>;
   onFileChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onDrop: (event: DragEvent<HTMLDivElement>) => void;
@@ -2562,6 +2580,7 @@ function ProcessingScreen({
   onClearError: () => void;
 }) {
   const t = useT();
+  const cloudConsentRef = useRef<HTMLInputElement>(null);
   const hasQuestionText = document.pages.some((page) => page.trim());
 
   return (
@@ -2693,6 +2712,7 @@ function ProcessingScreen({
       {(choice === "cloud" || choice === "hybrid") && (
         <label className="pm-cloud-consent">
           <input
+            ref={cloudConsentRef}
             type="checkbox"
             checked={cloudConsent}
             onChange={(event) => onCloudConsentChange(event.currentTarget.checked)}
@@ -2854,8 +2874,27 @@ function ProcessingScreen({
       {errorMessage && (
         <div className="pm-error-banner" role="alert">
           <AlertCircle size={18} />
-          <span>{errorMessage}</span>
-          <button type="button" onClick={onClearError} aria-label={t("error_dismiss")}>
+          <div className="pm-error-content">
+            <span>{errorMessage}</span>
+            {onDeviceTimeout && (
+              <button
+                className="pm-button pm-button--outline pm-error-action"
+                type="button"
+                onClick={() => {
+                  onSelectChoice("cloud");
+                  requestAnimationFrame(() => cloudConsentRef.current?.focus());
+                }}
+              >
+                {t("on_device_timeout_choose_cloud")}
+              </button>
+            )}
+          </div>
+          <button
+            className="pm-error-dismiss"
+            type="button"
+            onClick={onClearError}
+            aria-label={t("error_dismiss")}
+          >
             <X size={16} />
           </button>
         </div>
