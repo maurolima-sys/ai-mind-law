@@ -12,6 +12,8 @@ import {
   DEVICE_MODEL_INIT_TIMEOUT_MS,
   initializeDeviceModelWithTimeout,
 } from "@/lib/services/firebaseAi";
+import { analysisProcessingSource, hasCloudResponse } from "@/lib/services/inferenceSource";
+import { buildDemoDocument } from "@/data/sampleTender";
 
 describe("parseTenderResponse", () => {
   it("accepts a complete JSON response wrapped in a code fence", () => {
@@ -153,6 +155,32 @@ describe("resolveProcessingSource", () => {
   it("reports on-device and mixed-source analyses from Firebase's response sources", () => {
     expect(resolveProcessingSource(sourceSet("ON_DEVICE"), "hybrid")).toBe("on-device");
     expect(resolveProcessingSource(sourceSet("ON_DEVICE", "IN_CLOUD"), "hybrid")).toBe("hybrid");
+  });
+
+  it("rejects an empty source set instead of inventing cloud inference", () => {
+    expect(() => resolveProcessingSource(sourceSet(), "cloud")).toThrow(
+      "Firebase AI Logic did not report an inference source.",
+    );
+  });
+});
+
+describe("inference reporting", () => {
+  it("only records a cloud response when IN_CLOUD was reported", () => {
+    expect(hasCloudResponse(false, "ON_DEVICE")).toBe(false);
+    expect(hasCloudResponse(false, "IN_CLOUD")).toBe(true);
+    expect(hasCloudResponse(true, "ON_DEVICE")).toBe(true);
+  });
+
+  it("does not infer legacy sources from their selected modes", () => {
+    const sample = buildDemoDocument().analysis;
+    if (!sample) throw new Error("Demo analysis is missing");
+    expect(analysisProcessingSource({ ...sample, mode: "local" })).toBeUndefined();
+    expect(analysisProcessingSource({ ...sample, mode: "cloud" })).toBeUndefined();
+    expect(analysisProcessingSource({ ...sample, mode: "hybrid" })).toBeUndefined();
+    expect(analysisProcessingSource(sample)).toBe("demo");
+    expect(
+      analysisProcessingSource({ ...sample, mode: "local", processingSource: "on-device" }),
+    ).toBe("on-device");
   });
 });
 

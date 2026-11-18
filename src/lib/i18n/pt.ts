@@ -76,12 +76,13 @@ export const pt: Translations = {
   risk_csv_source: "Localização de origem",
   risk_csv_origin: "Origem",
 
-  mode_on_device: "No dispositivo",
-  mode_cloud: "Nuvem",
-  mode_cloud_fallback: "Fallback para nuvem",
-  mode_hybrid: "Híbrido",
+  mode_on_device: "No dispositivo (ON_DEVICE)",
+  mode_cloud: "Nuvem (IN_CLOUD)",
+  mode_cloud_fallback: "Nuvem (IN_CLOUD; modo híbrido)",
+  mode_hybrid: "Dispositivo (ON_DEVICE) + nuvem (IN_CLOUD)",
   mode_demo: "Modo demonstração",
   mode_not_analyzed: "Não analisado",
+  mode_source_unknown: "Origem da inferência não registada",
 
   sidebar_workspace: "Espaço de trabalho",
   sidebar_privacy_title: "Privacidade por escolha",
@@ -93,7 +94,7 @@ export const pt: Translations = {
   search_aria: "Pesquisar no espaço de trabalho",
   search_clear: "Limpar pesquisa",
   firebase_not_configured: "Configuração Firebase necessária",
-  firebase_connected: "Firebase AI Logic: Ligado",
+  firebase_cloud_response_received: "Resposta da nuvem recebida nesta sessão",
   firebase_configured: "Firebase configurado · ainda não verificado",
 
   btn_add_document: "Adicionar documento",
@@ -236,7 +237,7 @@ export const pt: Translations = {
   inference_processing_source: "Fonte de processamento:",
   inference_firebase_label: "Firebase AI Logic",
   inference_firebase_not_used: "Não utilizado",
-  inference_firebase_connected: "Ligado · resposta recebida",
+  inference_response_received: "Resposta do modelo recebida para esta análise",
   inference_model_label: "Modelo",
   inference_evidence_label: "Modo de evidência",
   inference_evidence_value: "Excertos ligados a páginas · verificados face ao texto extraído",
@@ -439,9 +440,10 @@ export const pt: Translations = {
 
   runtime_firebase_label: "Firebase AI Logic",
   runtime_not_configured: "Não configurado",
-  runtime_connected: "Ligado · uma resposta foi recebida",
+  runtime_cloud_response_received:
+    "Resposta da nuvem recebida nesta sessão · ligação não garantida",
   runtime_configured_no_response: "Configurado · ainda sem resposta em direto",
-  runtime_processing_source: "Fonte de processamento",
+  runtime_processing_source: "Origem da análise do documento selecionado",
   runtime_demo_mode: "Modo demonstração · IA não utilizada",
   runtime_not_run: "Não executado",
   runtime_demo_data: "Dados de demonstração",

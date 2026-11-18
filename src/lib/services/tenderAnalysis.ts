@@ -25,9 +25,10 @@ import {
   type GeminiModelName,
 } from "@/lib/services/firebaseAi";
 import { scoreConfidence } from "@/lib/services/evidence";
+import type { InferenceSource } from "@/lib/services/inferenceSource";
 
 type Chunk = { pages: Array<{ sourceIndex: number; location: string; text: string }> };
-export type InferenceSource = "ON_DEVICE" | "IN_CLOUD";
+export type { InferenceSource } from "@/lib/services/inferenceSource";
 type ProgressUpdate = {
   phase: "preparing" | "analyzing";
   completed: number;
@@ -146,6 +147,9 @@ export function resolveProcessingSource(
 ): ProcessingSource {
   const usedOnDevice = sources.has("ON_DEVICE");
   const usedCloud = sources.has("IN_CLOUD");
+  if (!usedOnDevice && !usedCloud) {
+    throw new Error("Firebase AI Logic did not report an inference source.");
+  }
   if (usedOnDevice && usedCloud) return "hybrid";
   if (usedOnDevice) return "on-device";
   if (preference === "hybrid" && usedCloud) return "cloud-fallback";
@@ -372,7 +376,10 @@ export async function analyzeTender(
         });
       },
     };
-    let generated: Awaited<ReturnType<typeof generateWithModelFallback>>;
+    let generated: {
+      result: Awaited<ReturnType<typeof generateSection>>;
+      modelName: GeminiModelName;
+    };
     try {
       generated = await generateWithModelFallback(preference, generateSection, fallbackOptions);
     } catch (error) {
@@ -388,6 +395,7 @@ export async function analyzeTender(
     }
     const { result, modelName } = generated;
     const source = requireInferenceSource(result.response.inferenceSource);
+    onInference(source);
     sources.add(source);
     if (source === "IN_CLOUD") cloudModelNames.add(modelName);
     if (preference === "hybrid" && source === "IN_CLOUD") {
@@ -395,11 +403,10 @@ export async function analyzeTender(
         phase: "analyzing",
         completed: index,
         total: chunks.length,
-        detail: `On-device unavailable; using cloud fallback for section ${index + 1}`,
+        detail: `Firebase reported cloud inference for section ${index + 1} (hybrid mode).`,
       });
     }
     records.push(parseTenderResponse(result.response.text()));
-    onInference(source);
   }
 
   if (sources.size === 0) {

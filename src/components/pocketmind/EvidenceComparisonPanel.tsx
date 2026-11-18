@@ -17,6 +17,7 @@ import type {
   SupportingEvidenceDocument,
 } from "@/lib/types";
 import { useT } from "@/lib/i18n";
+import { processingSourceKeys } from "@/lib/services/inferenceSource";
 
 export function EvidenceComparisonPanel({
   tenderDocumentId,
@@ -297,7 +298,12 @@ function EvidenceMatchResult({
             {t("evidence_compare_ai_estimate", { confidence: Math.round(result.confidence * 100) })}
           </span>
         </div>
-        <small>{result.model}</small>
+        <small>
+          {result.model} · {t("inference_processing_source")}{" "}
+          {result.processingSource
+            ? t(processingSourceKeys[result.processingSource])
+            : t("mode_source_unknown")}
+        </small>
       </div>
       <p>{result.explanation}</p>
       {result.evidence.excerpt && (

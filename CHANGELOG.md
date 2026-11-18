@@ -8,6 +8,7 @@ Format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Fixed
+- Firebase runtime indicators now distinguish a cloud response received in the session from configuration and on-device inference. Analysis, Q&A and evidence comparisons show the source reported by the SDK; legacy analyses without a recorded source remain unknown.
 - `f715a2a` — repaired corrupted UTF-8 literals in the interface and English translations.
 - `c65bee6` — separated uploaded and demonstration document metrics and activity; risk filters, counts and CSV identify each origin. The local library continues to show uploaded documents only.
 

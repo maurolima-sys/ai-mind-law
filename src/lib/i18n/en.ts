@@ -75,12 +75,13 @@
   risk_csv_origin: "Origin",
 
   // ── Processing mode labels ───────────────────────────────────────────────────
-  mode_on_device: "On-device",
-  mode_cloud: "Cloud",
-  mode_cloud_fallback: "Cloud fallback",
-  mode_hybrid: "Hybrid",
+  mode_on_device: "On-device (ON_DEVICE)",
+  mode_cloud: "Cloud (IN_CLOUD)",
+  mode_cloud_fallback: "Cloud (IN_CLOUD; hybrid selected)",
+  mode_hybrid: "On-device (ON_DEVICE) + cloud (IN_CLOUD)",
   mode_demo: "Demo mode",
   mode_not_analyzed: "Not analyzed",
+  mode_source_unknown: "Inference source not recorded",
 
   // ── Sidebar ──────────────────────────────────────────────────────────────────
   sidebar_workspace: "Workspace",
@@ -94,7 +95,7 @@
   search_aria: "Search current workspace",
   search_clear: "Clear search",
   firebase_not_configured: "Firebase setup required",
-  firebase_connected: "Firebase AI Logic: Connected",
+  firebase_cloud_response_received: "Cloud response received this session",
   firebase_configured: "Firebase configured · not yet verified",
 
   // ── Global button ────────────────────────────────────────────────────────────
@@ -245,7 +246,7 @@
   inference_processing_source: "Processing source:",
   inference_firebase_label: "Firebase AI Logic",
   inference_firebase_not_used: "Not used",
-  inference_firebase_connected: "Connected · response received",
+  inference_response_received: "Model response received for this analysis",
   inference_model_label: "Model",
   inference_evidence_label: "Evidence mode",
   inference_evidence_value: "Page-linked excerpts · checked against extracted text",
@@ -458,9 +459,10 @@
   // ── Processing — runtime status ───────────────────────────────────────────────
   runtime_firebase_label: "Firebase AI Logic",
   runtime_not_configured: "Not configured",
-  runtime_connected: "Connected · a response was received",
+  runtime_cloud_response_received:
+    "Cloud response received this session · connection not guaranteed",
   runtime_configured_no_response: "Configured · no live response yet",
-  runtime_processing_source: "Processing source",
+  runtime_processing_source: "Selected document analysis source",
   runtime_demo_mode: "Demo mode · AI not used",
   runtime_not_run: "Not run",
   runtime_demo_data: "Demo data",

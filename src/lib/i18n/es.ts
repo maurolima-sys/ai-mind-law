@@ -76,12 +76,13 @@ export const es: Translations = {
   risk_csv_source: "Ubicación de origen",
   risk_csv_origin: "Origen",
 
-  mode_on_device: "En el dispositivo",
-  mode_cloud: "Nube",
-  mode_cloud_fallback: "Fallback a la nube",
-  mode_hybrid: "Híbrido",
+  mode_on_device: "En el dispositivo (ON_DEVICE)",
+  mode_cloud: "Nube (IN_CLOUD)",
+  mode_cloud_fallback: "Nube (IN_CLOUD; modo híbrido)",
+  mode_hybrid: "Dispositivo (ON_DEVICE) + nube (IN_CLOUD)",
   mode_demo: "Modo demostración",
   mode_not_analyzed: "No analizado",
+  mode_source_unknown: "Origen de inferencia no registrado",
 
   sidebar_workspace: "Espacio de trabajo",
   sidebar_privacy_title: "Privacidad por elección",
@@ -93,7 +94,7 @@ export const es: Translations = {
   search_aria: "Buscar en el espacio de trabajo",
   search_clear: "Limpiar búsqueda",
   firebase_not_configured: "Configuración de Firebase requerida",
-  firebase_connected: "Firebase AI Logic: Conectado",
+  firebase_cloud_response_received: "Respuesta de la nube recibida en esta sesión",
   firebase_configured: "Firebase configurado · aún no verificado",
 
   btn_add_document: "Añadir documento",
@@ -237,7 +238,7 @@ export const es: Translations = {
   inference_processing_source: "Fuente de procesamiento:",
   inference_firebase_label: "Firebase AI Logic",
   inference_firebase_not_used: "No utilizado",
-  inference_firebase_connected: "Conectado · respuesta recibida",
+  inference_response_received: "Respuesta del modelo recibida para este análisis",
   inference_model_label: "Modelo",
   inference_evidence_label: "Modo de evidencia",
   inference_evidence_value:
@@ -443,9 +444,10 @@ export const es: Translations = {
 
   runtime_firebase_label: "Firebase AI Logic",
   runtime_not_configured: "No configurado",
-  runtime_connected: "Conectado · se recibió una respuesta",
+  runtime_cloud_response_received:
+    "Respuesta de la nube recibida en esta sesión · conexión no garantizada",
   runtime_configured_no_response: "Configurado · aún sin respuesta en vivo",
-  runtime_processing_source: "Fuente de procesamiento",
+  runtime_processing_source: "Origen del análisis del documento seleccionado",
   runtime_demo_mode: "Modo demostración · IA no utilizada",
   runtime_not_run: "No ejecutado",
   runtime_demo_data: "Datos de demostración",

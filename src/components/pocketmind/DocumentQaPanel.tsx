@@ -18,6 +18,7 @@ import {
 } from "@/lib/services/legalResearch.functions";
 import type { LegalResearchSource } from "@/lib/services/legalResearch";
 import type { ChatCitation, DocumentFormat, InferencePreference } from "@/lib/types";
+import type { InferenceSource } from "@/lib/services/inferenceSource";
 import { useT } from "@/lib/i18n";
 
 type SpeechRecognitionEventLike = {
@@ -54,6 +55,7 @@ type QaMessage =
       citedResearchSourceIds: string[];
       researchAttempted: boolean;
       engine: string;
+      inferenceSource: InferenceSource;
     };
 
 type ResearchAvailability = "checking" | "available" | "unavailable" | "error";
@@ -173,7 +175,7 @@ export function DocumentQaPanel({
   paginationVerified: boolean;
   onOpenProcessing: () => void;
   onSelectPage: (page: number, excerpt?: string) => void;
-  onModelResponse: () => void;
+  onModelResponse: (source: InferenceSource) => void;
 }) {
   const t = useT();
   const [messages, setMessages] = useState<QaMessage[]>([]);
@@ -355,6 +357,7 @@ export function DocumentQaPanel({
           citedResearchSourceIds: answer.citedResearchSourceIds,
           researchAttempted: researchEnabled,
           engine: answer.engine,
+          inferenceSource: answer.inferenceSource,
         },
       ]);
       onDraftChange("");
@@ -428,7 +431,10 @@ export function DocumentQaPanel({
                 </strong>
                 {message.role === "assistant" && (
                   <>
-                    <span>{message.engine}</span>
+                    <span>
+                      {message.engine} · {t("inference_processing_source")}{" "}
+                      {t(message.inferenceSource === "ON_DEVICE" ? "mode_on_device" : "mode_cloud")}
+                    </span>
                     <button
                       type="button"
                       className="pm-icon-button pm-qa-speak"

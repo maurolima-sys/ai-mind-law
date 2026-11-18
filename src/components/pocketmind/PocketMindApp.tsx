@@ -75,6 +75,12 @@ import { RiskScreen } from "@/components/pocketmind/RiskScreen";
 import { SourceDocumentViewer } from "@/components/pocketmind/SourceDocumentViewer";
 import { complianceCsv, downloadText } from "@/lib/services/csv";
 import {
+  analysisProcessingSource,
+  hasCloudResponse,
+  processingSourceKeys,
+  type InferenceSource,
+} from "@/lib/services/inferenceSource";
+import {
   assessmentKeys,
   complianceAssessment,
   evidenceVerification,
@@ -128,7 +134,6 @@ import {
   type Review,
   type SupportingEvidenceDocument,
   type InferencePreference,
-  type ProcessingSource,
   type WorkspaceActivity,
 } from "@/lib/types";
 
@@ -151,11 +156,6 @@ type Finding = {
   severity?: string;
   mandatory?: boolean;
 };
-
-function getProcessingSource(analysis: Analysis): ProcessingSource {
-  if (analysis.processingSource) return analysis.processingSource;
-  return analysis.mode === "local" ? "on-device" : analysis.mode;
-}
 
 function Badge({
   tone = "neutral",
@@ -282,12 +282,7 @@ function modeSourceTone(
 type TFn = ReturnType<typeof useT>;
 
 function modeLabel(source: Analysis["processingSource"] | undefined, t: TFn): string {
-  if (source === "on-device") return t("mode_on_device");
-  if (source === "cloud") return t("mode_cloud");
-  if (source === "cloud-fallback") return t("mode_cloud_fallback");
-  if (source === "hybrid") return t("mode_hybrid");
-  if (source === "demo") return t("mode_demo");
-  return t("mode_not_analyzed");
+  return source ? t(processingSourceKeys[source]) : t("mode_source_unknown");
 }
 
 function EvidenceStatus({ evidence }: { evidence: Evidence }) {
@@ -346,7 +341,7 @@ export function PocketMindApp() {
   const [documentPagination, setDocumentPagination] = useState<Record<string, boolean>>({});
   const [reviews, setReviews] = useState<Record<string, Review>>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [firebaseConnected, setFirebaseConnected] = useState(false);
+  const [cloudResponseReceived, setCloudResponseReceived] = useState(false);
   const [progressDetail, setProgressDetail] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [activePage, setActivePage] = useState(1);
@@ -423,12 +418,12 @@ export function PocketMindApp() {
   const firebaseConfigured = isFirebaseConfigured();
   const firebaseStatusLabel = !firebaseConfigured
     ? t("firebase_not_configured")
-    : firebaseConnected
-      ? t("firebase_connected")
+    : cloudResponseReceived
+      ? t("firebase_cloud_response_received")
       : t("firebase_configured");
   const firebaseStatusTone = !firebaseConfigured
     ? "amber"
-    : firebaseConnected
+    : cloudResponseReceived
       ? "green"
       : "neutral";
   const allFindings = useMemo(
@@ -490,6 +485,10 @@ export function PocketMindApp() {
       ...(requirementId ? { requirementId } : {}),
     };
     setActivities((current) => [activity, ...current].slice(0, 200));
+  }
+
+  function recordInferenceResponse(source: InferenceSource) {
+    setCloudResponseReceived((previous) => hasCloudResponse(previous, source));
   }
 
   async function addDocument(selectedFile: File | undefined) {
@@ -793,7 +792,7 @@ export function PocketMindApp() {
         format: evidenceDocument.format,
         sourceLocations: evidenceDocument.sourceLocations,
         preference: processingChoice,
-        onInference: () => setFirebaseConnected(true),
+        onInference: recordInferenceResponse,
         onProgress: setEvidenceComparisonProgress,
       });
       const match: EvidenceMatch = {
@@ -881,7 +880,7 @@ export function PocketMindApp() {
       pages,
       processingChoice,
       ({ detail }) => setProgressDetail(detail),
-      () => setFirebaseConnected(true),
+      recordInferenceResponse,
       {
         format,
         sourceLocations: locations,
@@ -1466,7 +1465,7 @@ export function PocketMindApp() {
               }
               onEvidenceCloudConsentChange={(checked) => setEvidenceCloudConsent(checked)}
               onOpenProcessing={() => setScreen("processing")}
-              onModelResponse={() => setFirebaseConnected(true)}
+              onModelResponse={recordInferenceResponse}
               onExport={exportAnalysis}
             />
           )}
@@ -1526,7 +1525,7 @@ export function PocketMindApp() {
                 scannedTextByDocumentId[selectedDocument.id]?.some((page) => page.trim()),
               )}
               firebaseConfigured={firebaseConfigured}
-              firebaseConnected={firebaseConnected}
+              cloudResponseReceived={cloudResponseReceived}
               isAnalyzing={isAnalyzing}
               progressDetail={progressDetail}
               errorMessage={errorMessage}
@@ -2000,7 +1999,7 @@ function AnalysisScreen({
   onCompareEvidence: (requirementId: string, evidenceDocumentId: string) => void;
   onEvidenceCloudConsentChange: (checked: boolean) => void;
   onOpenProcessing: () => void;
-  onModelResponse: () => void;
+  onModelResponse: (source: InferenceSource) => void;
   onExport: () => void;
 }) {
   const t = useT();
@@ -2110,7 +2109,7 @@ function AnalysisScreen({
     }
     return <EmptyAnalysis onOpenProcessing={onOpenProcessing} />;
   }
-  const processingSource = getProcessingSource(analysis);
+  const processingSource = analysisProcessingSource(analysis);
 
   const [activeTab, setActiveTab] = useState<"analysis" | "summary" | "qa" | "compare">("analysis");
   return (
@@ -2410,9 +2409,11 @@ function AnalysisScreen({
                   <div>
                     <dt>{t("inference_firebase_label")}</dt>
                     <dd>
-                      {analysis.mode === "demo"
+                      {processingSource === "demo"
                         ? t("inference_firebase_not_used")
-                        : t("inference_firebase_connected")}
+                        : processingSource
+                          ? t("inference_response_received")
+                          : t("mode_source_unknown")}
                     </dd>
                   </div>
                   <div>
@@ -2848,7 +2849,7 @@ function ProcessingScreen({
   externalOcrConsent,
   hasExtractedText,
   firebaseConfigured,
-  firebaseConnected,
+  cloudResponseReceived,
   isAnalyzing,
   progressDetail,
   errorMessage,
@@ -2876,7 +2877,7 @@ function ProcessingScreen({
   externalOcrConsent: boolean;
   hasExtractedText: boolean;
   firebaseConfigured: boolean;
-  firebaseConnected: boolean;
+  cloudResponseReceived: boolean;
   isAnalyzing: boolean;
   progressDetail: string;
   errorMessage: string;
@@ -3458,8 +3459,8 @@ function ProcessingScreen({
           <strong>
             {!firebaseConfigured
               ? t("runtime_not_configured")
-              : firebaseConnected
-                ? t("runtime_connected")
+              : cloudResponseReceived
+                ? t("runtime_cloud_response_received")
                 : t("runtime_configured_no_response")}
           </strong>
         </div>
@@ -3467,7 +3468,7 @@ function ProcessingScreen({
           <span>{t("runtime_processing_source")}</span>
           <strong>
             {document.analysis
-              ? modeLabel(getProcessingSource(document.analysis), t)
+              ? modeLabel(analysisProcessingSource(document.analysis), t)
               : document.source === "demo"
                 ? t("runtime_demo_mode")
                 : t("runtime_not_run")}
