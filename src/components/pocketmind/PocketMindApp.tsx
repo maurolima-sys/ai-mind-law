@@ -2077,34 +2077,37 @@ function AnalysisScreen({
   }
   const processingSource = getProcessingSource(analysis);
 
+  const [activeTab, setActiveTab] = useState<"analysis" | "summary" | "qa" | "compare">("analysis");
   return (
     <div className="pm-analysis-screen">
-      <div className="pm-document-toolbar">
-        <div className="pm-document-title">
-          <span className="pm-file-icon pm-file-icon--large">
-            <FileText size={20} />
-          </span>
+      {/* Document header */}
+      <div className="pm-doc-subheader-aligned">
+        <div className="pm-doc-sub-left">
+          <span className="pm-file-icon pm-file-icon--large"><FileText size={20} /></span>
           <div>
             <h2>{document.name}</h2>
-            <span>
-              {document.source === "demo"
-                ? t("toolbar_fictional_sample")
-                : format === "pdf"
-                  ? t("toolbar_pdf_document")
-                  : format === "docx"
-                    ? t("toolbar_docx_document")
-                    : t("toolbar_xlsx_document")}{" "}
-              Â·{" "}
-              {hasPdfPagination
-                ? `${document.pages.length} ${t("toolbar_pages")}`
-                : `${document.pages.length} ${t("toolbar_source_sections")}`}{" "}
-              Â· {formatBytes(document.size)}
-            </span>
+            <div className="pm-doc-sub-meta">
+              <span>
+                {document.source === "demo"
+                  ? t("toolbar_fictional_sample")
+                  : format === "pdf"
+                    ? t("toolbar_pdf_document")
+                    : format === "docx"
+                      ? t("toolbar_docx_document")
+                      : t("toolbar_xlsx_document")}
+              </span>
+              <span>Â·</span>
+              <span>
+                {hasPdfPagination
+                  ? `${document.pages.length} ${t("toolbar_pages")}`
+                  : `${document.pages.length} ${t("toolbar_source_sections")}`}
+              </span>
+              <span>Â·</span>
+              <span>{formatBytes(document.size)}</span>
+              <Badge tone={modeSourceTone(processingSource)}>{modeLabel(processingSource, t)}</Badge>
+              {textSource === "llamaparse" && <Badge tone="amber">{t("toolbar_llamaparse_badge")}</Badge>}
+            </div>
           </div>
-          <Badge tone={modeSourceTone(processingSource)}>{modeLabel(processingSource, t)}</Badge>
-          {textSource === "llamaparse" && (
-            <Badge tone="amber">{t("toolbar_llamaparse_badge")}</Badge>
-          )}
         </div>
         <button className="pm-button pm-button--dark" type="button" onClick={onExport}>
           <ArrowDownToLine size={16} /> {t("toolbar_export_json")}
@@ -2114,9 +2117,7 @@ function AnalysisScreen({
       {document.source === "demo" && (
         <div className="pm-inline-warning">
           <Sparkles size={16} />
-          <span>
-            {analysis.mode === "demo" ? t("warning_demo_prepared") : t("warning_demo_ai")}
-          </span>
+          <span>{analysis.mode === "demo" ? t("warning_demo_prepared") : t("warning_demo_ai")}</span>
         </div>
       )}
 
@@ -2127,41 +2128,9 @@ function AnalysisScreen({
         </div>
       )}
 
-      <section className="pm-inference-report" aria-label="Analysis run status">
-        <div className="pm-inference-report-heading">
-          <strong>{t("inference_title")}</strong>
-          <Badge tone={modeSourceTone(processingSource)}>
-            {t("inference_processing_source")} {modeLabel(processingSource, t)}
-          </Badge>
-        </div>
-        <dl>
-          <div>
-            <dt>{t("inference_firebase_label")}</dt>
-            <dd>
-              {analysis.mode === "demo"
-                ? t("inference_firebase_not_used")
-                : t("inference_firebase_connected")}
-            </dd>
-          </div>
-          <div>
-            <dt>{t("inference_model_label")}</dt>
-            <dd>{analysis.model ?? analysis.engine}</dd>
-          </div>
-          <div>
-            <dt>{t("inference_evidence_label")}</dt>
-            <dd>{t("inference_evidence_value")}</dd>
-          </div>
-          <div>
-            <dt>{t("inference_demo_label")}</dt>
-            <dd>{document.source === "demo" ? t("inference_yes") : t("inference_no")}</dd>
-          </div>
-        </dl>
-      </section>
-
+      {/* Summary strip */}
       <section className="pm-summary-strip">
-        <div className="pm-summary-icon">
-          <Sparkles size={18} />
-        </div>
+        <div className="pm-summary-icon"><Sparkles size={18} /></div>
         <div>
           <strong>{t("summary_title")}</strong>
           <p>{analysis.summary}</p>
@@ -2172,64 +2141,42 @@ function AnalysisScreen({
         </div>
       </section>
 
-      <div className="pm-filter-row" aria-label="Filter findings">
-        {filterOptions.map((option) => (
-          <button
-            type="button"
-            aria-pressed={activeFinding === option.id}
-            className={`pm-filter-chip${activeFinding === option.id ? " is-selected" : ""}`}
-            key={option.id}
-            onClick={() => onSelectFilter(option.id)}
-          >
-            {option.label}
-            <span>{option.count}</span>
-          </button>
-        ))}
-      </div>
-
+      {/* Split-screen layout */}
       <div className="pm-analysis-layout">
+        {/* Left: source viewer */}
         <section className="pm-panel pm-source-panel">
-          <div className="pm-panel-heading pm-source-heading">
-            <div>
-              <h2>{t("source_panel_title_full")}</h2>
-              <p>
-                {format !== "pdf"
-                  ? t("source_office_document")
-                  : textSource === "llamaparse"
-                    ? paginationVerified
-                      ? t("source_llamaparse_full")
-                      : t("source_llamaparse_unpaginated")
-                    : t("source_pdfjs_full")}
-              </p>
-            </div>
-            <div className="pm-page-controls">
-              {canNavigateSources && (
-                <button
-                  type="button"
-                  className="pm-icon-button"
-                  aria-label={t("source_prev_page")}
-                  disabled={activePage <= 1}
-                  onClick={() => onSelectSource(activePage - 1, null)}
-                >
-                  <ChevronLeft size={17} />
-                </button>
-              )}
-              <span>
+          {/* Viewer toolbar */}
+          <div className="pm-viewer-toolbar">
+            <div className="pm-toolbar-group">
+              <button
+                type="button"
+                className="pm-toolbar-icon-btn"
+                aria-label={t("source_prev_page")}
+                disabled={activePage <= 1}
+                onClick={() => onSelectSource(activePage - 1, null)}
+              >
+                <ChevronLeft size={15} />
+              </button>
+              <span className="pm-page-counter-pill">
                 {hasPdfPagination
                   ? t("source_page_of", { page: activePage, total: document.pages.length })
                   : sourceLocation}
               </span>
-              {canNavigateSources && (
-                <button
-                  type="button"
-                  className="pm-icon-button"
-                  aria-label={t("source_next_page")}
-                  disabled={activePage >= document.pages.length}
-                  onClick={() => onSelectSource(activePage + 1, null)}
-                >
-                  <ChevronRight size={17} />
-                </button>
-              )}
+              <button
+                type="button"
+                className="pm-toolbar-icon-btn"
+                aria-label={t("source_next_page")}
+                disabled={activePage >= document.pages.length}
+                onClick={() => onSelectSource(activePage + 1, null)}
+              >
+                <ChevronRight size={15} />
+              </button>
+            </div>
+            <div className="pm-toolbar-group">
+              <button type="button" className="pm-toolbar-icon-btn" aria-label="Zoom out"><ZoomOut size={14} /></button>
+              <span className="pm-zoom-pill">100%</span>
+              <button type="button" className="pm-toolbar-icon-btn" aria-label="Zoom in"><ZoomIn size={14} /></button>
+              <button type="button" className="pm-toolbar-icon-btn" aria-label="Expand"><Maximize2 size={14} /></button>
             </div>
           </div>
           <SourceDocumentViewer
@@ -2242,152 +2189,221 @@ function AnalysisScreen({
             sourceLocation={sourceLocation}
             excerpt={activeExcerpt}
           />
+          {/* Thumbnail strip */}
+          {document.pages.length > 1 && (
+            <div className="pm-thumbnail-strip">
+              {document.pages.slice(0, 8).map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  className={`pm-thumb-box${activePage === idx + 1 ? " is-active" : ""}`}
+                  onClick={() => onSelectSource(idx + 1, null)}
+                  aria-label={`Page ${idx + 1}`}
+                >
+                  {idx + 1}
+                </button>
+              ))}
+              {document.pages.length > 8 && (
+                <span className="pm-zoom-pill">+{document.pages.length - 8}</span>
+              )}
+            </div>
+          )}
         </section>
 
+        {/* Right: tabbed analysis panel */}
         <section className="pm-findings-panel">
-          <div className="pm-findings-heading">
-            <div>
-              <h2>{t("findings_title")}</h2>
-              <p>{t("findings_count", { shown: findings.length, total: totalFindings })}</p>
-            </div>
-            <Badge tone={analysis.mode === "demo" ? "amber" : "blue"}>
-              {analysis.mode === "demo" ? t("findings_illustrative") : t("findings_ai_generated")}
-            </Badge>
+          {/* Tabs */}
+          <div className="pm-analysis-tabs-header">
+            {(["analysis", "summary", "qa", "compare"] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                className={`pm-analysis-tab-btn${activeTab === tab ? " is-active" : ""}`}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab === "analysis" && <ScrollText size={14} />}
+                {tab === "summary" && <Sparkles size={14} />}
+                {tab === "qa" && <CircleHelp size={14} />}
+                {tab === "compare" && <Table2 size={14} />}
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </button>
+            ))}
           </div>
-          <div className="pm-findings-list">
-            {findings.length ? (
-              findings.map((finding) => (
-                <article
-                  className={`pm-finding pm-finding--${finding.kind.toLowerCase().replaceAll(" ", "-")}`}
-                  key={finding.id}
-                >
-                  <div className="pm-finding-top">
-                    <Badge
-                      tone={
-                        finding.kind === "Risk"
-                          ? finding.severity === "Critical" || finding.severity === "High"
-                            ? "red"
-                            : "amber"
-                          : finding.kind === "Missing information"
-                            ? "amber"
-                            : "blue"
-                      }
-                    >
-                      {finding.kind}
-                    </Badge>
-                    {finding.confidence !== undefined && (
-                      <span className="pm-confidence">
-                        {Math.round(finding.confidence * 100)}% confidence
-                      </span>
-                    )}
-                    {finding.severity && (
-                      <Badge
-                        tone={
-                          finding.severity === "Critical" || finding.severity === "High"
-                            ? "red"
-                            : "amber"
-                        }
-                      >
-                        {finding.severity}
-                      </Badge>
-                    )}
-                  </div>
-                  <h3>{finding.title}</h3>
-                  <p>{finding.description}</p>
-                  <div className="pm-finding-evidence">
-                    {finding.excerpt && <blockquote>â€œ{finding.excerpt}â€</blockquote>}
-                    <div className="pm-finding-meta">
-                      {finding.sourceIndex !== null ? (
-                        <button
-                          className="pm-page-link"
-                          type="button"
-                          onClick={() => {
-                            if (finding.sourceIndex !== null) {
-                              onSelectSource(
-                                finding.sourceIndex,
-                                finding.excerpt,
-                                finding.kind === "Requirement" ? finding.id : undefined,
-                              );
-                            }
-                          }}
-                        >
-                          <FileText size={14} />{" "}
-                          {finding.page !== null
-                            ? t("finding_page", { page: finding.page })
-                            : (finding.sourceLocation ?? `Source section ${finding.sourceIndex}`)}
-                        </button>
-                      ) : (
-                        <span className="pm-muted-label">{t("finding_no_source_page")}</span>
-                      )}
-                      <EvidenceStatus
-                        evidence={{
-                          page: finding.page,
-                          excerpt: finding.excerpt,
-                          verified: finding.verified,
-                          sourceIndex: finding.sourceIndex,
-                          sourceLocation: finding.sourceLocation,
-                        }}
-                      />
-                    </div>
-                  </div>
-                </article>
-              ))
-            ) : (
-              <div className="pm-empty-state">
-                <Filter size={22} />
-                <strong>
-                  {search ? t("findings_empty_search") : t("findings_empty_category")}
-                </strong>
-                <span>{t("findings_empty_hint")}</span>
+
+          {activeTab === "analysis" && (
+            <>
+              {/* Filter chips */}
+              <div className="pm-filter-row" aria-label="Filter findings" style={{padding: "10px 12px 0"}}>
+                {filterOptions.map((option) => (
+                  <button
+                    type="button"
+                    aria-pressed={activeFinding === option.id}
+                    className={`pm-filter-chip${activeFinding === option.id ? " is-selected" : ""}`}
+                    key={option.id}
+                    onClick={() => onSelectFilter(option.id)}
+                  >
+                    {option.label}<span>{option.count}</span>
+                  </button>
+                ))}
               </div>
-            )}
-          </div>
-          <div className="pm-human-review-note">
-            <CircleHelp size={16} />
-            <span>{t("findings_disclaimer")}</span>
-          </div>
+
+              <div className="pm-findings-list">
+                {findings.length ? (
+                  findings.map((finding) => {
+                    const conf = finding.confidence ?? 0;
+                    const confTag = conf >= 0.8 ? "green" : conf >= 0.6 ? "yellow" : "orange";
+                    return (
+                      <article className="pm-finding-card-clean" key={finding.id}>
+                        <div className="pm-finding-card-meta">
+                          <Badge
+                            tone={
+                              finding.kind === "Risk"
+                                ? finding.severity === "Critical" || finding.severity === "High" ? "red" : "amber"
+                                : finding.kind === "Missing information" ? "amber" : "blue"
+                            }
+                          >
+                            {finding.kind}
+                          </Badge>
+                          {finding.severity && (
+                            <Badge tone={finding.severity === "Critical" || finding.severity === "High" ? "red" : "amber"}>
+                              {finding.severity}
+                            </Badge>
+                          )}
+                          {finding.confidence !== undefined && (
+                            <span className={`pm-confidence-tag pm-confidence-tag--${confTag}`}>
+                              {Math.round(finding.confidence * 100)}%
+                            </span>
+                          )}
+                        </div>
+                        <h5>{finding.title}</h5>
+                        {finding.excerpt && <blockquote>"{finding.excerpt}"</blockquote>}
+                        <div className="pm-finding-meta" style={{marginTop: "8px"}}>
+                          {finding.sourceIndex !== null ? (
+                            <button
+                              className="pm-page-link"
+                              type="button"
+                              onClick={() => {
+                                if (finding.sourceIndex !== null) {
+                                  onSelectSource(
+                                    finding.sourceIndex,
+                                    finding.excerpt,
+                                    finding.kind === "Requirement" ? finding.id : undefined,
+                                  );
+                                }
+                              }}
+                            >
+                              <FileText size={13} />{" "}
+                              {finding.page !== null
+                                ? t("finding_page", { page: finding.page })
+                                : (finding.sourceLocation ?? `Source section ${finding.sourceIndex}`)}
+                            </button>
+                          ) : (
+                            <span className="pm-muted-label">{t("finding_no_source_page")}</span>
+                          )}
+                          <EvidenceStatus
+                            evidence={{
+                              page: finding.page,
+                              excerpt: finding.excerpt,
+                              verified: finding.verified,
+                              sourceIndex: finding.sourceIndex,
+                              sourceLocation: finding.sourceLocation,
+                            }}
+                          />
+                        </div>
+                      </article>
+                    );
+                  })
+                ) : (
+                  <div className="pm-empty-state">
+                    <Filter size={22} />
+                    <strong>{search ? t("findings_empty_search") : t("findings_empty_category")}</strong>
+                    <span>{t("findings_empty_hint")}</span>
+                  </div>
+                )}
+              </div>
+              <div className="pm-human-review-note">
+                <CircleHelp size={16} />
+                <span>{t("findings_disclaimer")}</span>
+              </div>
+            </>
+          )}
+
+          {activeTab === "summary" && (
+            <div style={{padding: "16px"}}>
+              <section className="pm-inference-report" aria-label="Analysis run status">
+                <div className="pm-inference-report-heading">
+                  <strong>{t("inference_title")}</strong>
+                  <Badge tone={modeSourceTone(processingSource)}>
+                    {t("inference_processing_source")} {modeLabel(processingSource, t)}
+                  </Badge>
+                </div>
+                <dl>
+                  <div>
+                    <dt>{t("inference_firebase_label")}</dt>
+                    <dd>{analysis.mode === "demo" ? t("inference_firebase_not_used") : t("inference_firebase_connected")}</dd>
+                  </div>
+                  <div>
+                    <dt>{t("inference_model_label")}</dt>
+                    <dd>{analysis.model ?? analysis.engine}</dd>
+                  </div>
+                  <div>
+                    <dt>{t("inference_evidence_label")}</dt>
+                    <dd>{t("inference_evidence_value")}</dd>
+                  </div>
+                  <div>
+                    <dt>{t("inference_demo_label")}</dt>
+                    <dd>{document.source === "demo" ? t("inference_yes") : t("inference_no")}</dd>
+                  </div>
+                </dl>
+              </section>
+            </div>
+          )}
+
+          {activeTab === "qa" && (
+            <DocumentQaPanel
+              key={document.id}
+              documentName={document.name}
+              pages={document.pages}
+              format={format}
+              sourceLocations={sourceLocations}
+              draft={questionDraft}
+              onDraftChange={onQuestionDraftChange}
+              preference={preference}
+              cloudConsent={cloudConsent}
+              paginationVerified={hasPdfPagination}
+              onOpenProcessing={onOpenProcessing}
+              onSelectPage={(index, excerpt) => onSelectSource(index, excerpt ?? null)}
+              onModelResponse={onModelResponse}
+            />
+          )}
+
+          {activeTab === "compare" && (
+            <EvidenceComparisonPanel
+              tenderDocumentId={document.id}
+              requirements={analysis.requirements}
+              selectedRequirementId={selectedRequirementId}
+              evidenceDocuments={evidenceDocuments}
+              links={evidenceLinks}
+              matches={evidenceMatches}
+              selectedEvidenceId={selectedEvidenceId}
+              preference={preference}
+              cloudConsent={evidenceCloudConsent}
+              isAddingEvidence={isAddingEvidence}
+              isComparing={isComparingEvidence}
+              progress={evidenceComparisonProgress}
+              error={evidenceComparisonError}
+              demo={document.source === "demo"}
+              onSelectRequirement={onSelectRequirement}
+              onSelectEvidence={onSelectEvidence}
+              onUpload={onUploadEvidence}
+              onLink={onLinkEvidence}
+              onUnlink={onUnlinkEvidence}
+              onCompare={onCompareEvidence}
+              onCloudConsentChange={onEvidenceCloudConsentChange}
+            />
+          )}
         </section>
       </div>
-
-      <EvidenceComparisonPanel
-        tenderDocumentId={document.id}
-        requirements={analysis.requirements}
-        selectedRequirementId={selectedRequirementId}
-        evidenceDocuments={evidenceDocuments}
-        links={evidenceLinks}
-        matches={evidenceMatches}
-        selectedEvidenceId={selectedEvidenceId}
-        preference={preference}
-        cloudConsent={evidenceCloudConsent}
-        isAddingEvidence={isAddingEvidence}
-        isComparing={isComparingEvidence}
-        progress={evidenceComparisonProgress}
-        error={evidenceComparisonError}
-        demo={document.source === "demo"}
-        onSelectRequirement={onSelectRequirement}
-        onSelectEvidence={onSelectEvidence}
-        onUpload={onUploadEvidence}
-        onLink={onLinkEvidence}
-        onUnlink={onUnlinkEvidence}
-        onCompare={onCompareEvidence}
-        onCloudConsentChange={onEvidenceCloudConsentChange}
-      />
-
-      <DocumentQaPanel
-        key={document.id}
-        documentName={document.name}
-        pages={document.pages}
-        format={format}
-        sourceLocations={sourceLocations}
-        draft={questionDraft}
-        onDraftChange={onQuestionDraftChange}
-        preference={preference}
-        cloudConsent={cloudConsent}
-        paginationVerified={hasPdfPagination}
-        onOpenProcessing={onOpenProcessing}
-        onSelectPage={(index, excerpt) => onSelectSource(index, excerpt ?? null)}
-        onModelResponse={onModelResponse}
-      />
     </div>
   );
 }
