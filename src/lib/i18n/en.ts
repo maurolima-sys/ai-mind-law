@@ -20,6 +20,55 @@
   screen_processing_title: "Choose how your document is processed",
   screen_processing_subtitle:
     "Text is extracted in this browser. You control whether AI may process it in the cloud.",
+  screen_risks_title: "Risk register",
+  screen_risks_subtitle:
+    "Review risks from saved document analyses, verify their source evidence, and record a response.",
+
+  risk_summary_label: "Risk summary",
+  risk_summary_total: "Risks",
+  risk_summary_critical: "Critical",
+  risk_summary_high: "High",
+  risk_summary_needs_review: "Need source review",
+  risk_filter_all: "All",
+  risk_severity_filter: "Filter risks by severity",
+  risk_document_filter: "Document",
+  risk_all_documents: "All analyzed documents",
+  risk_register_title: "Findings from document analyses",
+  risk_results_count: "Showing {{shown}} of {{total}} risks",
+  risk_export_csv: "Export CSV",
+  risk_severity_critical: "Critical",
+  risk_severity_high: "High",
+  risk_severity_medium: "Medium",
+  risk_severity_low: "Low",
+  risk_kind_detected: "Detected finding",
+  risk_kind_suggestion: "AI suggestion",
+  risk_source_excerpt: "Source excerpt",
+  risk_evidence_missing: "No source excerpt was provided for this finding.",
+  risk_page_reference: "Page {{page}}",
+  risk_source_unavailable: "Source location unavailable; verify in the document.",
+  risk_action_plan_label: "Mitigation / response plan",
+  risk_action_plan_hint: "Record a human-defined response for this risk.",
+  risk_action_plan_save: "Save response",
+  risk_local_note: "Stored only in this browser workspace.",
+  risk_empty_title: "No risks were reported",
+  risk_empty_detail:
+    "The analyzed documents returned no risk findings. This does not guarantee that the documents contain no risks.",
+  risk_no_analyses_title: "Analyze a document to review risks",
+  risk_no_analyses_detail:
+    "This register uses risks from saved analyses. Add and analyze a tender to populate it.",
+  risk_no_matches_title: "No matching risks",
+  risk_no_matches_detail: "Adjust the severity filter, document, or workspace search.",
+  risk_review_disclaimer:
+    "AI findings are reviewable suggestions, not legal advice. Verify each source and define mitigation with your team.",
+  risk_csv_document: "Document",
+  risk_csv_severity: "Severity",
+  risk_csv_type: "Finding type",
+  risk_csv_title: "Risk",
+  risk_csv_explanation: "Explanation",
+  risk_csv_action_plan: "Human response plan",
+  risk_csv_evidence: "Source excerpt",
+  risk_csv_source: "Source location",
+  risk_csv_demo: "Illustrative sample",
 
   // â”€â”€ Processing mode labels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   mode_on_device: "On-device",
@@ -543,9 +592,9 @@
   tour_step0_title: "Welcome to PocketMind AI",
   tour_step0_body:
     "Turn complex tender PDFs into reviewable findings â€” with a link to the source page for each one. This short tour walks the full flow in about 90 seconds, using the preloaded sample tender. No setup needed.",
-  tour_step1_title: "Five areas, one workspace",
+  tour_step1_title: "Six areas, one workspace",
   tour_step1_body:
-    "Move between Dashboard, Library, Document analysis, Compliance matrix, and Processing & privacy from this sidebar.",
+    "Move between Dashboard, Library, Document analysis, Compliance matrix, Risks, and Processing & privacy from this sidebar.",
   tour_library_title: "Your local document library",
   tour_library_body:
     "Uploaded tenders, extracted text, bidder evidence, and review work stay in this browser. The library shows what's saved and lets you delete local workspace data.",

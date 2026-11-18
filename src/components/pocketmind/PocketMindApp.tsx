@@ -73,6 +73,7 @@ import { EvidenceComparisonPanel } from "@/components/pocketmind/EvidenceCompari
 import { GuidedTour } from "@/components/pocketmind/GuidedTour";
 import { LanguageSelector } from "@/components/pocketmind/LanguageSelector";
 import { LocalWorkspaceLibrary } from "@/components/pocketmind/LocalWorkspaceLibrary";
+import { RiskScreen } from "@/components/pocketmind/RiskScreen";
 import { SourceDocumentViewer } from "@/components/pocketmind/SourceDocumentViewer";
 import { complianceCsv, downloadText } from "@/lib/services/csv";
 import { useLocale, useT } from "@/lib/i18n";
@@ -93,6 +94,7 @@ import {
   saveEvidenceDocument,
   saveLocalWorkspaceState,
 } from "@/lib/services/localWorkspace";
+import { riskReviewKey } from "@/lib/services/riskReview";
 import { compareEvidenceToRequirement } from "@/lib/services/evidenceComparison";
 import { isExternalOcrAvailable, runExternalOcr } from "@/lib/services/externalOcr";
 import {
@@ -122,7 +124,7 @@ import {
   type WorkspaceActivity,
 } from "@/lib/types";
 
-type Screen = "overview" | "library" | "analysis" | "compliance" | "processing";
+type Screen = "overview" | "library" | "analysis" | "compliance" | "processing" | "risks";
 type ProcessingChoice = "demo" | InferencePreference;
 type ExternalOcrAvailability = "checking" | "enabled" | "disabled" | "error";
 type FindingKind = "Requirement" | "Deadline" | "Specification" | "Risk" | "Missing information";
@@ -356,9 +358,7 @@ export function PocketMindApp() {
         const demo = buildDemoDocument();
         const savedDocs = workspace.documents.filter((document) => document.id !== DEMO_DOC_ID);
         setDocuments(
-          savedDocs.length > 0
-            ? [demo, ...savedDocs]
-            : [demo, ...DEFAULT_WORKSPACE_DOCUMENTS],
+          savedDocs.length > 0 ? [demo, ...savedDocs] : [demo, ...DEFAULT_WORKSPACE_DOCUMENTS],
         );
         setFilesByDocumentId(workspace.filesByDocumentId);
         setEvidenceDocuments(workspace.evidenceDocuments);
@@ -366,9 +366,7 @@ export function PocketMindApp() {
         setReviews(workspace.reviews);
         setEvidenceMatches(workspace.evidenceMatches);
         setEvidenceLinks(workspace.evidenceLinks);
-        setActivities(
-          workspace.activities.length > 0 ? workspace.activities : DEFAULT_ACTIVITIES,
-        );
+        setActivities(workspace.activities.length > 0 ? workspace.activities : DEFAULT_ACTIVITIES);
       })
       .catch((error) => {
         if (!active) return;
@@ -463,6 +461,7 @@ export function PocketMindApp() {
     analysis: { title: t("screen_analysis_title"), subtitle: t("screen_analysis_subtitle") },
     compliance: { title: t("screen_compliance_title"), subtitle: t("screen_compliance_subtitle") },
     processing: { title: t("screen_processing_title"), subtitle: t("screen_processing_subtitle") },
+    risks: { title: t("screen_risks_title"), subtitle: t("screen_risks_subtitle") },
   };
   const currentScreenCopy = screenTitles[screen];
   const navigation = [
@@ -1152,28 +1151,53 @@ export function PocketMindApp() {
           ))}
           <button
             type="button"
-            className={`pm-nav-item${activeFinding === "risk" && screen === "analysis" ? " is-active" : ""}`}
-            onClick={() => { setActiveFinding("risk"); setScreen("analysis"); }}
+            className={`pm-nav-item${screen === "risks" ? " is-active" : ""}`}
+            aria-current={screen === "risks" ? "page" : undefined}
+            onClick={() => setScreen("risks")}
           >
             <AlertTriangle size={19} strokeWidth={1.9} aria-hidden="true" />
             <span>{t("sidebar_nav_risks")}</span>
           </button>
-          <button type="button" className="pm-nav-item pm-nav-item--disabled" disabled aria-disabled="true" title={t("nav_coming_soon")}>
+          <button
+            type="button"
+            className="pm-nav-item pm-nav-item--disabled"
+            disabled
+            aria-disabled="true"
+            title={t("nav_coming_soon")}
+          >
             <Folder size={19} strokeWidth={1.9} aria-hidden="true" />
             <span>{t("sidebar_nav_projects")}</span>
             <span className="pm-nav-soon">{t("nav_coming_soon")}</span>
           </button>
-          <button type="button" className="pm-nav-item pm-nav-item--disabled" disabled aria-disabled="true" title={t("nav_coming_soon")}>
+          <button
+            type="button"
+            className="pm-nav-item pm-nav-item--disabled"
+            disabled
+            aria-disabled="true"
+            title={t("nav_coming_soon")}
+          >
             <Users size={19} strokeWidth={1.9} aria-hidden="true" />
             <span>{t("sidebar_nav_team")}</span>
             <span className="pm-nav-soon">{t("nav_coming_soon")}</span>
           </button>
-          <button type="button" className="pm-nav-item pm-nav-item--disabled" disabled aria-disabled="true" title={t("nav_coming_soon")}>
+          <button
+            type="button"
+            className="pm-nav-item pm-nav-item--disabled"
+            disabled
+            aria-disabled="true"
+            title={t("nav_coming_soon")}
+          >
             <BrainCircuit size={19} strokeWidth={1.9} aria-hidden="true" />
             <span>{t("sidebar_nav_integrations")}</span>
             <span className="pm-nav-soon">{t("nav_coming_soon")}</span>
           </button>
-          <button type="button" className="pm-nav-item pm-nav-item--disabled" disabled aria-disabled="true" title={t("nav_coming_soon")}>
+          <button
+            type="button"
+            className="pm-nav-item pm-nav-item--disabled"
+            disabled
+            aria-disabled="true"
+            title={t("nav_coming_soon")}
+          >
             <Settings size={19} strokeWidth={1.9} aria-hidden="true" />
             <span>{t("sidebar_nav_settings")}</span>
             <span className="pm-nav-soon">{t("nav_coming_soon")}</span>
@@ -1186,7 +1210,9 @@ export function PocketMindApp() {
             <strong>{t("sidebar_upgrade_title")}</strong>
           </div>
           <p>{t("sidebar_upgrade_desc")}</p>
-          <button type="button" className="pm-pro-btn">{t("sidebar_view_plans")}</button>
+          <button type="button" className="pm-pro-btn">
+            {t("sidebar_view_plans")}
+          </button>
         </div>
 
         <div className="pm-workspace-switcher">
@@ -1250,7 +1276,7 @@ export function PocketMindApp() {
             <div className="pm-brand-mark">
               <BrainCircuit size={19} />
             </div>
-            <span>PocketMind AI</span>
+            <span className="pm-mobile-brand-name">PocketMind AI</span>
           </div>
           <label className="pm-search">
             <Search size={17} aria-hidden="true" />
@@ -1440,6 +1466,29 @@ export function PocketMindApp() {
               onExport={exportAnalysis}
             />
           )}
+          {screen === "risks" && (
+            <RiskScreen
+              documents={documents}
+              reviews={reviews}
+              search={search}
+              storageError={workspaceError}
+              onOpenProcessing={() => setScreen("processing")}
+              onOpenSource={(documentId, sourceIndex, excerpt) => {
+                setSelectedDocumentId(documentId);
+                setCloudConsent(false);
+                setEvidenceCloudConsent(false);
+                setSelectedEvidenceId("");
+                setSelectedRequirementId(null);
+                setActivePage(sourceIndex);
+                setActiveExcerpt(excerpt);
+                setActiveFinding("risk");
+                setScreen("analysis");
+              }}
+              onSaveMitigation={(documentId, riskId, note) => {
+                updateReview(riskReviewKey(documentId, riskId), { notes: note });
+              }}
+            />
+          )}
           {screen === "compliance" && (
             <ComplianceScreen
               analysis={analysis}
@@ -1609,9 +1658,7 @@ function OverviewScreen({
           </div>
           <div className="pm-kpi-value-row">
             <span className="pm-kpi-value">{documents.length || 24}</span>
-            <span className="pm-kpi-delta pm-kpi-delta--up">
-              â†‘ +33%
-            </span>
+            <span className="pm-kpi-delta pm-kpi-delta--up">â†‘ +33%</span>
           </div>
           <span className="pm-kpi-sub">{t("overview_last_30_days")}</span>
         </div>
@@ -1625,9 +1672,7 @@ function OverviewScreen({
           </div>
           <div className="pm-kpi-value-row">
             <span className="pm-kpi-value">{analysis?.requirements.length || 186}</span>
-            <span className="pm-kpi-delta pm-kpi-delta--up">
-              â†‘ +21%
-            </span>
+            <span className="pm-kpi-delta pm-kpi-delta--up">â†‘ +21%</span>
           </div>
           <span className="pm-kpi-sub">{t("overview_last_30_days")}</span>
         </div>
@@ -1641,9 +1686,7 @@ function OverviewScreen({
           </div>
           <div className="pm-kpi-value-row">
             <span className="pm-kpi-value">{criticalRisks || 7}</span>
-            <span className="pm-kpi-delta pm-kpi-delta--orange">
-              â†‘ +2
-            </span>
+            <span className="pm-kpi-delta pm-kpi-delta--orange">â†‘ +2</span>
           </div>
           <span className="pm-kpi-sub">{t("overview_last_30_days")}</span>
         </div>
@@ -1657,9 +1700,7 @@ function OverviewScreen({
           </div>
           <div className="pm-kpi-value-row">
             <span className="pm-kpi-value">{pendingReviews || 5}</span>
-            <span className="pm-kpi-delta pm-kpi-delta--down">
-              â†“ -40%
-            </span>
+            <span className="pm-kpi-delta pm-kpi-delta--down">â†“ -40%</span>
           </div>
           <span className="pm-kpi-sub">{t("overview_last_30_days")}</span>
         </div>
@@ -1693,7 +1734,8 @@ function OverviewScreen({
                     const isPdf = (document.format ?? "pdf") === "pdf";
                     const isDocx = document.format === "docx";
                     const isXlsx = document.format === "xlsx";
-                    const statusText = document.status ?? (document.analysis ? "Analysed" : "Processing");
+                    const statusText =
+                      document.status ?? (document.analysis ? "Analysed" : "Processing");
                     return (
                       <tr
                         key={document.id}
@@ -1720,7 +1762,8 @@ function OverviewScreen({
                             <div className="pm-doc-name-col">
                               <strong>{document.name}</strong>
                               <small>
-                                {document.pages.length || 24} {t("toolbar_pages")} Â· {formatBytes(document.size)}
+                                {document.pages.length || 24} {t("toolbar_pages")} Â·{" "}
+                                {formatBytes(document.size)}
                               </small>
                             </div>
                           </div>
@@ -1790,11 +1833,7 @@ function OverviewScreen({
             </div>
             <h3>{t("upload_tile_title")}</h3>
             <p>{t("upload_tile_detail")}</p>
-            <button
-              className="pm-upload-btn-main"
-              type="button"
-              onClick={onOpenProcessing}
-            >
+            <button className="pm-upload-btn-main" type="button" onClick={onOpenProcessing}>
               {t("upload_tile_cta")}
             </button>
             <span className="pm-quick-upload-footer">{t("upload_supports")}</span>
@@ -1803,11 +1842,7 @@ function OverviewScreen({
           <section className="pm-activity-feed-card">
             <div className="pm-activity-feed-header">
               <h3>{t("activity_title")}</h3>
-              <button
-                type="button"
-                className="pm-link-button"
-                onClick={onOpenAnalysis}
-              >
+              <button type="button" className="pm-link-button" onClick={onOpenAnalysis}>
                 {t("overview_view_all")}
               </button>
             </div>
@@ -1815,18 +1850,26 @@ function OverviewScreen({
               {activities.slice(0, 4).map((activity) => {
                 const tone = activity.tone ?? "blue";
                 const docName =
-                  activity.documentName ??
-                  documentNames.get(activity.documentId) ??
-                  "Document";
+                  activity.documentName ?? documentNames.get(activity.documentId) ?? "Document";
                 const title = activity.title ?? activityDescription(activity);
-                const timeStr = activity.timeAgo ?? new Date(activity.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const timeStr =
+                  activity.timeAgo ??
+                  new Date(activity.at).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  });
                 const FeedIcon =
-                  activity.type === "analysis-completed" ? BrainCircuit
-                  : activity.type === "document-added" ? FilePlus2
-                  : activity.type === "evidence-added" ? FileCheck2
-                  : activity.type === "evidence-compared" ? BadgeCheck
-                  : activity.type === "review-updated" ? ClipboardCheck
-                  : FileText;
+                  activity.type === "analysis-completed"
+                    ? BrainCircuit
+                    : activity.type === "document-added"
+                      ? FilePlus2
+                      : activity.type === "evidence-added"
+                        ? FileCheck2
+                        : activity.type === "evidence-compared"
+                          ? BadgeCheck
+                          : activity.type === "review-updated"
+                            ? ClipboardCheck
+                            : FileText;
                 return (
                   <li key={activity.id} className="pm-feed-item">
                     <span className={`pm-feed-icon pm-feed-icon--${tone}`}>
@@ -1844,7 +1887,6 @@ function OverviewScreen({
           </section>
         </aside>
       </div>
-
     </div>
   );
 }
@@ -1962,7 +2004,7 @@ function AnalysisScreen({
     if (document.pages.some((page) => page.trim())) {
       return (
         <div className="pm-analysis-screen">
-            <div className="pm-analysis-layout">
+          <div className="pm-analysis-layout">
             <section className="pm-panel pm-source-panel">
               <div className="pm-panel-heading pm-source-heading">
                 <div>
@@ -2047,7 +2089,9 @@ function AnalysisScreen({
       {/* Document header */}
       <div className="pm-doc-subheader-aligned">
         <div className="pm-doc-sub-left">
-          <span className="pm-file-icon pm-file-icon--large"><FileText size={20} /></span>
+          <span className="pm-file-icon pm-file-icon--large">
+            <FileText size={20} />
+          </span>
           <div>
             <h2>{document.name}</h2>
             <div className="pm-doc-sub-meta">
@@ -2068,8 +2112,12 @@ function AnalysisScreen({
               </span>
               <span>Â·</span>
               <span>{formatBytes(document.size)}</span>
-              <Badge tone={modeSourceTone(processingSource)}>{modeLabel(processingSource, t)}</Badge>
-              {textSource === "llamaparse" && <Badge tone="amber">{t("toolbar_llamaparse_badge")}</Badge>}
+              <Badge tone={modeSourceTone(processingSource)}>
+                {modeLabel(processingSource, t)}
+              </Badge>
+              {textSource === "llamaparse" && (
+                <Badge tone="amber">{t("toolbar_llamaparse_badge")}</Badge>
+              )}
             </div>
           </div>
         </div>
@@ -2081,7 +2129,9 @@ function AnalysisScreen({
       {document.source === "demo" && (
         <div className="pm-inline-warning">
           <Sparkles size={16} />
-          <span>{analysis.mode === "demo" ? t("warning_demo_prepared") : t("warning_demo_ai")}</span>
+          <span>
+            {analysis.mode === "demo" ? t("warning_demo_prepared") : t("warning_demo_ai")}
+          </span>
         </div>
       )}
 
@@ -2094,7 +2144,9 @@ function AnalysisScreen({
 
       {/* Summary strip */}
       <section className="pm-summary-strip">
-        <div className="pm-summary-icon"><Sparkles size={18} /></div>
+        <div className="pm-summary-icon">
+          <Sparkles size={18} />
+        </div>
         <div>
           <strong>{t("summary_title")}</strong>
           <p>{analysis.summary}</p>
@@ -2137,10 +2189,16 @@ function AnalysisScreen({
               </button>
             </div>
             <div className="pm-toolbar-group">
-              <button type="button" className="pm-toolbar-icon-btn" aria-label="Zoom out"><ZoomOut size={14} /></button>
+              <button type="button" className="pm-toolbar-icon-btn" aria-label="Zoom out">
+                <ZoomOut size={14} />
+              </button>
               <span className="pm-zoom-pill">100%</span>
-              <button type="button" className="pm-toolbar-icon-btn" aria-label="Zoom in"><ZoomIn size={14} /></button>
-              <button type="button" className="pm-toolbar-icon-btn" aria-label="Expand"><Maximize2 size={14} /></button>
+              <button type="button" className="pm-toolbar-icon-btn" aria-label="Zoom in">
+                <ZoomIn size={14} />
+              </button>
+              <button type="button" className="pm-toolbar-icon-btn" aria-label="Expand">
+                <Maximize2 size={14} />
+              </button>
             </div>
           </div>
           <SourceDocumentViewer
@@ -2197,7 +2255,11 @@ function AnalysisScreen({
           {activeTab === "analysis" && (
             <>
               {/* Filter chips */}
-              <div className="pm-filter-row" aria-label="Filter findings" style={{padding: "10px 12px 0"}}>
+              <div
+                className="pm-filter-row"
+                aria-label="Filter findings"
+                style={{ padding: "10px 12px 0" }}
+              >
                 {filterOptions.map((option) => (
                   <button
                     type="button"
@@ -2206,7 +2268,8 @@ function AnalysisScreen({
                     key={option.id}
                     onClick={() => onSelectFilter(option.id)}
                   >
-                    {option.label}<span>{option.count}</span>
+                    {option.label}
+                    <span>{option.count}</span>
                   </button>
                 ))}
               </div>
@@ -2222,14 +2285,24 @@ function AnalysisScreen({
                           <Badge
                             tone={
                               finding.kind === "Risk"
-                                ? finding.severity === "Critical" || finding.severity === "High" ? "red" : "amber"
-                                : finding.kind === "Missing information" ? "amber" : "blue"
+                                ? finding.severity === "Critical" || finding.severity === "High"
+                                  ? "red"
+                                  : "amber"
+                                : finding.kind === "Missing information"
+                                  ? "amber"
+                                  : "blue"
                             }
                           >
                             {finding.kind}
                           </Badge>
                           {finding.severity && (
-                            <Badge tone={finding.severity === "Critical" || finding.severity === "High" ? "red" : "amber"}>
+                            <Badge
+                              tone={
+                                finding.severity === "Critical" || finding.severity === "High"
+                                  ? "red"
+                                  : "amber"
+                              }
+                            >
                               {finding.severity}
                             </Badge>
                           )}
@@ -2241,7 +2314,7 @@ function AnalysisScreen({
                         </div>
                         <h5>{finding.title}</h5>
                         {finding.excerpt && <blockquote>"{finding.excerpt}"</blockquote>}
-                        <div className="pm-finding-meta" style={{marginTop: "8px"}}>
+                        <div className="pm-finding-meta" style={{ marginTop: "8px" }}>
                           {finding.sourceIndex !== null ? (
                             <button
                               className="pm-page-link"
@@ -2259,7 +2332,8 @@ function AnalysisScreen({
                               <FileText size={13} />{" "}
                               {finding.page !== null
                                 ? t("finding_page", { page: finding.page })
-                                : (finding.sourceLocation ?? `Source section ${finding.sourceIndex}`)}
+                                : (finding.sourceLocation ??
+                                  `Source section ${finding.sourceIndex}`)}
                             </button>
                           ) : (
                             <span className="pm-muted-label">{t("finding_no_source_page")}</span>
@@ -2280,7 +2354,9 @@ function AnalysisScreen({
                 ) : (
                   <div className="pm-empty-state">
                     <Filter size={22} />
-                    <strong>{search ? t("findings_empty_search") : t("findings_empty_category")}</strong>
+                    <strong>
+                      {search ? t("findings_empty_search") : t("findings_empty_category")}
+                    </strong>
                     <span>{t("findings_empty_hint")}</span>
                   </div>
                 )}
@@ -2293,7 +2369,7 @@ function AnalysisScreen({
           )}
 
           {activeTab === "summary" && (
-            <div style={{padding: "16px"}}>
+            <div style={{ padding: "16px" }}>
               <section className="pm-inference-report" aria-label="Analysis run status">
                 <div className="pm-inference-report-heading">
                   <strong>{t("inference_title")}</strong>
@@ -2304,7 +2380,11 @@ function AnalysisScreen({
                 <dl>
                   <div>
                     <dt>{t("inference_firebase_label")}</dt>
-                    <dd>{analysis.mode === "demo" ? t("inference_firebase_not_used") : t("inference_firebase_connected")}</dd>
+                    <dd>
+                      {analysis.mode === "demo"
+                        ? t("inference_firebase_not_used")
+                        : t("inference_firebase_connected")}
+                    </dd>
                   </div>
                   <div>
                     <dt>{t("inference_model_label")}</dt>
@@ -2428,7 +2508,9 @@ function ComplianceScreen({
   if (!analysis) return <EmptyAnalysis onOpenProcessing={onOpenProcessing} />;
 
   const verifiedCount = requirements.filter((r) => r.evidence.verified).length;
-  const pendingCount  = requirements.filter((r) => (reviews[r.id]?.status ?? "pending") === "pending").length;
+  const pendingCount = requirements.filter(
+    (r) => (reviews[r.id]?.status ?? "pending") === "pending",
+  ).length;
 
   return (
     <div className="pm-compliance-screen">
@@ -2437,8 +2519,10 @@ function ComplianceScreen({
         <div className="pm-compliance-sub-left">
           <ClipboardCheck size={15} />
           <span>{t("compliance_col_requirement")}</span>
-          <span style={{color:"var(--pm-soft)"}}>Â·</span>
-          <span>{requirements.length} {t("compliance_summary_reqs", { count: requirements.length })}</span>
+          <span style={{ color: "var(--pm-soft)" }}>Â·</span>
+          <span>
+            {requirements.length} {t("compliance_summary_reqs", { count: requirements.length })}
+          </span>
         </div>
         <div className="pm-compliance-sub-right">
           <span className="pm-pill-in-review">
@@ -2469,7 +2553,11 @@ function ComplianceScreen({
           <span className="sr-only">{t("compliance_category_filter_sr")}</span>
           <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.currentTarget.value)}>
             <option value="all">{t("compliance_all_categories")}</option>
-            {CATEGORIES.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+            {CATEGORIES.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
           </select>
           <ChevronDown size={15} />
         </label>
@@ -2484,7 +2572,11 @@ function ComplianceScreen({
           </select>
           <ChevronDown size={15} />
         </label>
-        <button className="pm-button pm-button--primary pm-export-button" type="button" onClick={onExport}>
+        <button
+          className="pm-button pm-button--primary pm-export-button"
+          type="button"
+          onClick={onExport}
+        >
           <ArrowDownToLine size={16} /> {t("compliance_export_csv")}
         </button>
       </div>
@@ -2493,9 +2585,16 @@ function ComplianceScreen({
         {/* Matrix table */}
         <section className="pm-panel pm-matrix-panel">
           <div className="pm-matrix-summary">
-            <span><strong>{requirements.length}</strong> {t("compliance_summary_reqs", { count: requirements.length })}</span>
-            <span><strong>{verifiedCount}</strong> {t("compliance_summary_verified")}</span>
-            <span><strong>{filteredRequirements.length}</strong> {t("compliance_summary_shown")}</span>
+            <span>
+              <strong>{requirements.length}</strong>{" "}
+              {t("compliance_summary_reqs", { count: requirements.length })}
+            </span>
+            <span>
+              <strong>{verifiedCount}</strong> {t("compliance_summary_verified")}
+            </span>
+            <span>
+              <strong>{filteredRequirements.length}</strong> {t("compliance_summary_shown")}
+            </span>
           </div>
           {filteredRequirements.length ? (
             <div className="pm-table-wrap">
@@ -2512,25 +2611,45 @@ function ComplianceScreen({
                 </thead>
                 <tbody>
                   {filteredRequirements.map((req) => {
-                    const review = reviews[req.id] ?? { status: "pending" as ReviewStatus, notes: "" };
+                    const review = reviews[req.id] ?? {
+                      status: "pending" as ReviewStatus,
+                      notes: "",
+                    };
                     const statusClass = `pm-status-pill-score pm-status-pill-score--${review.status}`;
                     return (
-                      <tr key={req.id} className={selectedRequirementId === req.id ? "is-selected" : ""}>
+                      <tr
+                        key={req.id}
+                        className={selectedRequirementId === req.id ? "is-selected" : ""}
+                      >
                         <td>
-                          <button className="pm-requirement-select" type="button" onClick={() => onSelectRequirement(req.id)}>
+                          <button
+                            className="pm-requirement-select"
+                            type="button"
+                            onClick={() => onSelectRequirement(req.id)}
+                          >
                             {req.description}
                           </button>
                         </td>
-                        <td><Badge tone="purple">{req.category}</Badge></td>
+                        <td>
+                          <Badge tone="purple">{req.category}</Badge>
+                        </td>
                         <td>
                           <Badge tone={req.mandatory ? "red" : "neutral"}>
-                            {req.mandatory ? t("compliance_mandatory_yes") : t("compliance_mandatory_no")}
+                            {req.mandatory
+                              ? t("compliance_mandatory_yes")
+                              : t("compliance_mandatory_no")}
                           </Badge>
                         </td>
                         <td>
                           {req.evidence.excerpt ? (
-                            <span className={req.evidence.verified ? "pm-verified-text" : "pm-unverified-text"}>
-                              {req.evidence.verified ? t("compliance_verified") : t("compliance_check_excerpt")}
+                            <span
+                              className={
+                                req.evidence.verified ? "pm-verified-text" : "pm-unverified-text"
+                              }
+                            >
+                              {req.evidence.verified
+                                ? t("compliance_verified")
+                                : t("compliance_check_excerpt")}
                             </span>
                           ) : (
                             <span className="pm-muted-label">{t("compliance_not_provided")}</span>
@@ -2539,7 +2658,9 @@ function ComplianceScreen({
                         <td>{req.evidence.page ?? "â€”"}</td>
                         <td>
                           <label className="pm-status-select">
-                            <span className="sr-only">{t("review_status_sr", { description: req.description })}</span>
+                            <span className="sr-only">
+                              {t("review_status_sr", { description: req.description })}
+                            </span>
                             <select
                               value={review.status}
                               onChange={(e) => {
@@ -2570,7 +2691,9 @@ function ComplianceScreen({
           )}
           <div className="pm-panel-foot">
             <span>{t("compliance_footer_session")}</span>
-            <span>{filteredRequirements.length} {t("compliance_count_of")} {requirements.length}</span>
+            <span>
+              {filteredRequirements.length} {t("compliance_count_of")} {requirements.length}
+            </span>
           </div>
         </section>
 
@@ -2584,11 +2707,16 @@ function ComplianceScreen({
             <>
               {/* Doc badge */}
               <div className="pm-drawer-doc-badge">
-                <span style={{fontWeight:700, color:"var(--pm-ink)", fontSize:"0.8rem"}}>{selectedRequirement.description.slice(0, 60)}{selectedRequirement.description.length > 60 ? "â€¦" : ""}</span>
-                <div style={{display:"flex", gap:"6px", flexShrink:0}}>
+                <span style={{ fontWeight: 700, color: "var(--pm-ink)", fontSize: "0.8rem" }}>
+                  {selectedRequirement.description.slice(0, 60)}
+                  {selectedRequirement.description.length > 60 ? "â€¦" : ""}
+                </span>
+                <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
                   <Badge tone="purple">{selectedRequirement.category}</Badge>
                   {selectedRequirement.evidence.page && (
-                    <Badge tone="blue">{t("evidence_page_badge", { page: selectedRequirement.evidence.page })}</Badge>
+                    <Badge tone="blue">
+                      {t("evidence_page_badge", { page: selectedRequirement.evidence.page })}
+                    </Badge>
                   )}
                 </div>
               </div>
@@ -2596,10 +2724,14 @@ function ComplianceScreen({
               {/* Certificate-style preview when verified */}
               {selectedRequirement.evidence.verified && (
                 <div className="pm-cert-preview-card">
-                  <div className="pm-cert-seal-icon"><ShieldCheck size={28} /></div>
+                  <div className="pm-cert-seal-icon">
+                    <ShieldCheck size={28} />
+                  </div>
                   <h5>{t("compliance_verified").toUpperCase()}</h5>
                   <p>{t("evidence_panel_subtitle")}</p>
-                  <small>{t("compliance_col_page")} {selectedRequirement.evidence.page ?? "â€”"}</small>
+                  <small>
+                    {t("compliance_col_page")} {selectedRequirement.evidence.page ?? "â€”"}
+                  </small>
                 </div>
               )}
 
@@ -2618,13 +2750,13 @@ function ComplianceScreen({
 
               {/* Relevance bar */}
               {selectedRequirement.evidence.verified && (
-                <div className="pm-relevance-bar-wrap" style={{marginBottom:"14px"}}>
+                <div className="pm-relevance-bar-wrap" style={{ marginBottom: "14px" }}>
                   <div className="pm-relevance-label-row">
-                    <span style={{color:"var(--pm-ink)"}}>Relevance</span>
-                    <span style={{color:"#16a34a"}}>High</span>
+                    <span style={{ color: "var(--pm-ink)" }}>Relevance</span>
+                    <span style={{ color: "#16a34a" }}>High</span>
                   </div>
                   <div className="pm-relevance-progress-track">
-                    <div className="pm-relevance-progress-fill" style={{width:"82%"}} />
+                    <div className="pm-relevance-progress-fill" style={{ width: "82%" }} />
                   </div>
                 </div>
               )}
@@ -2634,7 +2766,9 @@ function ComplianceScreen({
                 {t("evidence_notes_label")}
                 <textarea
                   value={reviews[selectedRequirement.id]?.notes ?? ""}
-                  onChange={(e) => onUpdateReview(selectedRequirement.id, { notes: e.currentTarget.value })}
+                  onChange={(e) =>
+                    onUpdateReview(selectedRequirement.id, { notes: e.currentTarget.value })
+                  }
                   placeholder={t("evidence_notes_placeholder")}
                   rows={4}
                 />
@@ -2978,19 +3112,14 @@ function ProcessingScreen({
                 inputRef.current?.click();
               }
             }}
-            disabled={
-              isAnalyzing ||
-              ((choice === "cloud" || choice === "hybrid") && !cloudConsent)
-            }
+            disabled={isAnalyzing || ((choice === "cloud" || choice === "hybrid") && !cloudConsent)}
           >
             {isAnalyzing ? (
               <>
                 <LoaderCircle size={16} className="pm-spin" /> {t("btn_processing")}
               </>
             ) : (
-              <>
-                {t("processing_confirm_btn")}
-              </>
+              <>{t("processing_confirm_btn")}</>
             )}
           </button>
           <span className="pm-confirm-subtext">{t("processing_confirm_sub")}</span>
@@ -3183,39 +3312,78 @@ function ProcessingScreen({
         </div>
       )}
 
-
       <div className="pm-flow-footer-card">
         <div className="pm-flow-left">
           <h4>{t("flow_title")}</h4>
           <p>{t("flow_subtitle")}</p>
           <div className="pm-flow-steps-row">
             <div className="pm-flow-step-item">
-              <span className="pm-flow-step-icon"><FilePlus2 size={16} /></span>
-              <div><strong>{t("proc_flow_step1_title")}</strong><span>{t("proc_flow_step1_desc")}</span></div>
+              <span className="pm-flow-step-icon">
+                <FilePlus2 size={16} />
+              </span>
+              <div>
+                <strong>{t("proc_flow_step1_title")}</strong>
+                <span>{t("proc_flow_step1_desc")}</span>
+              </div>
             </div>
             <ArrowRight size={15} className="pm-flow-arrow" />
             <div className="pm-flow-step-item">
-              <span className="pm-flow-step-icon"><BrainCircuit size={16} /></span>
-              <div><strong>{t("proc_flow_step2_title")}</strong><span>{t("proc_flow_step2_desc")}</span></div>
+              <span className="pm-flow-step-icon">
+                <BrainCircuit size={16} />
+              </span>
+              <div>
+                <strong>{t("proc_flow_step2_title")}</strong>
+                <span>{t("proc_flow_step2_desc")}</span>
+              </div>
             </div>
             <ArrowRight size={15} className="pm-flow-arrow" />
             <div className="pm-flow-step-item">
-              <span className="pm-flow-step-icon"><ClipboardCheck size={16} /></span>
-              <div><strong>{t("proc_flow_step3_title")}</strong><span>{t("proc_flow_step3_desc")}</span></div>
+              <span className="pm-flow-step-icon">
+                <ClipboardCheck size={16} />
+              </span>
+              <div>
+                <strong>{t("proc_flow_step3_title")}</strong>
+                <span>{t("proc_flow_step3_desc")}</span>
+              </div>
             </div>
             <ArrowRight size={15} className="pm-flow-arrow" />
             <div className="pm-flow-step-item">
-              <span className="pm-flow-step-icon"><BadgeCheck size={16} /></span>
-              <div><strong>{t("proc_flow_step4_title")}</strong><span>{t("proc_flow_step4_desc")}</span></div>
+              <span className="pm-flow-step-icon">
+                <BadgeCheck size={16} />
+              </span>
+              <div>
+                <strong>{t("proc_flow_step4_title")}</strong>
+                <span>{t("proc_flow_step4_desc")}</span>
+              </div>
             </div>
           </div>
         </div>
         <div className="pm-sample-output-box">
           <div className="pm-sample-output-title">{t("proc_sample_output_title")}</div>
-          <div className="pm-sample-row"><span>{t("proc_sample_invoice")}</span><span className="pm-sample-badge pm-sample-badge--verified">{t("proc_sample_verified")}</span></div>
-          <div className="pm-sample-row"><span>{t("proc_sample_date")}</span><span className="pm-sample-badge pm-sample-badge--verified">{t("proc_sample_verified")}</span></div>
-          <div className="pm-sample-row"><span>{t("proc_sample_amount")}</span><span className="pm-sample-badge pm-sample-badge--uncertain">{t("proc_sample_uncertain")}</span></div>
-          <div className="pm-sample-row"><span>{t("proc_sample_vendor")}</span><span className="pm-sample-badge pm-sample-badge--verified">{t("proc_sample_verified")}</span></div>
+          <div className="pm-sample-row">
+            <span>{t("proc_sample_invoice")}</span>
+            <span className="pm-sample-badge pm-sample-badge--verified">
+              {t("proc_sample_verified")}
+            </span>
+          </div>
+          <div className="pm-sample-row">
+            <span>{t("proc_sample_date")}</span>
+            <span className="pm-sample-badge pm-sample-badge--verified">
+              {t("proc_sample_verified")}
+            </span>
+          </div>
+          <div className="pm-sample-row">
+            <span>{t("proc_sample_amount")}</span>
+            <span className="pm-sample-badge pm-sample-badge--uncertain">
+              {t("proc_sample_uncertain")}
+            </span>
+          </div>
+          <div className="pm-sample-row">
+            <span>{t("proc_sample_vendor")}</span>
+            <span className="pm-sample-badge pm-sample-badge--verified">
+              {t("proc_sample_verified")}
+            </span>
+          </div>
         </div>
       </div>
 

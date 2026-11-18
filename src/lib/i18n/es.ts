@@ -21,6 +21,56 @@ export const es: Translations = {
   screen_processing_title: "Elige cómo se procesa tu documento",
   screen_processing_subtitle:
     "El texto se extrae en este navegador. Tú controlas si la IA puede procesarlo en la nube.",
+  screen_risks_title: "Registro de riesgos",
+  screen_risks_subtitle:
+    "Revisa los riesgos de los análisis guardados, verifica la evidencia de origen y registra una respuesta.",
+
+  risk_summary_label: "Resumen de riesgos",
+  risk_summary_total: "Riesgos",
+  risk_summary_critical: "Críticos",
+  risk_summary_high: "Altos",
+  risk_summary_needs_review: "Necesitan revisión",
+  risk_filter_all: "Todos",
+  risk_severity_filter: "Filtrar riesgos por gravedad",
+  risk_document_filter: "Documento",
+  risk_all_documents: "Todos los documentos analizados",
+  risk_register_title: "Hallazgos de los análisis documentales",
+  risk_results_count: "Mostrando {{shown}} de {{total}} riesgos",
+  risk_export_csv: "Exportar CSV",
+  risk_severity_critical: "Crítico",
+  risk_severity_high: "Alto",
+  risk_severity_medium: "Medio",
+  risk_severity_low: "Bajo",
+  risk_kind_detected: "Hallazgo detectado",
+  risk_kind_suggestion: "Sugerencia de IA",
+  risk_source_excerpt: "Fragmento de origen",
+  risk_evidence_missing: "No se proporcionó un fragmento de origen para este hallazgo.",
+  risk_page_reference: "Página {{page}}",
+  risk_source_unavailable: "Ubicación de origen no disponible; verifica el documento.",
+  risk_action_plan_label: "Plan de mitigación / respuesta",
+  risk_action_plan_hint: "Registra una respuesta definida por una persona para este riesgo.",
+  risk_action_plan_save: "Guardar respuesta",
+  risk_local_note: "Se guarda solo en este espacio de trabajo del navegador.",
+  risk_empty_title: "No se informaron riesgos",
+  risk_empty_detail:
+    "Los documentos analizados no devolvieron hallazgos de riesgo. Esto no garantiza que los documentos no contengan riesgos.",
+  risk_no_analyses_title: "Analiza un documento para revisar los riesgos",
+  risk_no_analyses_detail:
+    "Este registro usa los riesgos de los análisis guardados. Añade y analiza una licitación para completarlo.",
+  risk_no_matches_title: "No hay riesgos coincidentes",
+  risk_no_matches_detail:
+    "Ajusta el filtro de gravedad, el documento o la búsqueda del espacio de trabajo.",
+  risk_review_disclaimer:
+    "Los hallazgos de IA son sugerencias revisables, no asesoramiento legal. Verifica cada origen y define la mitigación con tu equipo.",
+  risk_csv_document: "Documento",
+  risk_csv_severity: "Gravedad",
+  risk_csv_type: "Tipo de hallazgo",
+  risk_csv_title: "Riesgo",
+  risk_csv_explanation: "Explicación",
+  risk_csv_action_plan: "Plan de respuesta humano",
+  risk_csv_evidence: "Fragmento de origen",
+  risk_csv_source: "Ubicación de origen",
+  risk_csv_demo: "Muestra ilustrativa",
 
   mode_on_device: "En el dispositivo",
   mode_cloud: "Nube",
@@ -527,9 +577,9 @@ export const es: Translations = {
   tour_step0_title: "Bienvenido a PocketMind AI",
   tour_step0_body:
     "Convierte PDFs de licitaciones complejas en hallazgos revisables — con un enlace a la página de origen para cada uno. Esta visita guiada recorre el flujo completo en unos 90 segundos, usando la licitación de muestra precargada. No se necesita configuración.",
-  tour_step1_title: "Cinco áreas, un espacio de trabajo",
+  tour_step1_title: "Seis áreas, un espacio de trabajo",
   tour_step1_body:
-    "Navega entre Panel, Biblioteca, Análisis documental, Matriz de cumplimiento y Procesamiento y privacidad desde esta barra lateral.",
+    "Navega entre Panel, Biblioteca, Análisis documental, Matriz de cumplimiento, Registro de riesgos y Procesamiento y privacidad desde esta barra lateral.",
   tour_library_title: "Tu biblioteca local de documentos",
   tour_library_body:
     "Las licitaciones cargadas, el texto extraído, la evidencia del licitador y las revisiones permanecen en este navegador. La biblioteca muestra lo guardado y permite borrar los datos locales.",

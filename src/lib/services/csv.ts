@@ -1,7 +1,14 @@
-import type { Requirement, Review } from "../types";
+import type { Requirement, Review, Risk } from "../types";
 import type { TranslationKey } from "../i18n/en";
 
 type TFn = (key: TranslationKey) => string;
+
+export interface RiskCsvEntry {
+  documentName: string;
+  isDemo: boolean;
+  risk: Risk;
+  mitigation: string;
+}
 
 const esc = (v: string) => {
   const safe = /^\s*[=+\-@]/.test(v) ? `'${v}` : v;
@@ -38,6 +45,38 @@ export function complianceCsv(
       .map(esc)
       .join(",");
   });
+  return [columns.join(","), ...rows].join("\n");
+}
+
+export function risksCsv(entries: RiskCsvEntry[], t: TFn): string {
+  const columns = [
+    t("risk_csv_document"),
+    t("risk_csv_severity"),
+    t("risk_csv_type"),
+    t("risk_csv_title"),
+    t("risk_csv_explanation"),
+    t("risk_csv_action_plan"),
+    t("risk_csv_evidence"),
+    t("risk_csv_source"),
+    t("csv_col_evidence_verified"),
+    t("risk_csv_demo"),
+  ];
+  const rows = entries.map(({ documentName, isDemo, risk, mitigation }) =>
+    [
+      documentName,
+      risk.severity,
+      risk.kind,
+      risk.title,
+      risk.explanation,
+      mitigation,
+      risk.evidence.excerpt ?? "",
+      risk.evidence.sourceLocation ?? risk.evidence.page?.toString() ?? "",
+      risk.evidence.verified ? t("csv_yes") : t("csv_no"),
+      isDemo ? t("csv_yes") : t("csv_no"),
+    ]
+      .map(esc)
+      .join(","),
+  );
   return [columns.join(","), ...rows].join("\n");
 }
 

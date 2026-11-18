@@ -19,7 +19,7 @@ import {
 
 // ─── types & constants ────────────────────────────────────────────────────────
 
-type TourScreen = "overview" | "library" | "analysis" | "compliance" | "processing";
+type TourScreen = "overview" | "library" | "analysis" | "compliance" | "processing" | "risks";
 
 interface TourStep {
   screen: TourScreen;

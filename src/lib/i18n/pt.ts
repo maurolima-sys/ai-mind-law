@@ -21,6 +21,56 @@ export const pt: Translations = {
   screen_processing_title: "Escolha como o documento é processado",
   screen_processing_subtitle:
     "O texto é extraído neste browser. Você controla se a IA pode processá-lo na nuvem.",
+  screen_risks_title: "Registo de riscos",
+  screen_risks_subtitle:
+    "Reveja os riscos das análises guardadas, confirme as evidências de origem e registe uma resposta.",
+
+  risk_summary_label: "Resumo dos riscos",
+  risk_summary_total: "Riscos",
+  risk_summary_critical: "Críticos",
+  risk_summary_high: "Altos",
+  risk_summary_needs_review: "Precisam de revisão",
+  risk_filter_all: "Todos",
+  risk_severity_filter: "Filtrar riscos por gravidade",
+  risk_document_filter: "Documento",
+  risk_all_documents: "Todos os documentos analisados",
+  risk_register_title: "Conclusões das análises documentais",
+  risk_results_count: "A mostrar {{shown}} de {{total}} riscos",
+  risk_export_csv: "Exportar CSV",
+  risk_severity_critical: "Crítico",
+  risk_severity_high: "Alto",
+  risk_severity_medium: "Médio",
+  risk_severity_low: "Baixo",
+  risk_kind_detected: "Risco identificado",
+  risk_kind_suggestion: "Sugestão da IA",
+  risk_source_excerpt: "Excerto de origem",
+  risk_evidence_missing: "Não foi fornecido um excerto de origem para esta conclusão.",
+  risk_page_reference: "Página {{page}}",
+  risk_source_unavailable: "Localização da origem indisponível; confirme no documento.",
+  risk_action_plan_label: "Plano de mitigação / resposta",
+  risk_action_plan_hint: "Registe uma resposta definida por uma pessoa para este risco.",
+  risk_action_plan_save: "Guardar resposta",
+  risk_local_note: "Guardado apenas neste espaço de trabalho do browser.",
+  risk_empty_title: "Não foram comunicados riscos",
+  risk_empty_detail:
+    "Os documentos analisados não devolveram conclusões de risco. Isto não garante que os documentos não contenham riscos.",
+  risk_no_analyses_title: "Analise um documento para rever os riscos",
+  risk_no_analyses_detail:
+    "Este registo utiliza os riscos das análises guardadas. Adicione e analise um concurso para o preencher.",
+  risk_no_matches_title: "Não foram encontrados riscos correspondentes",
+  risk_no_matches_detail:
+    "Ajuste o filtro de gravidade, o documento ou a pesquisa do espaço de trabalho.",
+  risk_review_disclaimer:
+    "As conclusões da IA são sugestões para revisão, não aconselhamento jurídico. Confirme cada origem e defina a mitigação com a sua equipa.",
+  risk_csv_document: "Documento",
+  risk_csv_severity: "Gravidade",
+  risk_csv_type: "Tipo de conclusão",
+  risk_csv_title: "Risco",
+  risk_csv_explanation: "Explicação",
+  risk_csv_action_plan: "Plano de resposta humano",
+  risk_csv_evidence: "Excerto de origem",
+  risk_csv_source: "Localização de origem",
+  risk_csv_demo: "Amostra ilustrativa",
 
   mode_on_device: "No dispositivo",
   mode_cloud: "Nuvem",
@@ -524,9 +574,9 @@ export const pt: Translations = {
   tour_step0_title: "Bem-vindo ao PocketMind AI",
   tour_step0_body:
     "Transforme PDFs de concursos complexos em conclusões verificáveis — com uma ligação à página de origem para cada uma. Esta visita guiada percorre o fluxo completo em cerca de 90 segundos, usando o concurso de amostra pré-carregado. Não é necessária configuração.",
-  tour_step1_title: "Cinco áreas, um espaço de trabalho",
+  tour_step1_title: "Seis áreas, um espaço de trabalho",
   tour_step1_body:
-    "Navegue entre Painel, Biblioteca, Análise documental, Matriz de conformidade e Processamento e privacidade a partir desta barra lateral.",
+    "Navegue entre Painel, Biblioteca, Análise documental, Matriz de conformidade, Registo de riscos e Processamento e privacidade a partir desta barra lateral.",
   tour_library_title: "A sua biblioteca local de documentos",
   tour_library_body:
     "Os concursos carregados, o texto extraído, as evidências do concorrente e as revisões ficam neste browser. A biblioteca mostra o que está guardado e permite eliminar os dados locais.",
@@ -608,7 +658,8 @@ export const pt: Translations = {
   proc_card_local_p3: "Ideal para documentos confidenciais",
   proc_card_cloud_title: "Processamento Cloud AI",
   proc_card_cloud_badge: "PODEROSO",
-  proc_card_cloud_consent: "Consinto explicitamente em enviar meu documento para um serviço em nuvem",
+  proc_card_cloud_consent:
+    "Consinto explicitamente em enviar meu documento para um serviço em nuvem",
   proc_card_cloud_warning:
     "O conteúdo do seu documento pode ser enviado para um serviço em nuvem para processamento com IA. Só habilite se concordar em compartilhar seus dados.",
   proc_card_cloud_p1: "Acesso a modelos avançados de IA",
