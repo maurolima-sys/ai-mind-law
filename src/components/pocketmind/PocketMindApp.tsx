@@ -1,4 +1,4 @@
-import {
+﻿import {
   AlertCircle,
   AlertTriangle,
   ArrowDownToLine,
@@ -198,7 +198,7 @@ function findAnalysisItems(analysis: Analysis, t: TFn): Finding[] {
       id: item.id,
       kind: "Requirement" as const,
       title: item.description,
-      description: `${item.category} · ${item.mandatory ? t("finding_mandatory") : t("finding_optional")}`,
+      description: `${item.category} Â· ${item.mandatory ? t("finding_mandatory") : t("finding_optional")}`,
       page: item.evidence.page,
       sourceIndex: item.evidence.sourceIndex ?? item.evidence.page,
       sourceLocation: item.evidence.sourceLocation ?? null,
@@ -222,7 +222,7 @@ function findAnalysisItems(analysis: Analysis, t: TFn): Finding[] {
       id: item.id,
       kind: "Specification" as const,
       title: item.item,
-      description: [item.quantity, item.unit, item.details].filter(Boolean).join(" · "),
+      description: [item.quantity, item.unit, item.details].filter(Boolean).join(" Â· "),
       page: item.evidence.page,
       sourceIndex: item.evidence.sourceIndex ?? item.evidence.page,
       sourceLocation: item.evidence.sourceLocation ?? null,
@@ -1260,9 +1260,9 @@ export function PocketMindApp() {
             rel="noreferrer"
             className="pm-build-info-link"
           >
-            GitHub ↗
+            GitHub â†—
           </a>
-          <span>·</span>
+          <span>Â·</span>
           {buildLabel()}
         </div>
       </aside>
@@ -1283,7 +1283,7 @@ export function PocketMindApp() {
               placeholder={t("search_placeholder")}
               aria-label={t("search_aria")}
             />
-            <kbd className="pm-kbd">⌘K</kbd>
+            <kbd className="pm-kbd">âŒ˜K</kbd>
             {search && (
               <button type="button" onClick={() => setSearch("")} aria-label={t("search_clear")}>
                 <X size={15} />
@@ -1633,7 +1633,7 @@ function OverviewScreen({
           <div className="pm-kpi-value-row">
             <span className="pm-kpi-value">{documents.length || 24}</span>
             <span className="pm-kpi-delta pm-kpi-delta--up">
-              ↑ +33%
+              â†‘ +33%
             </span>
           </div>
           <span className="pm-kpi-sub">{t("overview_last_30_days")}</span>
@@ -1649,7 +1649,7 @@ function OverviewScreen({
           <div className="pm-kpi-value-row">
             <span className="pm-kpi-value">{analysis?.requirements.length || 186}</span>
             <span className="pm-kpi-delta pm-kpi-delta--up">
-              ↑ +21%
+              â†‘ +21%
             </span>
           </div>
           <span className="pm-kpi-sub">{t("overview_last_30_days")}</span>
@@ -1665,7 +1665,7 @@ function OverviewScreen({
           <div className="pm-kpi-value-row">
             <span className="pm-kpi-value">{criticalRisks || 7}</span>
             <span className="pm-kpi-delta pm-kpi-delta--orange">
-              ↑ +2
+              â†‘ +2
             </span>
           </div>
           <span className="pm-kpi-sub">{t("overview_last_30_days")}</span>
@@ -1681,7 +1681,7 @@ function OverviewScreen({
           <div className="pm-kpi-value-row">
             <span className="pm-kpi-value">{pendingReviews || 5}</span>
             <span className="pm-kpi-delta pm-kpi-delta--down">
-              ↓ -40%
+              â†“ -40%
             </span>
           </div>
           <span className="pm-kpi-sub">{t("overview_last_30_days")}</span>
@@ -1743,7 +1743,7 @@ function OverviewScreen({
                             <div className="pm-doc-name-col">
                               <strong>{document.name}</strong>
                               <small>
-                                {document.pages.length || 24} {t("toolbar_pages")} · {formatBytes(document.size)}
+                                {document.pages.length || 24} {t("toolbar_pages")} Â· {formatBytes(document.size)}
                               </small>
                             </div>
                           </div>
@@ -2094,11 +2094,11 @@ function AnalysisScreen({
                   : format === "docx"
                     ? t("toolbar_docx_document")
                     : t("toolbar_xlsx_document")}{" "}
-              ·{" "}
+              Â·{" "}
               {hasPdfPagination
                 ? `${document.pages.length} ${t("toolbar_pages")}`
                 : `${document.pages.length} ${t("toolbar_source_sections")}`}{" "}
-              · {formatBytes(document.size)}
+              Â· {formatBytes(document.size)}
             </span>
           </div>
           <Badge tone={modeSourceTone(processingSource)}>{modeLabel(processingSource, t)}</Badge>
@@ -2295,7 +2295,7 @@ function AnalysisScreen({
                   <h3>{finding.title}</h3>
                   <p>{finding.description}</p>
                   <div className="pm-finding-evidence">
-                    {finding.excerpt && <blockquote>“{finding.excerpt}”</blockquote>}
+                    {finding.excerpt && <blockquote>â€œ{finding.excerpt}â€</blockquote>}
                     <div className="pm-finding-meta">
                       {finding.sourceIndex !== null ? (
                         <button
@@ -2573,7 +2573,7 @@ function ComplianceScreen({
                             <span className="pm-muted-label">{t("compliance_not_provided")}</span>
                           )}
                         </td>
-                        <td>{requirement.evidence.page ?? "—"}</td>
+                        <td>{requirement.evidence.page ?? "â€”"}</td>
                         <td>
                           <label className="pm-status-select">
                             <span className="sr-only">
@@ -2637,7 +2637,7 @@ function ComplianceScreen({
                 )}
               </div>
               {selectedRequirement.evidence.excerpt ? (
-                <blockquote>“{selectedRequirement.evidence.excerpt}”</blockquote>
+                <blockquote>â€œ{selectedRequirement.evidence.excerpt}â€</blockquote>
               ) : (
                 <div className="pm-evidence-missing">{t("evidence_no_excerpt")}</div>
               )}
@@ -3028,7 +3028,7 @@ function ProcessingScreen({
             <div>
               <strong>{file.name}</strong>
               <span>
-                {formatBytes(file.size)} · {getDocumentFormat(file.name)?.toUpperCase()} ·{" "}
+                {formatBytes(file.size)} Â· {getDocumentFormat(file.name)?.toUpperCase()} Â·{" "}
                 {t("file_stored")}
               </span>
             </div>
@@ -3197,6 +3197,42 @@ function ProcessingScreen({
         </div>
       )}
 
+
+      <div className="pm-flow-footer-card">
+        <div className="pm-flow-left">
+          <h4>{t("flow_title")}</h4>
+          <p>{t("flow_subtitle")}</p>
+          <div className="pm-flow-steps-row">
+            <div className="pm-flow-step-item">
+              <span className="pm-flow-step-icon"><FilePlus2 size={16} /></span>
+              <div><strong>{t("proc_flow_step1_title")}</strong><span>{t("proc_flow_step1_desc")}</span></div>
+            </div>
+            <ArrowRight size={15} className="pm-flow-arrow" />
+            <div className="pm-flow-step-item">
+              <span className="pm-flow-step-icon"><BrainCircuit size={16} /></span>
+              <div><strong>{t("proc_flow_step2_title")}</strong><span>{t("proc_flow_step2_desc")}</span></div>
+            </div>
+            <ArrowRight size={15} className="pm-flow-arrow" />
+            <div className="pm-flow-step-item">
+              <span className="pm-flow-step-icon"><ClipboardCheck size={16} /></span>
+              <div><strong>{t("proc_flow_step3_title")}</strong><span>{t("proc_flow_step3_desc")}</span></div>
+            </div>
+            <ArrowRight size={15} className="pm-flow-arrow" />
+            <div className="pm-flow-step-item">
+              <span className="pm-flow-step-icon"><BadgeCheck size={16} /></span>
+              <div><strong>{t("proc_flow_step4_title")}</strong><span>{t("proc_flow_step4_desc")}</span></div>
+            </div>
+          </div>
+        </div>
+        <div className="pm-sample-output-box">
+          <div className="pm-sample-output-title">{t("proc_sample_output_title")}</div>
+          <div className="pm-sample-row"><span>{t("proc_sample_invoice")}</span><span className="pm-sample-badge pm-sample-badge--verified">{t("proc_sample_verified")}</span></div>
+          <div className="pm-sample-row"><span>{t("proc_sample_date")}</span><span className="pm-sample-badge pm-sample-badge--verified">{t("proc_sample_verified")}</span></div>
+          <div className="pm-sample-row"><span>{t("proc_sample_amount")}</span><span className="pm-sample-badge pm-sample-badge--uncertain">{t("proc_sample_uncertain")}</span></div>
+          <div className="pm-sample-row"><span>{t("proc_sample_vendor")}</span><span className="pm-sample-badge pm-sample-badge--verified">{t("proc_sample_verified")}</span></div>
+        </div>
+      </div>
+
       {!firebaseConfigured && choice !== "demo" && (
         <div className="pm-setup-notice">
           <AlertCircle size={18} />
@@ -3233,127 +3269,6 @@ function ProcessingScreen({
           <strong>{document.source === "demo" ? t("runtime_demo_data") : t("inference_no")}</strong>
         </div>
       </section>
-
-      <div className="pm-processing-footer">
-        <div>
-          <span className="pm-footer-label">{t("footer_selected_mode")}</span>
-          <Badge tone={choice === "demo" ? "amber" : choice === "local" ? "green" : "blue"}>
-            {choice === "demo"
-              ? t("footer_mode_demo")
-              : choice === "local"
-                ? t("footer_mode_local")
-                : choice === "cloud"
-                  ? t("footer_mode_cloud")
-                  : t("footer_mode_hybrid")}
-          </Badge>
-        </div>
-        <div>
-          <span className="pm-footer-label">{t("footer_source_reporting")}</span>
-          <span className="pm-footer-value">
-            <ShieldCheck size={17} /> {t("footer_source_reporting_value")}
-          </span>
-        </div>
-        <div className="pm-footer-actions">
-          {choice === "demo" ? (
-            <button type="button" className="pm-button pm-button--primary" onClick={onOpenDemo}>
-              {t("btn_explore_sample")} <ArrowRight size={16} />
-            </button>
-          ) : (
-            <>
-              {document.source === "upload" && (
-                <button
-                  type="button"
-                  className="pm-button pm-button--outline"
-                  onClick={onExtractTextOnly}
-                  disabled={isAnalyzing || (!file && !hasQuestionText)}
-                >
-                  <FileText size={16} />
-                  {hasQuestionText ? t("btn_ask_pdf") : t("btn_extract_text")}
-                </button>
-              )}
-              <button
-                type="button"
-                className="pm-button pm-button--primary"
-                onClick={onRunAnalysis}
-                disabled={
-                  isAnalyzing ||
-                  (!file && document.source !== "demo") ||
-                  ((choice === "cloud" || choice === "hybrid") && !cloudConsent)
-                }
-              >
-                {isAnalyzing ? (
-                  <>
-                    <LoaderCircle size={16} className="pm-spin" /> {t("btn_processing")}
-                  </>
-                ) : (
-                  <>
-                    {document.source === "demo" ? t("btn_analyze_sample") : t("btn_analyze_pdf")}{" "}
-                    <ArrowRight size={16} />
-                  </>
-                )}
-              </button>
-            </>
-          )}
-          <span>
-            {choice === "demo"
-              ? t("footer_status_demo")
-              : choice === "local"
-                ? t("footer_status_local")
-                : choice === "cloud"
-                  ? cloudConsent
-                    ? t("footer_status_cloud_ok")
-                    : t("footer_status_cloud_pending")
-                  : cloudConsent
-                    ? t("footer_status_hybrid_ok")
-                    : t("footer_status_hybrid_pending")}
-          </span>
-        </div>
-      </div>
-
-      <section className="pm-process-flow">
-        <div>
-          <h2>{t("flow_title")}</h2>
-          <p>{t("flow_subtitle")}</p>
-        </div>
-        <div className="pm-flow-steps">
-          <div>
-            <span>
-              <FilePlus2 size={18} />
-            </span>
-            <strong>{t("flow_step1_title")}</strong>
-            <small>{t("flow_step1_detail")}</small>
-          </div>
-          <ArrowRight size={17} />
-          <div>
-            <span>
-              <BrainCircuit size={18} />
-            </span>
-            <strong>{t("flow_step2_title")}</strong>
-            <small>{t("flow_step2_detail")}</small>
-          </div>
-          <ArrowRight size={17} />
-          <div>
-            <span>
-              <ClipboardCheck size={18} />
-            </span>
-            <strong>{t("flow_step3_title")}</strong>
-            <small>{t("flow_step3_detail")}</small>
-          </div>
-          <ArrowRight size={17} />
-          <div>
-            <span>
-              <BadgeCheck size={18} />
-            </span>
-            <strong>{t("flow_step4_title")}</strong>
-            <small>{t("flow_step4_detail")}</small>
-          </div>
-        </div>
-      </section>
-      {document.source === "demo" && (
-        <p className="pm-current-sample">
-          <Sparkles size={14} /> {t("flow_current_sample")} {document.name}
-        </p>
-      )}
     </div>
   );
 }
