@@ -1,0 +1,12 @@
+{
+	"mcpServers": {
+		"supabase": {
+			"type": "http",
+			"url": "https://mcp.supabase.com/mcp?project_ref=bksgztuqvflsvoffilay&features=docs,account,database,debugging,development,functions,branching,feedback,notebooks"
+		},
+		"llamaparse": {
+			"type": "http",
+			"url": "https://mcp.llamaindex.ai/mcp"
+		}
+	}
+}

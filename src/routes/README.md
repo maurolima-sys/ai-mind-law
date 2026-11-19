@@ -19,3 +19,7 @@ is `src/routes/__root.tsx`.
 | `__root.tsx` | app shell — wraps every page; preserve `<Outlet />` |
 
 `routeTree.gen.ts` is auto-generated. Don't edit it by hand.
+
+The `/evaluation` route is reserved for an internal dashboard and currently
+returns 404. It must remain unavailable until authentication, member
+authorization, shared persistence, and a production disable mechanism exist.
