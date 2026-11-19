@@ -57,7 +57,7 @@ export function useAuth() {
   }, []);
 
   const signOut = useCallback(async () => {
-    await getSupabase().auth.signOut();
+    return getSupabase().auth.signOut();
   }, []);
 
   return { ...state, signInWithEmail, signUpWithEmail, signInWithGoogle, signOut };

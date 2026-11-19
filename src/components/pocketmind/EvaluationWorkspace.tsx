@@ -39,10 +39,14 @@ export function EvaluationWorkspace({
   userId,
   email,
   onSignOut,
+  signOutError,
+  signOutPending,
 }: {
   userId: string;
   email?: string | undefined;
   onSignOut: () => void;
+  signOutError?: string;
+  signOutPending?: boolean;
 }) {
   const key = evaluationStorageKey(userId);
   const [storage, setStorage] = useState(() => readStorage(key));
@@ -102,12 +106,18 @@ export function EvaluationWorkspace({
             <button
               type="button"
               onClick={onSignOut}
-              className="min-h-11 rounded-lg border border-[#cbd5e1] px-4 font-semibold hover:bg-[#edf3ff]"
+              disabled={signOutPending}
+              className="min-h-11 rounded-lg border border-[#cbd5e1] px-4 font-semibold hover:bg-[#edf3ff] disabled:opacity-50"
             >
-              Sign out
+              {signOutPending ? "Signing out…" : "Sign out"}
             </button>
           </div>
         </div>
+        {signOutError && (
+          <p role="alert" className="mx-auto max-w-7xl px-5 pb-4 text-sm text-red-700 sm:px-8">
+            {signOutError}
+          </p>
+        )}
       </header>
       <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8">
         <nav aria-label="Evaluation sections" className="mb-8 flex flex-wrap gap-2">
