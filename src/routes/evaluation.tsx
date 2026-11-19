@@ -1,35 +1,31 @@
-import { useState } from "react";
-import { createFileRoute, notFound, redirect, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
-import { getSupabase } from "@/lib/services/supabase";
 import { EvaluationWorkspace } from "@/components/pocketmind/EvaluationWorkspace";
 import { evaluationEnabled } from "@/lib/evaluation";
 
 export const Route = createFileRoute("/evaluation")({
   head: () => ({ meta: [{ title: "Evaluation — PocketMind AI" }] }),
-  beforeLoad: async () => {
-    if (typeof window === "undefined") throw notFound();
+  beforeLoad: () => {
+    // Only block on the client — server must render the HTML shell.
     if (
+      typeof window !== "undefined" &&
       !evaluationEnabled(import.meta.env["VITE_ENABLE_EVALUATION_DASHBOARD"], import.meta.env.DEV)
     )
       throw notFound();
-    let session = null;
-    try {
-      const { data } = await getSupabase().auth.getSession();
-      session = data.session;
-    } catch {
-      throw redirect({ to: "/login" });
-    }
-    if (!session) throw redirect({ to: "/login" });
   },
   component: EvaluationPage,
 });
 
 function EvaluationPage() {
-  const { user, signOut } = useAuth();
+  const { user, loading, error, signOut } = useAuth();
   const navigate = useNavigate();
   const [signOutError, setSignOutError] = useState("");
   const [signOutPending, setSignOutPending] = useState(false);
+
+  useEffect(() => {
+    if (!loading && !user) void navigate({ to: "/login", replace: true });
+  }, [loading, user, navigate]);
 
   async function handleSignOut() {
     setSignOutPending(true);
@@ -42,7 +38,6 @@ function EvaluationPage() {
       setSignOutPending(false);
       return;
     }
-
     try {
       await navigate({ to: "/", hash: "", replace: true });
     } catch {
@@ -51,18 +46,22 @@ function EvaluationPage() {
     }
   }
 
-  if (!user)
+  if (loading)
     return (
-      <div className="p-6">
-        {signOutError ? (
-          <p role="alert">
-            {signOutError} <a href="/">Home</a>
-          </p>
-        ) : (
-          <p>Sign in to access the evaluation workspace.</p>
-        )}
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-sm text-muted-foreground">Loading…</p>
       </div>
     );
+
+  if (!user)
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-sm text-muted-foreground">
+          {error ?? "Redirecting to sign in…"}
+        </p>
+      </div>
+    );
+
   return (
     <EvaluationWorkspace
       key={user.id}
