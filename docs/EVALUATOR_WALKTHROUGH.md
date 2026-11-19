@@ -169,7 +169,7 @@ npm run dev
 Open in desktop Chrome. Register the App Check debug token (printed in the browser console) in Firebase Console → App Check → Debug tokens.
 
 ```sh
-npm test       # 98 tests (27 files)
+npm test       # 107 tests (29 files)
 npm run lint
 npm run build
 ```

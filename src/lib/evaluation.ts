@@ -252,7 +252,7 @@ export const EVALUATION_CRITERIA: EvaluationCriterion[] = [
     section: "Documentation",
     title: "Reconcile test counts",
     description:
-      "Verified: 107 tests across 28 test files (npm test). Walkthrough updated from '11 tests' to '107 tests (28 files)'. Evidence: commit 1e3c477.",
+      "Verified: 107 tests across 29 test files (npm test). Walkthrough updated from '11 tests' to '107 tests (29 files)'. Evidence: commit 1e3c477.",
   },
   {
     id: "ci-triggers",
