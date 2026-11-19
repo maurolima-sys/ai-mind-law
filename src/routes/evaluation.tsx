@@ -7,9 +7,6 @@ import { evaluationEnabled } from "@/lib/evaluation";
 
 export const Route = createFileRoute("/evaluation")({
   head: () => ({ meta: [{ title: "Evaluation — PocketMind AI" }] }),
-  ssr: evaluationEnabled(import.meta.env["VITE_ENABLE_EVALUATION_DASHBOARD"], import.meta.env.DEV)
-    ? false
-    : true,
   beforeLoad: async () => {
     if (
       !evaluationEnabled(import.meta.env["VITE_ENABLE_EVALUATION_DASHBOARD"], import.meta.env.DEV)
