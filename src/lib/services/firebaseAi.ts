@@ -257,6 +257,8 @@ declare global {
   interface Window {
     FIREBASE_APPCHECK_DEBUG_TOKEN?: boolean | string;
   }
+  // Injected by vite.config.ts define — present only in dev builds.
+  const __APPCHECK_DEBUG_TOKEN__: string | undefined;
 }
 
 const runtimeWindowKey = "__pocketMindFirebaseRuntime";
@@ -334,10 +336,11 @@ function getFirebaseRuntime(): FirebaseRuntime {
   // Setting window.FIREBASE_APPCHECK_DEBUG_TOKEN before initializeAppCheck
   // activates the App Check debug bypass — the reCAPTCHA call is skipped
   // and the registered debug token is used instead.
+  // __APPCHECK_DEBUG_TOKEN__ is a build-time define injected only in dev builds;
+  // it is never present in the production bundle.
   if (import.meta.env.DEV) {
-    const debugToken = (
-      import.meta.env["VITE_FIREBASE_APPCHECK_DEBUG_TOKEN"] as string | undefined
-    )?.trim();
+    const debugToken =
+      typeof __APPCHECK_DEBUG_TOKEN__ !== "undefined" ? __APPCHECK_DEBUG_TOKEN__ : undefined;
     if (debugToken) {
       window.FIREBASE_APPCHECK_DEBUG_TOKEN = debugToken;
     }

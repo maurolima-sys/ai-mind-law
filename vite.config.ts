@@ -18,6 +18,14 @@ const commitHash = (() => {
   }
 })();
 
+// App Check debug token: injected only in dev builds, never in production.
+// Read from FIREBASE_APPCHECK_DEBUG_TOKEN (no VITE_ prefix) so Vite does not
+// embed it in the production bundle via the standard VITE_* env injection.
+const appCheckDebugToken = (() => {
+  if (process.env.NODE_ENV === "production") return undefined;
+  return process.env["FIREBASE_APPCHECK_DEBUG_TOKEN"] ?? undefined;
+})();
+
 export default defineConfig({
   tanstackStart: {
     server: { entry: "server" },
@@ -27,6 +35,10 @@ export default defineConfig({
       __APP_VERSION__: JSON.stringify("0.4.0"),
       __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
       __COMMIT_HASH__: JSON.stringify(commitHash),
+      // undefined → the define is omitted entirely in production builds
+      ...(appCheckDebugToken !== undefined
+        ? { __APPCHECK_DEBUG_TOKEN__: JSON.stringify(appCheckDebugToken) }
+        : {}),
     },
   },
 });
