@@ -225,10 +225,11 @@ describe("ComponentName", () => {
 
 ### Sensitive value handling in diagnostics (MANDATORY)
 
-- When reading `.env.local`, `.env`, or any secrets file for diagnostic purposes, **never reproduce actual values in responses** — report only the variable name and whether it is present, absent, or empty
+- Read `.env.local` / `.env` freely to operate (pass values to scripts, commands, and tools) — the file is gitignored and stays local
+- **Never reproduce actual values in chat responses** — report only the variable name and whether it is present, absent, or empty
 - Applies to: API keys, tokens, passwords, JWTs, site keys, secret keys, debug tokens, access tokens, and any credential
-- Correct: `VITE_FIREBASE_APPCHECK_DEBUG_TOKEN` — present
-- Incorrect: `VITE_FIREBASE_APPCHECK_DEBUG_TOKEN="51B91E3F-..."` — never show the value
+- Correct response: `VITE_FIREBASE_APPCHECK_DEBUG_TOKEN` — present
+- Incorrect response: `VITE_FIREBASE_APPCHECK_DEBUG_TOKEN="51B91E3F-..."` — never echo the raw value
 - If a value must be compared (e.g. checking for duplicates), do the comparison silently and report only the conclusion
 - This rule applies even when the user explicitly asks to "check" or "verify" a value — confirm presence and format only, never echo the raw value
 
