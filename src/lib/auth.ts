@@ -18,7 +18,17 @@ export function useAuth() {
   });
 
   useEffect(() => {
-    const sb = getSupabase();
+    let sb: ReturnType<typeof getSupabase>;
+    try {
+      sb = getSupabase();
+    } catch (e) {
+      setState((s) => ({
+        ...s,
+        loading: false,
+        error: e instanceof Error ? e.message : "Supabase is not configured.",
+      }));
+      return;
+    }
     sb.auth.getSession().then(({ data }) => {
       setState({
         session: data.session,

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, notFound, redirect, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { getSupabase } from "@/lib/services/supabase";
 import { EvaluationWorkspace } from "@/components/pocketmind/EvaluationWorkspace";
@@ -8,13 +8,19 @@ import { evaluationEnabled } from "@/lib/evaluation";
 export const Route = createFileRoute("/evaluation")({
   head: () => ({ meta: [{ title: "Evaluation — PocketMind AI" }] }),
   beforeLoad: async () => {
+    if (typeof window === "undefined") throw notFound();
     if (
       !evaluationEnabled(import.meta.env["VITE_ENABLE_EVALUATION_DASHBOARD"], import.meta.env.DEV)
     )
       throw notFound();
-    if (typeof window === "undefined") throw notFound();
-    const { data } = await getSupabase().auth.getSession();
-    if (!data.session) throw notFound();
+    let session = null;
+    try {
+      const { data } = await getSupabase().auth.getSession();
+      session = data.session;
+    } catch {
+      throw redirect({ to: "/login" });
+    }
+    if (!session) throw redirect({ to: "/login" });
   },
   component: EvaluationPage,
 });
