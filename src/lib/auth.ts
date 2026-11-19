@@ -20,7 +20,12 @@ export function useAuth() {
   useEffect(() => {
     const sb = getSupabase();
     sb.auth.getSession().then(({ data }) => {
-      setState({ session: data.session, user: data.session?.user ?? null, loading: false, error: null });
+      setState({
+        session: data.session,
+        user: data.session?.user ?? null,
+        loading: false,
+        error: null,
+      });
     });
     const { data: listener } = sb.auth.onAuthStateChange((_event, session) => {
       setState({ session, user: session?.user ?? null, loading: false, error: null });

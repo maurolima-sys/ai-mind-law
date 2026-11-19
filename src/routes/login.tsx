@@ -11,10 +11,10 @@ function LoginPage() {
   const { session, loading, error, signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
 
-  const [email, setEmail]       = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [mode, setMode]         = useState<"signin" | "signup">("signin");
-  const [notice, setNotice]     = useState<string | null>(null);
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     if (session) void navigate({ to: "/evaluation" });
@@ -43,7 +43,9 @@ function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium text-foreground">Email</label>
+            <label htmlFor="email" className="text-sm font-medium text-foreground">
+              Email
+            </label>
             <input
               id="email"
               type="email"
@@ -57,7 +59,9 @@ function LoginPage() {
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium text-foreground">Password</label>
+            <label htmlFor="password" className="text-sm font-medium text-foreground">
+              Password
+            </label>
             <input
               id="password"
               type="password"
@@ -70,8 +74,8 @@ function LoginPage() {
             />
           </div>
 
-          {error   && <p className="text-sm text-destructive">{error}</p>}
-          {notice  && <p className="text-sm text-green-600">{notice}</p>}
+          {error && <p className="text-sm text-destructive">{error}</p>}
+          {notice && <p className="text-sm text-green-600">{notice}</p>}
 
           <button
             type="submit"
@@ -101,14 +105,24 @@ function LoginPage() {
 
         <p className="text-center text-sm text-muted-foreground">
           {mode === "signin" ? (
-            <>No account?{" "}
-              <button type="button" onClick={() => setMode("signup")} className="font-medium text-primary hover:underline">
+            <>
+              No account?{" "}
+              <button
+                type="button"
+                onClick={() => setMode("signup")}
+                className="font-medium text-primary hover:underline"
+              >
                 Sign up
               </button>
             </>
           ) : (
-            <>Already have an account?{" "}
-              <button type="button" onClick={() => setMode("signin")} className="font-medium text-primary hover:underline">
+            <>
+              Already have an account?{" "}
+              <button
+                type="button"
+                onClick={() => setMode("signin")}
+                className="font-medium text-primary hover:underline"
+              >
                 Sign in
               </button>
             </>
