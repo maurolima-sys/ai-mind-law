@@ -73,6 +73,11 @@ import { IntegrationsScreen } from "@/components/pocketmind/IntegrationsScreen";
 import { LanguageSelector } from "@/components/pocketmind/LanguageSelector";
 import { LocalWorkspaceLibrary } from "@/components/pocketmind/LocalWorkspaceLibrary";
 import { ProjectsScreen } from "@/components/pocketmind/ProjectsScreen";
+import {
+  ProcessingMonitor,
+  type MonitorEvent,
+  type MonitorState,
+} from "@/components/pocketmind/ProcessingMonitor";
 import { RiskScreen } from "@/components/pocketmind/RiskScreen";
 import { SettingsScreen } from "@/components/pocketmind/SettingsScreen";
 import { SourceDocumentViewer } from "@/components/pocketmind/SourceDocumentViewer";
@@ -380,6 +385,11 @@ export function PocketMindApp() {
   >({});
   const [cloudResponseReceived, setCloudResponseReceived] = useState(false);
   const [progressDetail, setProgressDetail] = useState("");
+  const [monitor, setMonitor] = useState<MonitorState | null>(null);
+  const screenRef = useRef(screen);
+  const selectedDocumentIdRef = useRef(selectedDocumentId);
+  screenRef.current = screen;
+  selectedDocumentIdRef.current = selectedDocumentId;
   const [errorMessage, setErrorMessage] = useState("");
   const [activePage, setActivePage] = useState(1);
   const [activeExcerpt, setActiveExcerpt] = useState<string | null>(null);
@@ -465,6 +475,67 @@ export function PocketMindApp() {
   const selectedDocument =
     documents.find((document) => document.id === selectedDocumentId) ?? documents[0];
   const file = filesByDocumentId[selectedDocumentId] ?? null;
+
+  useEffect(() => {
+    if (
+      screen !== "processing" ||
+      monitor?.status !== "completed" ||
+      !monitor.autoOpen ||
+      monitor.documentId !== selectedDocumentId
+    )
+      return;
+    const timer = window.setTimeout(() => {
+      setMonitor(null);
+      setScreen("analysis");
+    }, 2500);
+    return () => window.clearTimeout(timer);
+  }, [screen, monitor?.status, monitor?.autoOpen, monitor?.documentId, selectedDocumentId]);
+
+  useEffect(() => {
+    if (screen === "processing") return;
+    setMonitor((current) => (current?.autoOpen ? { ...current, autoOpen: false } : current));
+  }, [screen]);
+
+  function startMonitor(document: DocumentRecord) {
+    setMonitor({
+      documentId: document.id,
+      documentName: document.name,
+      status: "running",
+      events: [{ type: "document-selected" }],
+    });
+  }
+
+  function appendMonitor(documentId: string, event: MonitorEvent) {
+    setMonitor((current) => {
+      if (!current || current.documentId !== documentId) return current;
+      const events = [...current.events];
+      if (
+        (event.type === "text-page" || event.type === "model-download") &&
+        events[events.length - 1]?.type === event.type
+      ) {
+        events[events.length - 1] = event;
+      } else {
+        events.push(event);
+      }
+      return { ...current, events: events.slice(-30) };
+    });
+  }
+
+  function setMonitorStatus(documentId: string, status: MonitorState["status"], result?: Analysis) {
+    setMonitor((current) =>
+      current?.documentId === documentId
+        ? {
+            ...current,
+            status,
+            ...(result ? { result } : {}),
+            autoOpen:
+              status === "completed" &&
+              screenRef.current === "processing" &&
+              selectedDocumentIdRef.current === documentId,
+          }
+        : current,
+    );
+  }
   const analysis = selectedDocument?.analysis;
   const firebaseConfigured = isFirebaseConfigured();
   const firebaseStatusLabel = !firebaseConfigured
@@ -620,11 +691,18 @@ export function PocketMindApp() {
     void addDocument(event.dataTransfer.files[0]);
   }
 
-  async function extractLocalDocument(fileToExtract: File, format: DocumentFormat) {
+  async function extractLocalDocument(
+    fileToExtract: File,
+    format: DocumentFormat,
+    documentId?: string,
+  ) {
+    if (documentId) appendMonitor(documentId, { type: "text-started" });
     if (format === "pdf") {
       const pages = await extractPdfText(fileToExtract, (completed, total) => {
         setProgressDetail(`Extracting text from page ${completed} of ${total}`);
+        if (documentId) appendMonitor(documentId, { type: "text-page", completed, total });
       });
+      if (documentId) appendMonitor(documentId, { type: "text-completed" });
       return {
         pages,
         sourceLocations: pages.map((_, index) => `Page ${index + 1}`),
@@ -641,6 +719,7 @@ export function PocketMindApp() {
       format === "docx"
         ? await extractDocxText(fileToExtract)
         : await extractXlsxText(fileToExtract);
+    if (documentId) appendMonitor(documentId, { type: "text-completed" });
     return {
       ...extracted,
       textSource: "browser" as const,
@@ -667,8 +746,13 @@ export function PocketMindApp() {
 
     setIsAnalyzing(true);
     setErrorMessage("");
+    startMonitor(selectedDocument);
     try {
-      const extracted = await extractLocalDocument(file, selectedDocument.format ?? "pdf");
+      const extracted = await extractLocalDocument(
+        file,
+        selectedDocument.format ?? "pdf",
+        selectedDocument.id,
+      );
       const updatedDocument: DocumentRecord = {
         ...selectedDocument,
         pages: extracted.pages,
@@ -702,12 +786,16 @@ export function PocketMindApp() {
           [selectedDocument.id]: extracted.pages,
         }));
         setExternalOcrConsentDocumentId(null);
+        appendMonitor(selectedDocument.id, { type: "ocr-waiting" });
+        setMonitorStatus(selectedDocument.id, "waiting");
         void checkExternalOcrStatus();
         return;
       }
 
+      setMonitor(null);
       setScreen("analysis");
     } catch (error) {
+      setMonitorStatus(selectedDocument.id, "failed");
       const detail = error instanceof Error ? error.message : "An unexpected error occurred.";
       setErrorMessage(`Text extraction could not be completed. ${detail}`);
     } finally {
@@ -1009,6 +1097,7 @@ export function PocketMindApp() {
           sourceLocations: locations,
           paginationVerified: paginated,
           documentId,
+          onEvent: (event) => appendMonitor(documentId, event),
         },
       );
     } catch (error) {
@@ -1035,7 +1124,7 @@ export function PocketMindApp() {
     setActiveExcerpt(null);
     setSelectedRequirementId(null);
     setActiveFinding("all");
-    setScreen("analysis");
+    setMonitorStatus(documentId, "completed", analysis);
     setAnalysisAttempts((current) => ({ ...current, [documentId]: "completed" }));
     recordActivity("analysis-completed", selectedDocument.id);
   }
@@ -1076,12 +1165,14 @@ export function PocketMindApp() {
 
     setIsAnalyzing(true);
     setErrorMessage("");
+    startMonitor(selectedDocument);
     try {
       let pages: string[];
       let locations: string[];
       let textSource: DocumentTextSource = "browser";
       let paginated = true;
       if (selectedDocument.source === "demo") {
+        appendMonitor(selectedDocument.id, { type: "sample-text" });
         pages = selectedDocument.pages;
         locations =
           selectedDocument.sourceLocations ?? pages.map((_, index) => `Page ${index + 1}`);
@@ -1101,10 +1192,11 @@ export function PocketMindApp() {
         paginated =
           selectedDocument.paginationVerified ?? documentPagination[selectedDocument.id] ?? true;
         if (hasSavedText) {
+          appendMonitor(selectedDocument.id, { type: "text-reused" });
           pages = selectedDocument.pages;
           locations = selectedDocument.sourceLocations ?? [];
         } else {
-          const extracted = await extractLocalDocument(file, format);
+          const extracted = await extractLocalDocument(file, format, selectedDocument.id);
           pages = extracted.pages;
           locations = extracted.sourceLocations;
           textSource = extracted.textSource;
@@ -1120,6 +1212,8 @@ export function PocketMindApp() {
         setScannedDocumentId(selectedDocument.id);
         setScannedTextByDocumentId((current) => ({ ...current, [selectedDocument.id]: pages }));
         setExternalOcrConsentDocumentId(null);
+        appendMonitor(selectedDocument.id, { type: "ocr-waiting" });
+        setMonitorStatus(selectedDocument.id, "waiting");
         void checkExternalOcrStatus();
         return;
       }
@@ -1142,6 +1236,7 @@ export function PocketMindApp() {
       }
       await analyzePages(pages, textSource, paginated, locations);
     } catch (error) {
+      setMonitorStatus(selectedDocument.id, "failed");
       reportAnalysisError(error, "Analysis could not be completed.");
     } finally {
       setIsAnalyzing(false);
@@ -1165,11 +1260,14 @@ export function PocketMindApp() {
 
     setIsAnalyzing(true);
     setErrorMessage("");
+    startMonitor(selectedDocument);
+    appendMonitor(selectedDocument.id, { type: "text-reused" });
     try {
       setProgressDetail("Analyzing the text extracted in this browser");
       const sourceLocations = pages.map((_, index) => `Page ${index + 1}`);
       await analyzePages(pages, "pdfjs", true, sourceLocations);
     } catch (error) {
+      setMonitorStatus(selectedDocument.id, "failed");
       reportAnalysisError(error, "Analysis could not be completed.");
     } finally {
       setIsAnalyzing(false);
@@ -1205,12 +1303,15 @@ export function PocketMindApp() {
 
     setIsAnalyzing(true);
     setErrorMessage("");
+    startMonitor(selectedDocument);
     try {
       setProgressDetail("Sending the PDF to LlamaParse for external text extraction");
+      appendMonitor(selectedDocument.id, { type: "ocr-started" });
       const result = await runExternalOcr(file, true);
       if (!result.pages.some((page) => page.trim())) {
         throw new Error("LlamaParse returned no text for this PDF.");
       }
+      appendMonitor(selectedDocument.id, { type: "ocr-completed" });
       setDocuments((current) =>
         current.map((document) =>
           document.id === selectedDocument.id
@@ -1237,6 +1338,7 @@ export function PocketMindApp() {
       );
       await analyzePages(result.pages, "llamaparse", result.paginated, sourceLocations);
     } catch (error) {
+      setMonitorStatus(selectedDocument.id, "failed");
       reportAnalysisError(error, "External text extraction could not be completed.");
     } finally {
       setIsAnalyzing(false);
@@ -1698,6 +1800,11 @@ export function PocketMindApp() {
               analysisAttempt={analysisAttempts[selectedDocument.id]}
               isAnalyzing={isAnalyzing}
               progressDetail={progressDetail}
+              monitor={monitor?.documentId === selectedDocument.id ? monitor : null}
+              onOpenResults={() => {
+                setMonitor(null);
+                setScreen("analysis");
+              }}
               errorMessage={errorMessage}
               onDeviceTimeout={
                 processingChoice === "local" &&
@@ -1708,6 +1815,7 @@ export function PocketMindApp() {
               onFileChange={handleFileChange}
               onDrop={handleDrop}
               onSelectChoice={(choice) => {
+                if (monitor?.status === "completed") setMonitor(null);
                 setProcessingChoice(choice);
                 if (choice === "demo" || choice === "local") setCloudConsent(false);
                 setEvidenceCloudConsent(false);
@@ -3058,6 +3166,8 @@ export function ProcessingScreen({
   analysisAttempt,
   isAnalyzing,
   progressDetail,
+  monitor,
+  onOpenResults,
   errorMessage,
   onDeviceTimeout,
   inputRef,
@@ -3087,6 +3197,8 @@ export function ProcessingScreen({
   analysisAttempt?: "running" | "failed" | "completed" | undefined;
   isAnalyzing: boolean;
   progressDetail: string;
+  monitor?: MonitorState | null;
+  onOpenResults: () => void;
   errorMessage: string;
   onDeviceTimeout: boolean;
   inputRef: RefObject<HTMLInputElement | null>;
@@ -3114,6 +3226,37 @@ export function ProcessingScreen({
         <h1>{t("processing_setup_title")}</h1>
         <p>{t("processing_setup_desc")}</p>
       </div>
+
+      {monitor && <ProcessingMonitor monitor={monitor} onOpenResults={onOpenResults} />}
+
+      {errorMessage && (
+        <div className="pm-error-banner" role="alert">
+          <AlertCircle size={18} />
+          <div className="pm-error-content">
+            <span>{errorMessage}</span>
+            {onDeviceTimeout && (
+              <button
+                className="pm-button pm-button--outline pm-error-action"
+                type="button"
+                onClick={() => {
+                  onSelectChoice("cloud");
+                  requestAnimationFrame(() => cloudConsentRef.current?.focus());
+                }}
+              >
+                {t("on_device_timeout_choose_cloud")}
+              </button>
+            )}
+          </div>
+          <button
+            className="pm-error-dismiss"
+            type="button"
+            onClick={onClearError}
+            aria-label={t("error_dismiss")}
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
 
       <div className="pm-decision-grid">
         {/* Card 1: Local processing */}
@@ -3545,36 +3688,7 @@ export function ProcessingScreen({
         </section>
       )}
 
-      {errorMessage && (
-        <div className="pm-error-banner" role="alert">
-          <AlertCircle size={18} />
-          <div className="pm-error-content">
-            <span>{errorMessage}</span>
-            {onDeviceTimeout && (
-              <button
-                className="pm-button pm-button--outline pm-error-action"
-                type="button"
-                onClick={() => {
-                  onSelectChoice("cloud");
-                  requestAnimationFrame(() => cloudConsentRef.current?.focus());
-                }}
-              >
-                {t("on_device_timeout_choose_cloud")}
-              </button>
-            )}
-          </div>
-          <button
-            className="pm-error-dismiss"
-            type="button"
-            onClick={onClearError}
-            aria-label={t("error_dismiss")}
-          >
-            <X size={16} />
-          </button>
-        </div>
-      )}
-
-      {isAnalyzing && (
+      {isAnalyzing && !monitor && (
         <div className="pm-progress-status" role="status">
           <LoaderCircle size={17} className="pm-spin" />
           <span>{progressDetail || t("progress_default")}</span>

@@ -26,7 +26,7 @@
 6. Watch the progress status. If the call succeeds, the badge reads **Connected · a response was received** and the inference source (**cloud** or **cloud-fallback**) appears next to the model name. A configured badge alone does not prove a successful live analysis.
 7. After a successful analysis, navigate to **Document analysis** to inspect findings, then **Compliance matrix** to see the review workflow.
 
-> The latest reported Cloud test was rejected with HTTP 401 because the Firebase App Check token was invalid; no model response was received. Confirm the production site key, authorized domain, and App Check registration/provider before describing the hosted Cloud path as verified.
+> **Production Cloud AI verified (2026-11-19).** A production run completed with `processingSource: cloud-fallback`, model `gemini-3.5-flash-lite`, 10 requirements, 5 deadlines, 3 specifications, and 1 risk — all excerpts with `verified: true`. The input was the built-in fictional sample text (Northbridge LED street lighting); the file was named "Riverside Civic Centre - Construction Tender.pdf" by the user, but the content analysed was the fictional sample, not a real procurement document. The exported JSON (`docs/Riverside Civic Centre - Construction Tender-analysis.json`) is the evidence artefact. `cloud-fallback` confirms the call reached Firebase AI Logic via the cloud fallback path; it does not confirm that the primary `gemini-3.8-flash` model was reached before fallback occurred.
 
 ---
 
@@ -42,7 +42,7 @@ The requirement is that Firebase AI Logic is **imported and actually called**, n
 | Browser DevTools → Network | Outbound requests to `firebaseapp.com` / `generativelanguage.googleapis.com` during analysis |
 | UI after analysis | Inference source badge: **on-device**, **cloud**, or **cloud-fallback** |
 
-`initializeAppCheck` runs before model calls, using the debug provider only in local development and `ReCaptchaEnterpriseProvider` in production. Firebase Console previously showed the production app as registered and enforced, but configuration and initialization do not prove that a valid App Check token was accepted on a live model request.
+`initializeAppCheck` runs before model calls, using the debug provider only in local development and `ReCaptchaEnterpriseProvider` in production. A production run on 2026-11-19 confirmed that a limited-use App Check token was accepted and `generateContent` returned 200 (`cloud-fallback`, `gemini-3.5-flash-lite`).
 
 ---
 
@@ -54,7 +54,7 @@ Navigate to **Processing & privacy** and try each mode:
 - Sends extracted text to Gemini via Firebase AI Logic.
 - Requires explicit consent checkbox — cloud processing is never silent.
 - Badge after analysis: **cloud** or **cloud-fallback**.
-- Model fallback chain: `gemini-3.5-flash-lite` → `gemini-3.5-flash` → `gemini-3.8-flash`.
+- Model fallback chain (most capable first): `gemini-3.8-flash` → `gemini-3.5-flash` → `gemini-3.5-flash-lite`. The production run reached `gemini-3.5-flash-lite`, confirming the chain was traversed.
 
 ### On-device only
 - Uses Chrome's Prompt API; the exact on-device model depends on Chrome and the device.
@@ -145,10 +145,10 @@ The submission is honest about its current state:
 
 | Item | Status |
 |---|---|
-| Cloud AI analysis with structured-output validation passing end-to-end | Blocked: the latest reported request returned HTTP 401 for an invalid App Check token; no model response was received |
+| Cloud AI analysis with structured-output validation passing end-to-end | ✅ Verified in production (2026-11-19): `cloud-fallback`, `gemini-3.5-flash-lite`, full structured output, all excerpts `verified: true`. Input was the fictional sample text, not a real procurement document. |
 | On-device inference (Chrome Prompt API) | The last reported sample timed out after 60 seconds. Local chunking and recovery guidance have been improved; a live Chrome retest is still pending. On-device-only mode never falls back to cloud. |
 | LlamaParse OCR with a real scanned PDF | Not yet tested end-to-end |
-| App Check in production | reCAPTCHA Enterprise is configured, but the latest reported token was rejected; verify site key, domain, Firebase app, and provider alignment |
+| App Check in production | ✅ A valid limited-use App Check token was accepted by Firebase AI Logic in production (2026-11-19). `exchangeRecaptchaEnterpriseToken` → `generateContent` → 200 path confirmed for that session; future sessions depend on reCAPTCHA Enterprise attestation remaining valid. |
 | Responsive layout with PT/ES longer strings on small screens | Not yet validated |
 
 The **Connected · a response was received** badge confirms a Firebase AI Logic response arrived. A successful structured-output analysis (findings displayed) confirms full validation passed.
@@ -169,7 +169,7 @@ npm run dev
 Open in desktop Chrome. Register the App Check debug token (printed in the browser console) in Firebase Console → App Check → Debug tokens.
 
 ```sh
-npm test       # 11 tests
+npm test       # 98 tests (27 files)
 npm run lint
 npm run build
 ```
@@ -183,7 +183,7 @@ CI runs automatically on every push via `.github/workflows/ci.yml`.
 | Requirement | Status |
 |---|---|
 | Firebase AI Logic imported and called at runtime | ✅ `firebaseAi.ts` |
-| App Check initialized | ✅ `initializeAppCheck` before model calls; successful production token acceptance remains pending live verification |
+| App Check initialized | ✅ `initializeAppCheck` before model calls; production token accepted — `generateContent` → 200 confirmed (2026-11-19) |
 | Web (Chrome) platform | ✅ |
 | Public GitHub repository | ✅ https://github.com/maurolima-sys/ai-mind-law |
 | Open source license | ✅ Apache 2.0 (`LICENSE`) |

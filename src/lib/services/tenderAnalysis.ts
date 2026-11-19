@@ -36,6 +36,18 @@ type ProgressUpdate = {
   detail: string;
 };
 
+export type AnalysisProgressEvent =
+  | { type: "initializing" }
+  | { type: "model-download"; percent: number }
+  | { type: "model-ready" }
+  | { type: "model-unavailable" }
+  | { type: "request-started"; section: number; total: number }
+  | { type: "retry"; model: string; attempt: number; status: number | undefined }
+  | { type: "cloud-retry" }
+  | { type: "response"; source: InferenceSource }
+  | { type: "output-validated"; section: number; total: number }
+  | { type: "checking-evidence" };
+
 const MAX_CHUNK_CHARACTERS = 8_000;
 export const ON_DEVICE_CHUNK_CHARACTERS = 3_000;
 
@@ -262,6 +274,7 @@ export async function analyzeTender(
     sourceLocations?: string[];
     paginationVerified?: boolean;
     documentId?: string;
+    onEvent?: (event: AnalysisProgressEvent) => void;
   } = {},
 ): Promise<Analysis> {
   const format = options.format ?? "pdf";
@@ -280,6 +293,7 @@ export async function analyzeTender(
     );
   }
 
+  options.onEvent?.({ type: "initializing" });
   const { model } = createTenderModel(preference);
 
   if (preference === "cloud") {
@@ -290,6 +304,7 @@ export async function analyzeTender(
       total: chunks.length,
       detail: "Preparing Firebase AI Logic cloud analysis",
     });
+    options.onEvent?.({ type: "model-ready" });
   } else {
     // local or hybrid: attempt on-device model initialization.
     onProgress({
@@ -302,6 +317,9 @@ export async function analyzeTender(
       await initializeDeviceModelWithTimeout(
         (progress) => model.initializeDeviceModel(progress),
         (progress) => {
+          if (Number.isFinite(progress) && progress >= 0 && progress <= 1) {
+            options.onEvent?.({ type: "model-download", percent: Math.round(progress * 100) });
+          }
           onProgress({
             phase: "preparing",
             completed: Math.round(progress * 100),
@@ -310,6 +328,7 @@ export async function analyzeTender(
           });
         },
       );
+      options.onEvent?.({ type: "model-ready" });
       onProgress({
         phase: "preparing",
         completed: 0,
@@ -323,6 +342,7 @@ export async function analyzeTender(
         if (getOnDeviceTimeoutStage(error)) throw error;
         throw new Error(`On-device inference is unavailable. ${detail}`);
       }
+      options.onEvent?.({ type: "model-unavailable" });
       onProgress({
         phase: "preparing",
         completed: 0,
@@ -361,6 +381,7 @@ export async function analyzeTender(
         ).model;
         cache.set(candidate, currentModel);
       }
+      options.onEvent?.({ type: "request-started", section: index + 1, total: chunks.length });
       return currentModel.generateContent(prompt, signal ? { signal } : undefined);
     };
     const fallbackOptions = {
@@ -373,6 +394,12 @@ export async function analyzeTender(
         status?: number;
         attempt: number;
       }) => {
+        options.onEvent?.({
+          type: "retry",
+          model: geminiModelLabel(nextModel),
+          attempt,
+          status,
+        });
         const action = nextModel === PRIMARY_GEMINI_MODEL ? "Retrying" : "Switching to fallback";
         onProgress({
           phase: "analyzing",
@@ -391,16 +418,18 @@ export async function analyzeTender(
     } catch (error) {
       if (preference !== "hybrid") throw error;
       forcedCloudFallback = true;
+      options.onEvent?.({ type: "cloud-retry" });
       onProgress({
         phase: "analyzing",
         completed: index,
         total: chunks.length,
-        detail: "The on-device session could not be created; retrying this section with Cloud AI.",
+        detail: "The request failed; retrying this section with Cloud AI under the hybrid policy.",
       });
       generated = await generateWithModelFallback("cloud", generateSection, fallbackOptions);
     }
     const { result, modelName } = generated;
     const source = requireInferenceSource(result.response.inferenceSource);
+    options.onEvent?.({ type: "response", source });
     onInference(source);
     sources.add(source);
     if (source === "IN_CLOUD") cloudModelNames.add(modelName);
@@ -413,12 +442,14 @@ export async function analyzeTender(
       });
     }
     records.push(parseTenderResponse(result.response.text()));
+    options.onEvent?.({ type: "output-validated", section: index + 1, total: chunks.length });
   }
 
   if (sources.size === 0) {
     throw new Error("Firebase AI Logic did not return any analysis results.");
   }
 
+  options.onEvent?.({ type: "checking-evidence" });
   onProgress({
     phase: "analyzing",
     completed: chunks.length,

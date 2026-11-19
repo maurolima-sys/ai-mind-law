@@ -1,0 +1,189 @@
+.pm-monitor {
+  display: grid;
+  grid-template-columns: minmax(190px, 30%) minmax(0, 1fr);
+  gap: 2rem;
+  margin: 1.5rem 0;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  color: #e8f3ff;
+  background: #101f35;
+  border-radius: 16px;
+}
+
+.pm-monitor-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+}
+.pm-monitor-radar {
+  position: relative;
+  width: min(100%, 220px);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid #5ea7d7;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle,
+      transparent 24%,
+      #376c91 24.5%,
+      transparent 25.5%,
+      transparent 49%,
+      #376c91 49.5%,
+      transparent 50.5%,
+      transparent 74%,
+      #376c91 74.5%,
+      transparent 75.5%
+    ),
+    linear-gradient(90deg, transparent 49.7%, #376c91 50%, transparent 50.3%),
+    linear-gradient(transparent 49.7%, #376c91 50%, transparent 50.3%);
+}
+.pm-monitor-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0deg 270deg, #41b9ed88 360deg);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .pm-monitor-sweep {
+    animation: pm-monitor-sweep 4s linear infinite;
+  }
+}
+.pm-monitor-center {
+  position: absolute;
+  inset: 48%;
+  border-radius: 50%;
+  background: #a4e7ff;
+}
+.pm-monitor-radar.is-paused .pm-monitor-sweep {
+  animation-play-state: paused;
+}
+@keyframes pm-monitor-sweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.pm-monitor-motion {
+  color: #c2e9ff;
+  background: transparent;
+  border: 1px solid #6596b3;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+.pm-monitor-motion:focus-visible {
+  outline: 2px solid #a4e7ff;
+  outline-offset: 3px;
+}
+.pm-monitor-heading {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: start;
+}
+.pm-monitor h2 {
+  color: #fff;
+  margin: 0;
+  font-size: 1.4rem;
+}
+.pm-monitor-document {
+  margin: 0.35rem 0 0;
+  color: #c2d9ec;
+  overflow-wrap: anywhere;
+}
+.pm-monitor-state {
+  padding: 0.35rem 0.7rem;
+  border-radius: 5px;
+  background: #294d66;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.pm-monitor-state.is-failed {
+  background: #7e343d;
+}
+.pm-monitor-state.is-waiting {
+  background: #76571d;
+}
+.pm-monitor-state.is-completed {
+  background: #22614d;
+}
+.pm-monitor h3 {
+  margin: 1.5rem 0 0.75rem;
+  color: #fff;
+  font-size: 0.95rem;
+}
+.pm-monitor-events {
+  display: grid;
+  gap: 0.7rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.pm-monitor-events li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  color: #c2d9ec;
+  font-size: 0.9rem;
+}
+.pm-monitor-events li.is-latest {
+  color: #fff;
+}
+.pm-monitor-dot {
+  flex: 0 0 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #77c9f0;
+}
+.pm-monitor-announcement {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.pm-monitor-progress {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: 1.2rem;
+  color: #c2d9ec;
+  font-size: 0.85rem;
+}
+.pm-monitor-progress progress {
+  width: 100%;
+  accent-color: #77c9f0;
+}
+.pm-monitor-results {
+  margin-top: 1.25rem;
+}
+.pm-monitor-results p {
+  margin: 0.7rem 0;
+}
+.pm-monitor-results ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  padding: 0;
+  list-style: none;
+  color: #c2d9ec;
+}
+.pm-monitor-results strong {
+  color: #fff;
+}
+@media (max-width: 700px) {
+  .pm-monitor {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .pm-monitor-radar {
+    width: 150px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pm-monitor-motion {
+    display: none;
+  }
+}

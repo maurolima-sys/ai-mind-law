@@ -1,5 +1,5 @@
 import "fake-indexeddb/auto";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import {
   createMemoryHistory,
   createRootRoute,
@@ -53,6 +53,7 @@ describe("processing provenance", () => {
     expect(within(status).getByText("No AI analysis attempted this session")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /confirm and continue/i }));
+    expect(await screen.findByText("Processing failed")).toBeInTheDocument();
     expect(
       await within(status).findByText("Failed · displayed analysis is from an earlier run"),
     ).toBeInTheDocument();
@@ -76,6 +77,7 @@ describe("processing provenance", () => {
     renderApp();
     fireEvent.click(await screen.findByRole("button", { name: /add a document/i }));
     fireEvent.click(screen.getByRole("button", { name: /confirm and continue/i }));
+    fireEvent.click(await screen.findByRole("button", { name: "View analysis results" }));
     expect(await screen.findByText("On-device (ON_DEVICE)")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Processing" }));
     const status = screen.getByRole("region", { name: "Firebase AI Logic status" });
@@ -83,7 +85,60 @@ describe("processing provenance", () => {
     expect(within(status).getByText("On-device (ON_DEVICE)")).toBeInTheDocument();
     expect(within(status).getByText("Completed")).toBeInTheDocument();
     expect(within(status).queryByText("Demo mode")).not.toBeInTheDocument();
-  });
+  }, 15_000);
+
+  it("opens results automatically after displaying completion", async () => {
+    const sample = buildDemoDocument();
+    if (!sample.analysis) throw new Error("Sample analysis missing");
+    mocks.analyzeTender.mockResolvedValue({
+      ...sample.analysis,
+      mode: "local",
+      processingSource: "on-device",
+    });
+    renderApp();
+    fireEvent.click(await screen.findByRole("button", { name: /add a document/i }));
+    fireEvent.click(screen.getByRole("button", { name: /confirm and continue/i }));
+    expect(
+      await screen.findByRole("button", { name: "View analysis results" }),
+    ).toBeInTheDocument();
+    await waitFor(
+      () =>
+        expect(
+          screen.queryByRole("region", { name: "Processing intelligence monitor" }),
+        ).not.toBeInTheDocument(),
+      { timeout: 6000 },
+    );
+    expect(
+      screen.getByRole("heading", { name: "Document analysis", level: 1 }),
+    ).toBeInTheDocument();
+  }, 15_000);
+
+  it("does not redirect when the user leaves processing before completion", async () => {
+    const sample = buildDemoDocument();
+    if (!sample.analysis) throw new Error("Sample analysis missing");
+    const result = { ...sample.analysis, mode: "local", processingSource: "on-device" };
+    let finish: (value: typeof result) => void = () => {
+      throw new Error("Analysis was not started");
+    };
+    mocks.analyzeTender.mockImplementation(
+      () =>
+        new Promise<typeof result>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    renderApp();
+    fireEvent.click(await screen.findByRole("button", { name: /add a document/i }));
+    fireEvent.click(screen.getByRole("button", { name: /confirm and continue/i }));
+    await screen.findByRole("region", { name: "Processing intelligence monitor" });
+    fireEvent.click(screen.getByRole("button", { name: "Dashboard" }));
+    await act(async () => finish(result));
+    fireEvent.click(screen.getByRole("button", { name: "Processing" }));
+    expect(
+      await screen.findByRole("button", { name: "View analysis results" }),
+    ).toBeInTheDocument();
+    await new Promise((resolve) => setTimeout(resolve, 2700));
+    expect(screen.getByRole("button", { name: "View analysis results" })).toBeInTheDocument();
+  }, 15_000);
 
   it("reports uploaded content, external extraction and an earlier cloud result separately", () => {
     const sample = buildDemoDocument();
@@ -112,6 +167,7 @@ describe("processing provenance", () => {
           analysisAttempt="failed"
           isAnalyzing={false}
           progressDetail=""
+          onOpenResults={vi.fn()}
           errorMessage=""
           onDeviceTimeout={false}
           inputRef={createRef<HTMLInputElement>()}
