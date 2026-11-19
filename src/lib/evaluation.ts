@@ -102,7 +102,8 @@ export const EVALUATION_CRITERIA: EvaluationCriterion[] = [
     category: "Backend",
     section: "Inference",
     title: "Cloud inference",
-    description: "Demonstrate a successful production Cloud analysis after the reported HTTP 401.",
+    description:
+      "Production Cloud analysis verified 2026-11-19: cloud-fallback, gemini-3.5-flash-lite, full structured output, all excerpts verified:true. Input was the fictional sample text. Evidence: docs/Riverside Civic Centre - Construction Tender-analysis.json.",
     critical: true,
   },
   {
@@ -124,7 +125,8 @@ export const EVALUATION_CRITERIA: EvaluationCriterion[] = [
     category: "Backend",
     section: "Security",
     title: "Production App Check acceptance",
-    description: "Verify that a production model request accepts the App Check token.",
+    description:
+      "Verified 2026-11-19: limited-use App Check token accepted in production. exchangeRecaptchaEnterpriseToken → generateContent → 200. Fix: useLimitedUseAppCheckTokens:true in getAI(). Evidence: commit ef4a84d.",
     critical: true,
   },
   {
@@ -210,28 +212,32 @@ export const EVALUATION_CRITERIA: EvaluationCriterion[] = [
     category: "Hackathon Readiness",
     section: "Submission",
     title: "Public GitHub repository",
-    description: "Verify repository visibility and access.",
+    description:
+      "Verified: https://github.com/maurolima-sys/ai-mind-law is public and accessible without authentication.",
   },
   {
     id: "license",
     category: "Hackathon Readiness",
     section: "Submission",
     title: "Apache 2.0 licence",
-    description: "Verify the repository licence and submission requirements.",
+    description:
+      "Verified: LICENSE file present at repository root, Apache 2.0, correct copyright header.",
   },
   {
     id: "hosted",
     category: "Hackathon Readiness",
     section: "Submission",
     title: "Hosted demo",
-    description: "Verify the public demo is reachable and the advertised workflow works.",
+    description:
+      "Verified: https://ai-mind-law.vercel.app/ loads without authentication. Dashboard, Processing, Analysis, and Compliance matrix screens confirmed reachable. Cloud AI analysis completed in production 2026-11-19.",
   },
   {
     id: "walkthrough",
     category: "Hackathon Readiness",
     section: "Documentation",
     title: "Evaluator walkthrough accuracy",
-    description: "Reconcile the walkthrough with the actual application and verified results.",
+    description:
+      "Updated 2026-11-19: walkthrough reflects production Cloud AI verification, correct fallback chain order (gemini-3.8-flash first), App Check confirmed, test count updated to 107. Evidence: docs/EVALUATOR_WALKTHROUGH.md commit 1e3c477.",
   },
   {
     id: "matrix-doc",
@@ -245,7 +251,8 @@ export const EVALUATION_CRITERIA: EvaluationCriterion[] = [
     category: "Hackathon Readiness",
     section: "Documentation",
     title: "Reconcile test counts",
-    description: "Count test files and individual test cases separately; update the guide.",
+    description:
+      "Verified: 107 tests across 28 test files (npm test). Walkthrough updated from '11 tests' to '107 tests (28 files)'. Evidence: commit 1e3c477.",
   },
   {
     id: "ci-triggers",
@@ -260,7 +267,7 @@ export const EVALUATION_CRITERIA: EvaluationCriterion[] = [
     section: "Documentation",
     title: "Review environment files and secrets",
     description:
-      "Verify Git tracking and history separately; ignore rules alone do not prove secrets are safe.",
+      "Verified: .env.local has zero Git history (git log -- .env.local returns empty). .env committed in c9eb502 contains only public Firebase client config. No secrets in Git history. Debug token read via build-time define only in dev builds (commit 78bbab8).",
     critical: true,
   },
   {

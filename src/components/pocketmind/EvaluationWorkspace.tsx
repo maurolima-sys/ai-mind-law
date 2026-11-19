@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import {
   EVALUATION_CRITERIA,
   emptyEvaluation,
@@ -52,10 +52,37 @@ export function EvaluationWorkspace({
   const [storage, setStorage] = useState(() => readStorage(key));
   const [message, setMessage] = useState("");
   const [resetPending, setResetPending] = useState(false);
+  const importRef = useRef<HTMLInputElement>(null);
   const summary = evaluationSummary(storage.state);
   const critical = EVALUATION_CRITERIA.filter(
     (criterion) => criterion.critical && storage.state.records[criterion.id]?.status !== "verified",
   );
+
+  function exportState() {
+    const blob = new Blob([JSON.stringify(storage.state, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "evaluation-snapshot.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function importState(file: File) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const state = parseEvaluation(reader.result as string);
+        const raw = JSON.stringify(state);
+        localStorage.setItem(key, raw);
+        setStorage({ state, raw, error: "" });
+        setMessage(`Imported ${Object.keys(state.records).length} records from snapshot.`);
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : "Import failed.");
+      }
+    };
+    reader.readAsText(file);
+  }
 
   function save(
     criterionId: string,
@@ -263,6 +290,41 @@ export function EvaluationWorkspace({
             </>
           )}
           <section className="mt-12 border-t border-[#e2e8f1] pt-6">
+            <h2 className="text-lg font-bold text-[#132449]">Import / Export</h2>
+            <p className="mt-2 text-sm text-[#52647e]">
+              Export a snapshot of this evaluation to share or back up. Import a snapshot to
+              pre-populate evidence — existing records are overwritten.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={exportState}
+                className="min-h-11 rounded-lg border border-[#cbd5e1] px-4 text-sm font-semibold hover:bg-[#edf3ff]"
+              >
+                Export snapshot
+              </button>
+              <button
+                type="button"
+                onClick={() => importRef.current?.click()}
+                className="min-h-11 rounded-lg border border-[#cbd5e1] px-4 text-sm font-semibold hover:bg-[#edf3ff]"
+              >
+                Import snapshot
+              </button>
+              <input
+                ref={importRef}
+                type="file"
+                accept="application/json,.json"
+                className="sr-only"
+                aria-label="Import evaluation snapshot JSON"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) importState(file);
+                  e.target.value = "";
+                }}
+              />
+            </div>
+          </section>
+          <section className="mt-8 border-t border-[#e2e8f1] pt-6">
             <h2 className="text-lg font-bold text-[#132449]">Reset local evaluation</h2>
             <p className="mt-2 text-sm text-[#52647e]">
               This removes this account's evaluation records and activity from this browser only.
