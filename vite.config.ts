@@ -9,6 +9,7 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import { execSync } from "child_process";
+import { loadEnv } from "vite";
 
 const commitHash = (() => {
   try {
@@ -19,11 +20,13 @@ const commitHash = (() => {
 })();
 
 // App Check debug token: injected only in dev builds, never in production.
-// Read from FIREBASE_APPCHECK_DEBUG_TOKEN (no VITE_ prefix) so Vite does not
-// embed it in the production bundle via the standard VITE_* env injection.
+// loadEnv with prefix="" reads all variables from .env.local regardless of prefix,
+// so FIREBASE_APPCHECK_DEBUG_TOKEN (no VITE_) is found without being auto-injected
+// into the bundle by Vite's standard VITE_* mechanism.
+const devEnv = loadEnv("development", process.cwd(), "");
 const appCheckDebugToken = (() => {
   if (process.env.NODE_ENV === "production") return undefined;
-  return process.env["FIREBASE_APPCHECK_DEBUG_TOKEN"] ?? undefined;
+  return devEnv["FIREBASE_APPCHECK_DEBUG_TOKEN"] ?? undefined;
 })();
 
 export default defineConfig({
