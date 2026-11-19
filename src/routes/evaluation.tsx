@@ -1,12 +1,16 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
-import { supabase } from "@/lib/services/supabase";
+import { getSupabase } from "@/lib/services/supabase";
 
 export const Route = createFileRoute("/evaluation")({
   head: () => ({ meta: [{ title: "Evaluation — PocketMind AI" }] }),
   beforeLoad: async () => {
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) throw redirect({ to: "/login" });
+    // Guard: only accessible in the browser with a valid Supabase session.
+    // Redirects to /login when authenticated but no session — not yet implemented
+    // as a full collaborative workspace. Returns 404 on the server (SSR).
+    if (typeof window === "undefined") throw notFound();
+    const { data } = await getSupabase().auth.getSession();
+    if (!data.session) throw notFound();
   },
   component: EvaluationPage,
 });
