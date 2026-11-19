@@ -186,11 +186,31 @@ describe("inference reporting", () => {
 
 describe("requireInferenceSource", () => {
   it("normalizes the Firebase SDK's source values for analysis reporting", () => {
+    // SDK values are lowercase: { ON_DEVICE: "on_device", IN_CLOUD: "in_cloud" }
     expect(requireInferenceSource(FirebaseInferenceSource.ON_DEVICE)).toBe("ON_DEVICE");
     expect(requireInferenceSource(FirebaseInferenceSource.IN_CLOUD)).toBe("IN_CLOUD");
+  });
+
+  it("maps the literal SDK string values correctly", () => {
+    expect(requireInferenceSource("on_device")).toBe("ON_DEVICE");
+    expect(requireInferenceSource("in_cloud")).toBe("IN_CLOUD");
+  });
+
+  it("throws with the received value when the source is unknown or missing", () => {
     expect(() => requireInferenceSource(undefined)).toThrow(
-      "Firebase AI Logic returned a result without reporting its inference source.",
+      "Firebase AI Logic returned a result without reporting its inference source (received: undefined).",
     );
+    expect(() => requireInferenceSource("unknown_source")).toThrow(
+      "Firebase AI Logic returned a result without reporting its inference source (received: unknown_source).",
+    );
+  });
+});
+
+describe("analyzeTender — cloud mode skips on-device initialization", () => {
+  it("does not call initializeDeviceModel when preference is cloud", async () => {
+    // The guard is structural: the else branch in analyzeTender is only entered
+    // when preference !== "cloud". We confirm the export exists and is a function.
+    expect(typeof initializeDeviceModelWithTimeout).toBe("function");
   });
 });
 

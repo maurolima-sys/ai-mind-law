@@ -134,10 +134,13 @@ export function parseTenderResponse(text: string) {
 }
 
 export function requireInferenceSource(source: string | undefined): InferenceSource {
+  // The SDK enum values are lowercase strings ("on_device", "in_cloud").
+  // Comparing against the enum object properties ensures we match the runtime value,
+  // not the key name, regardless of SDK version.
   if (source === FirebaseInferenceSource.ON_DEVICE) return "ON_DEVICE";
   if (source === FirebaseInferenceSource.IN_CLOUD) return "IN_CLOUD";
   throw new Error(
-    "Firebase AI Logic returned a result without reporting its inference source. Update the Firebase SDK before using this result.",
+    `Firebase AI Logic returned a result without reporting its inference source (received: ${String(source)}). Update the Firebase SDK before using this result.`,
   );
 }
 
@@ -278,7 +281,9 @@ export async function analyzeTender(
   }
 
   const { model } = createTenderModel(preference);
+
   if (preference === "cloud") {
+    // Cloud-only: skip on-device initialization entirely.
     onProgress({
       phase: "preparing",
       completed: 0,
@@ -286,6 +291,7 @@ export async function analyzeTender(
       detail: "Preparing Firebase AI Logic cloud analysis",
     });
   } else {
+    // local or hybrid: attempt on-device model initialization.
     onProgress({
       phase: "preparing",
       completed: 0,

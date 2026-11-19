@@ -46,9 +46,9 @@ describe("Firebase AI retry policy", () => {
     vi.useFakeTimers();
     const calls: string[] = [];
     expect(GEMINI_MODEL_FALLBACK_CHAIN).toEqual([
-      "gemini-3.5-flash-lite",
-      "gemini-3.5-flash",
       "gemini-3.8-flash",
+      "gemini-3.5-flash",
+      "gemini-3.5-flash-lite",
     ]);
 
     const request = generateWithModelFallback("cloud", async (modelName) => {
@@ -66,6 +66,20 @@ describe("Firebase AI retry policy", () => {
     });
     expect(calls).toEqual([PRIMARY_GEMINI_MODEL, SECONDARY_GEMINI_MODEL, TERTIARY_GEMINI_MODEL]);
     expect([...new Set(calls)]).toEqual([...GEMINI_MODEL_FALLBACK_CHAIN]);
+  });
+
+  it("starts with the most capable model (gemini-3.8-flash) and degrades on failure", async () => {
+    vi.useFakeTimers();
+    const calls: string[] = [];
+    const request = generateWithModelFallback("cloud", async (modelName) => {
+      calls.push(modelName);
+      if (calls.length === 1) throw { customErrorData: { status: 503 } };
+      return "ok";
+    });
+    await vi.runAllTimersAsync();
+    await expect(request).resolves.toMatchObject({ modelName: SECONDARY_GEMINI_MODEL });
+    expect(calls[0]).toBe("gemini-3.8-flash");
+    expect(calls[1]).toBe("gemini-3.5-flash");
   });
 
   it("does not switch models for permanent errors or local-only requests", async () => {
