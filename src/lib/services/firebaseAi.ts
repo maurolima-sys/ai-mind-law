@@ -354,7 +354,10 @@ function getFirebaseRuntime(): FirebaseRuntime {
   const runtime = {
     app,
     appCheck,
-    ai: getAI(app, { backend: new GoogleAIBackend() }),
+    ai: getAI(app, {
+      backend: new GoogleAIBackend(),
+      useLimitedUseAppCheckTokens: true,
+    }),
   };
   runtimeHost[runtimeWindowKey] = runtime;
   return runtime;
