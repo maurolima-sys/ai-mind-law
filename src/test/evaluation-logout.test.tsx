@@ -32,8 +32,13 @@ function renderRoute() {
     path: "/",
     component: () => <h1>Home page</h1>,
   });
+  const login = createRoute({
+    getParentRoute: () => root,
+    path: "/login",
+    component: () => <h1>Login page</h1>,
+  });
   const history = createMemoryHistory({ initialEntries: ["/evaluation#overview"] });
-  const router = createRouter({ routeTree: root.addChildren([evaluation, home]), history });
+  const router = createRouter({ routeTree: root.addChildren([evaluation, home, login]), history });
   render(<RouterProvider router={router} />);
   return router;
 }
@@ -50,6 +55,13 @@ afterEach(() => {
 });
 
 describe("evaluation logout", () => {
+  it("redirects an unauthenticated hydrated page to login", async () => {
+    getSession.mockResolvedValue({ data: { session: null } });
+    renderRoute();
+    expect(await screen.findByRole("heading", { name: "Login page" })).toBeInTheDocument();
+    expect(screen.queryByText("Evaluation sections")).not.toBeInTheDocument();
+  });
+
   it("waits for sign out, then replaces the evaluation URL with home", async () => {
     let finishSignOut!: (result: { error: null }) => void;
     signOut.mockReturnValue(new Promise((resolve) => (finishSignOut = resolve)));

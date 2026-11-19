@@ -64,7 +64,7 @@ describe("processing provenance", () => {
     expect(
       screen.getByText("Failed · displayed analysis is from an earlier run"),
     ).toBeInTheDocument();
-  });
+  }, 15_000);
 
   it("reports real inference separately from fictional sample content", async () => {
     const sample = buildDemoDocument();

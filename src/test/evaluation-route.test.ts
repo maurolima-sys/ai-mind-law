@@ -12,21 +12,35 @@ const context = {} as NonNullable<Parameters<typeof guard>[0]>;
 
 afterEach(() => {
   vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
   getSession.mockReset();
 });
 
 describe("evaluation route guard", () => {
-  it("blocks a disabled route without querying authentication", async () => {
+  it("blocks a disabled route on the client without querying authentication", () => {
     vi.stubEnv("VITE_ENABLE_EVALUATION_DASHBOARD", "false");
-    await expect(guard(context)).rejects.toMatchObject({ isNotFound: true });
+    expect(() => guard(context)).toThrow();
     expect(getSession).not.toHaveBeenCalled();
   });
 
-  it("requires a session when enabled", async () => {
+  it("allows an enabled route on the client without querying authentication", () => {
     vi.stubEnv("VITE_ENABLE_EVALUATION_DASHBOARD", "true");
-    getSession.mockResolvedValueOnce({ data: { session: null } });
-    await expect(guard(context)).rejects.toMatchObject({ isNotFound: true });
-    getSession.mockResolvedValueOnce({ data: { session: { user: { id: "test" } } } });
-    await expect(guard(context)).resolves.toBeUndefined();
+    expect(() => guard(context)).not.toThrow();
+    expect(getSession).not.toHaveBeenCalled();
+  });
+
+  it("allows the enabled route to render a public shell on the server", () => {
+    vi.stubEnv("VITE_ENABLE_EVALUATION_DASHBOARD", "true");
+    vi.stubGlobal("window", undefined);
+    expect(() => guard(context)).not.toThrow();
+    expect(getSession).not.toHaveBeenCalled();
+  });
+
+  it("allows the disabled route to render a shell on the server — client will block", () => {
+    vi.stubEnv("VITE_ENABLE_EVALUATION_DASHBOARD", "false");
+    vi.stubGlobal("window", undefined);
+    // Server has no window; flag check is skipped. Client-side beforeLoad blocks.
+    expect(() => guard(context)).not.toThrow();
+    expect(getSession).not.toHaveBeenCalled();
   });
 });

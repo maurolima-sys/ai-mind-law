@@ -25,7 +25,7 @@ describe("SettingsScreen", () => {
     fireEvent.change(screen.getByLabelText("Interface language"), {
       target: { value: "pt" },
     });
-    fireEvent.click(screen.getByLabelText("Cloud AI"));
+    fireEvent.click(screen.getByRole("radio", { name: "Cloud AI" }));
     fireEvent.click(screen.getByRole("switch", { name: /Voice input in Q&A/ }));
     fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
 
