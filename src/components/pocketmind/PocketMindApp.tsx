@@ -375,6 +375,9 @@ export function PocketMindApp() {
   const [documentPagination, setDocumentPagination] = useState<Record<string, boolean>>({});
   const [reviews, setReviews] = useState<Record<string, Review>>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisAttempts, setAnalysisAttempts] = useState<
+    Record<string, "running" | "failed" | "completed">
+  >({});
   const [cloudResponseReceived, setCloudResponseReceived] = useState(false);
   const [progressDetail, setProgressDetail] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -992,18 +995,26 @@ export function PocketMindApp() {
       throw new Error("Demo mode never runs external OCR or Firebase AI analysis.");
     }
     const format = selectedDocument.format ?? getDocumentFormat(selectedDocument.name) ?? "pdf";
-    const result = await analyzeTender(
-      pages,
-      processingChoice,
-      ({ detail }) => setProgressDetail(detail),
-      recordInferenceResponse,
-      {
-        format,
-        sourceLocations: locations,
-        paginationVerified: paginated,
-        documentId: selectedDocument.id,
-      },
-    );
+    const documentId = selectedDocument.id;
+    setAnalysisAttempts((current) => ({ ...current, [documentId]: "running" }));
+    let result: Analysis;
+    try {
+      result = await analyzeTender(
+        pages,
+        processingChoice,
+        ({ detail }) => setProgressDetail(detail),
+        recordInferenceResponse,
+        {
+          format,
+          sourceLocations: locations,
+          paginationVerified: paginated,
+          documentId,
+        },
+      );
+    } catch (error) {
+      setAnalysisAttempts((current) => ({ ...current, [documentId]: "failed" }));
+      throw error;
+    }
     const analysis =
       format === "pdf" && !paginated ? markUnpaginatedEvidenceUnverified(result) : result;
     const updatedDocument: DocumentRecord = {
@@ -1025,6 +1036,7 @@ export function PocketMindApp() {
     setSelectedRequirementId(null);
     setActiveFinding("all");
     setScreen("analysis");
+    setAnalysisAttempts((current) => ({ ...current, [documentId]: "completed" }));
     recordActivity("analysis-completed", selectedDocument.id);
   }
 
@@ -1471,6 +1483,15 @@ export function PocketMindApp() {
               </div>
             )}
 
+          {screen !== "processing" && analysisAttempts[selectedDocument.id] === "failed" && (
+            <div className="pm-demo-banner" role="status">
+              <AlertCircle size={17} />
+              <span>
+                {analysis ? t("runtime_attempt_failed_previous") : t("runtime_attempt_failed")}
+              </span>
+            </div>
+          )}
+
           {screen === "overview" && (
             <OverviewScreen
               documents={documents}
@@ -1674,6 +1695,7 @@ export function PocketMindApp() {
               )}
               firebaseConfigured={firebaseConfigured}
               cloudResponseReceived={cloudResponseReceived}
+              analysisAttempt={analysisAttempts[selectedDocument.id]}
               isAnalyzing={isAnalyzing}
               progressDetail={progressDetail}
               errorMessage={errorMessage}
@@ -3022,7 +3044,7 @@ export function ComplianceScreen({
   );
 }
 
-function ProcessingScreen({
+export function ProcessingScreen({
   document,
   file,
   choice,
@@ -3033,6 +3055,7 @@ function ProcessingScreen({
   hasExtractedText,
   firebaseConfigured,
   cloudResponseReceived,
+  analysisAttempt,
   isAnalyzing,
   progressDetail,
   errorMessage,
@@ -3061,6 +3084,7 @@ function ProcessingScreen({
   hasExtractedText: boolean;
   firebaseConfigured: boolean;
   cloudResponseReceived: boolean;
+  analysisAttempt?: "running" | "failed" | "completed" | undefined;
   isAnalyzing: boolean;
   progressDetail: string;
   errorMessage: string;
@@ -3170,7 +3194,9 @@ function ProcessingScreen({
               <span className="pm-radio-circle">
                 {(choice === "cloud" || choice === "hybrid") && <span className="pm-radio-dot" />}
               </span>
-              <span>{t("proc_card_cloud_title")}</span>
+              <span>
+                {choice === "hybrid" ? t("proc_card_hybrid_selected") : t("proc_card_cloud_title")}
+              </span>
             </div>
             <Badge tone="purple">{t("proc_card_cloud_badge")}</Badge>
           </div>
@@ -3309,7 +3335,9 @@ function ProcessingScreen({
                 ? t("proc_card_demo_title")
                 : choice === "local"
                   ? t("proc_card_local_title")
-                  : t("proc_card_cloud_title")}
+                  : choice === "hybrid"
+                    ? t("proc_card_hybrid_selected")
+                    : t("proc_card_cloud_title")}
             </Badge>
           </div>
         </div>
@@ -3333,7 +3361,9 @@ function ProcessingScreen({
                 ? t("proc_confirm_privacy_stays")
                 : choice === "demo"
                   ? t("proc_confirm_privacy_simulated_desc")
-                  : t("proc_confirm_privacy_cloud_desc")}
+                  : choice === "hybrid"
+                    ? t("proc_confirm_privacy_hybrid_desc")
+                    : t("proc_confirm_privacy_cloud_desc")}
             </span>
           </div>
         </div>
@@ -3648,18 +3678,52 @@ function ProcessingScreen({
           </strong>
         </div>
         <div>
+          <span>{t("runtime_selected_document")}</span>
+          <strong>{document.name}</strong>
+        </div>
+        <div>
+          <span>{t("runtime_document_content")}</span>
+          <strong>
+            {document.source === "demo"
+              ? t("runtime_sample_content")
+              : t("runtime_uploaded_content")}
+          </strong>
+        </div>
+        <div>
+          <span>{t("runtime_text_extraction")}</span>
+          <strong>
+            {document.source === "demo"
+              ? t("runtime_sample_text")
+              : !hasQuestionText
+                ? t("runtime_text_not_extracted")
+                : document.textSource === "llamaparse"
+                  ? t("runtime_text_external_ocr")
+                  : document.textSource === "pdfjs" || document.textSource === "browser"
+                    ? t("runtime_text_local")
+                    : t("runtime_text_unknown")}
+          </strong>
+        </div>
+        <div>
           <span>{t("runtime_processing_source")}</span>
           <strong>
             {document.analysis
               ? modeLabel(analysisProcessingSource(document.analysis), t)
-              : document.source === "demo"
-                ? t("runtime_demo_mode")
-                : t("runtime_not_run")}
+              : t("runtime_not_run")}
           </strong>
         </div>
         <div>
-          <span>{t("runtime_demo_data_label")}</span>
-          <strong>{document.source === "demo" ? t("runtime_demo_data") : t("inference_no")}</strong>
+          <span>{t("runtime_latest_attempt")}</span>
+          <strong>
+            {analysisAttempt === "running"
+              ? t("runtime_attempt_running")
+              : analysisAttempt === "failed"
+                ? document.analysis
+                  ? t("runtime_attempt_failed_previous")
+                  : t("runtime_attempt_failed")
+                : analysisAttempt === "completed"
+                  ? t("runtime_attempt_completed")
+                  : t("runtime_attempt_not_started")}
+          </strong>
         </div>
       </section>
     </div>

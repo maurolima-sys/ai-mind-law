@@ -1,0 +1,145 @@
+import "fake-indexeddb/auto";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import {
+  createMemoryHistory,
+  createRootRoute,
+  createRouter,
+  RouterProvider,
+} from "@tanstack/react-router";
+import { createRef } from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { buildDemoDocument } from "@/data/sampleTender";
+import { LocaleProvider } from "@/lib/i18n";
+import { PocketMindApp, ProcessingScreen } from "@/components/pocketmind/PocketMindApp";
+
+const mocks = vi.hoisted(() => ({ analyzeTender: vi.fn() }));
+vi.mock("@/lib/buildInfo", () => ({ buildLabel: () => "test build" }));
+vi.mock("@/lib/services/tenderAnalysis", () => ({ analyzeTender: mocks.analyzeTender }));
+vi.mock("@/lib/services/firebaseAi", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/services/firebaseAi")>()),
+  isFirebaseConfigured: () => false,
+}));
+
+beforeEach(() => {
+  localStorage.clear();
+  mocks.analyzeTender.mockReset();
+});
+afterEach(cleanup);
+
+function renderApp() {
+  const root = createRootRoute({
+    component: () => (
+      <LocaleProvider>
+        <PocketMindApp />
+      </LocaleProvider>
+    ),
+  });
+  const router = createRouter({ routeTree: root, history: createMemoryHistory() });
+  render(<RouterProvider router={router} />);
+}
+
+describe("processing provenance", () => {
+  it("distinguishes a failed local attempt from the previously prepared sample analysis", async () => {
+    mocks.analyzeTender.mockRejectedValue(
+      Object.assign(new Error("timed out"), { code: "ON_DEVICE_GENERATION_TIMEOUT" }),
+    );
+    renderApp();
+
+    fireEvent.click(await screen.findByRole("button", { name: /add a document/i }));
+    const status = screen.getByRole("region", { name: "Firebase AI Logic status" });
+    expect(within(status).getByText("Fictional sample document")).toBeInTheDocument();
+    expect(within(status).getByText("Demo mode")).toBeInTheDocument();
+    expect(within(status).getByText("No AI analysis attempted this session")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /confirm and continue/i }));
+    expect(
+      await within(status).findByText("Failed · displayed analysis is from an earlier run"),
+    ).toBeInTheDocument();
+    expect(within(status).getByText("Demo mode")).toBeInTheDocument();
+    expect(mocks.analyzeTender.mock.calls[0]?.[1]).toBe("local");
+
+    fireEvent.click(screen.getByRole("button", { name: "Dashboard" }));
+    expect(
+      screen.getByText("Failed · displayed analysis is from an earlier run"),
+    ).toBeInTheDocument();
+  });
+
+  it("reports real inference separately from fictional sample content", async () => {
+    const sample = buildDemoDocument();
+    if (!sample.analysis) throw new Error("Sample analysis missing");
+    mocks.analyzeTender.mockResolvedValue({
+      ...sample.analysis,
+      mode: "local",
+      processingSource: "on-device",
+    });
+    renderApp();
+    fireEvent.click(await screen.findByRole("button", { name: /add a document/i }));
+    fireEvent.click(screen.getByRole("button", { name: /confirm and continue/i }));
+    expect(await screen.findByText("On-device (ON_DEVICE)")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Processing" }));
+    const status = screen.getByRole("region", { name: "Firebase AI Logic status" });
+    expect(within(status).getByText("Fictional sample document")).toBeInTheDocument();
+    expect(within(status).getByText("On-device (ON_DEVICE)")).toBeInTheDocument();
+    expect(within(status).getByText("Completed")).toBeInTheDocument();
+    expect(within(status).queryByText("Demo mode")).not.toBeInTheDocument();
+  });
+
+  it("reports uploaded content, external extraction and an earlier cloud result separately", () => {
+    const sample = buildDemoDocument();
+    if (!sample.analysis) throw new Error("Sample analysis missing");
+    const document = {
+      ...sample,
+      id: "uploaded",
+      name: "document.pdf",
+      source: "upload" as const,
+      textSource: "llamaparse" as const,
+      analysis: { ...sample.analysis, mode: "cloud" as const, processingSource: "cloud" as const },
+    };
+    render(
+      <LocaleProvider>
+        <ProcessingScreen
+          document={document}
+          file={null}
+          choice="hybrid"
+          cloudConsent={false}
+          showExternalOcrPrompt={false}
+          externalOcrAvailability="disabled"
+          externalOcrConsent={false}
+          hasExtractedText={true}
+          firebaseConfigured={true}
+          cloudResponseReceived={false}
+          analysisAttempt="failed"
+          isAnalyzing={false}
+          progressDetail=""
+          errorMessage=""
+          onDeviceTimeout={false}
+          inputRef={createRef<HTMLInputElement>()}
+          onFileChange={vi.fn()}
+          onDrop={vi.fn()}
+          onSelectChoice={vi.fn()}
+          onCloudConsentChange={vi.fn()}
+          onExternalOcrConsentChange={vi.fn()}
+          onExternalOcr={vi.fn()}
+          onAnalyzeExtractedText={vi.fn()}
+          onExtractTextOnly={vi.fn()}
+          onCheckExternalOcr={vi.fn()}
+          onRunAnalysis={vi.fn()}
+          onOpenDemo={vi.fn()}
+          onClearError={vi.fn()}
+        />
+      </LocaleProvider>,
+    );
+    const status = screen.getByRole("region", { name: "Firebase AI Logic status" });
+    expect(within(status).getByText("document.pdf")).toBeInTheDocument();
+    expect(within(status).getByText("Uploaded document")).toBeInTheDocument();
+    expect(within(status).getByText("External OCR · LlamaParse")).toBeInTheDocument();
+    expect(within(status).getByText("Cloud (IN_CLOUD)")).toBeInTheDocument();
+    expect(
+      within(status).getByText("Failed · displayed analysis is from an earlier run"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Mode for next analysis")).toBeInTheDocument();
+    expect(screen.getAllByText("Hybrid · on-device first, cloud fallback")).toHaveLength(2);
+    expect(screen.getByRole("button", { name: /confirm and continue/i })).toBeDisabled();
+  });
+});
