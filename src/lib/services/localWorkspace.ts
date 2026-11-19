@@ -1,6 +1,8 @@
 import type {
   DocumentRecord,
   EvidenceMatch,
+  ProjectDocumentLink,
+  ProjectRecord,
   RequirementEvidenceLink,
   Review,
   SupportingEvidenceDocument,
@@ -8,12 +10,14 @@ import type {
 } from "@/lib/types";
 
 const DATABASE_NAME = "pocketmind-local-workspace";
-const DATABASE_VERSION = 1;
+const DATABASE_VERSION = 2;
 const DOCUMENTS = "documents";
 const DOCUMENT_FILES = "document-files";
 const EVIDENCE_DOCUMENTS = "evidence-documents";
 const EVIDENCE_FILES = "evidence-files";
 const WORKSPACE_STATE = "workspace-state";
+const PROJECTS = "projects";
+const PROJECT_DOCUMENT_LINKS = "project-document-links";
 
 type StoredFile = {
   id: string;
@@ -35,6 +39,8 @@ export interface LoadedLocalWorkspace extends LocalWorkspaceState {
   filesByDocumentId: Record<string, File>;
   evidenceDocuments: SupportingEvidenceDocument[];
   filesByEvidenceId: Record<string, File>;
+  projects: ProjectRecord[];
+  projectDocumentLinks: ProjectDocumentLink[];
 }
 
 const emptyState = (): LocalWorkspaceState => ({
@@ -67,6 +73,24 @@ function openDatabase(): Promise<IDBDatabase> {
       }
       if (!database.objectStoreNames.contains(WORKSPACE_STATE)) {
         database.createObjectStore(WORKSPACE_STATE, { keyPath: "key" });
+      }
+      if (!database.objectStoreNames.contains(PROJECTS)) {
+        database.createObjectStore(PROJECTS, { keyPath: "id" });
+      }
+      if (!database.objectStoreNames.contains(PROJECT_DOCUMENT_LINKS)) {
+        database.createObjectStore(PROJECT_DOCUMENT_LINKS, { keyPath: "id" });
+      }
+      const links = request.transaction!.objectStore(PROJECT_DOCUMENT_LINKS);
+      if (!links.indexNames.contains("projectId")) {
+        links.createIndex("projectId", "projectId");
+      }
+      if (!links.indexNames.contains("documentId")) {
+        links.createIndex("documentId", "documentId");
+      }
+      if (!links.indexNames.contains("project-document-unique")) {
+        links.createIndex("project-document-unique", ["projectId", "documentId"], {
+          unique: true,
+        });
       }
     };
     request.onsuccess = () => {
@@ -116,7 +140,15 @@ export async function loadLocalWorkspace(): Promise<LoadedLocalWorkspace> {
   const database = await openDatabase();
   try {
     const transaction = database.transaction(
-      [DOCUMENTS, DOCUMENT_FILES, EVIDENCE_DOCUMENTS, EVIDENCE_FILES, WORKSPACE_STATE],
+      [
+        DOCUMENTS,
+        DOCUMENT_FILES,
+        EVIDENCE_DOCUMENTS,
+        EVIDENCE_FILES,
+        WORKSPACE_STATE,
+        PROJECTS,
+        PROJECT_DOCUMENT_LINKS,
+      ],
       "readonly",
     );
     const done = transactionDone(transaction);
@@ -126,15 +158,29 @@ export async function loadLocalWorkspace(): Promise<LoadedLocalWorkspace> {
       transaction.objectStore(EVIDENCE_DOCUMENTS),
     );
     const evidenceFilesRequest = getAllRecords<StoredFile>(transaction.objectStore(EVIDENCE_FILES));
+    const projectsRequest = getAllRecords<ProjectRecord>(transaction.objectStore(PROJECTS));
+    const projectLinksRequest = getAllRecords<ProjectDocumentLink>(
+      transaction.objectStore(PROJECT_DOCUMENT_LINKS),
+    );
     const stateRequest = getRecord<{
       key: string;
       value: LocalWorkspaceState;
     }>(transaction.objectStore(WORKSPACE_STATE), "workspace");
-    const [documents, files, evidenceDocuments, evidenceFiles, storedState] = await Promise.all([
+    const [
+      documents,
+      files,
+      evidenceDocuments,
+      evidenceFiles,
+      projects,
+      projectDocumentLinks,
+      storedState,
+    ] = await Promise.all([
       documentsRequest,
       filesRequest,
       evidenceRequest,
       evidenceFilesRequest,
+      projectsRequest,
+      projectLinksRequest,
       stateRequest,
     ]);
     await done;
@@ -144,6 +190,8 @@ export async function loadLocalWorkspace(): Promise<LoadedLocalWorkspace> {
       filesByDocumentId: Object.fromEntries(files.map((item) => [item.id, toFile(item)])),
       evidenceDocuments,
       filesByEvidenceId: Object.fromEntries(evidenceFiles.map((item) => [item.id, toFile(item)])),
+      projects,
+      projectDocumentLinks,
       ...(storedState?.value ?? emptyState()),
     };
   } finally {
@@ -249,10 +297,114 @@ export async function saveLocalWorkspaceState(state: LocalWorkspaceState): Promi
   }
 }
 
+export async function saveProjectRecord(project: ProjectRecord): Promise<void> {
+  const database = await openDatabase();
+  try {
+    const transaction = database.transaction(PROJECTS, "readwrite");
+    const done = transactionDone(transaction);
+    transaction.objectStore(PROJECTS).put(project);
+    await done;
+  } finally {
+    database.close();
+  }
+}
+
+export async function saveProjectDocumentLink(
+  link: ProjectDocumentLink,
+): Promise<ProjectDocumentLink> {
+  const database = await openDatabase();
+  try {
+    const transaction = database.transaction(
+      [DOCUMENTS, PROJECTS, PROJECT_DOCUMENT_LINKS],
+      "readwrite",
+    );
+    const done = transactionDone(transaction);
+    const store = transaction.objectStore(PROJECT_DOCUMENT_LINKS);
+    const projectRequest = transaction.objectStore(PROJECTS).get(link.projectId) as IDBRequest<
+      ProjectRecord | undefined
+    >;
+    const documentRequest = transaction.objectStore(DOCUMENTS).get(link.documentId) as IDBRequest<
+      DocumentRecord | undefined
+    >;
+    const existingRequest = store
+      .index("project-document-unique")
+      .get([link.projectId, link.documentId]) as IDBRequest<ProjectDocumentLink | undefined>;
+    const [project, document, existing] = await Promise.all([
+      requestResult(projectRequest),
+      requestResult(documentRequest),
+      requestResult(existingRequest),
+    ]);
+    if (!project) {
+      transaction.abort();
+      await done.catch(() => undefined);
+      throw new Error("The selected project no longer exists in this browser.");
+    }
+    if (!document) {
+      transaction.abort();
+      await done.catch(() => undefined);
+      throw new Error("The selected document no longer exists in this browser.");
+    }
+    const saved = existing
+      ? {
+          ...link,
+          id: existing.id,
+          addedAt: existing.addedAt,
+        }
+      : link;
+    store.put(saved);
+    await done;
+    return saved;
+  } finally {
+    database.close();
+  }
+}
+
+export async function deleteProjectDocumentLink(linkId: string): Promise<void> {
+  const database = await openDatabase();
+  try {
+    const transaction = database.transaction(PROJECT_DOCUMENT_LINKS, "readwrite");
+    const done = transactionDone(transaction);
+    transaction.objectStore(PROJECT_DOCUMENT_LINKS).delete(linkId);
+    await done;
+  } finally {
+    database.close();
+  }
+}
+
+export async function deleteProjectRecord(projectId: string): Promise<void> {
+  const database = await openDatabase();
+  try {
+    const transaction = database.transaction([PROJECTS, PROJECT_DOCUMENT_LINKS], "readwrite");
+    const done = transactionDone(transaction);
+    transaction.objectStore(PROJECTS).delete(projectId);
+    const links = transaction
+      .objectStore(PROJECT_DOCUMENT_LINKS)
+      .index("projectId")
+      .openCursor(IDBKeyRange.only(projectId));
+    links.onsuccess = () => {
+      const cursor = links.result;
+      if (!cursor) return;
+      cursor.delete();
+      cursor.continue();
+    };
+    await done;
+  } finally {
+    database.close();
+  }
+}
+
 export async function clearLocalWorkspace(): Promise<void> {
   const database = await openDatabase();
   try {
-    const stores = [DOCUMENTS, DOCUMENT_FILES, EVIDENCE_DOCUMENTS, EVIDENCE_FILES, WORKSPACE_STATE];
+    const stores = [
+      DOCUMENTS,
+      DOCUMENT_FILES,
+      EVIDENCE_DOCUMENTS,
+      EVIDENCE_FILES,
+      WORKSPACE_STATE,
+      PROJECTS,
+      PROJECT_DOCUMENT_LINKS,
+    ];
     const transaction = database.transaction(stores, "readwrite");
     const done = transactionDone(transaction);
     for (const store of stores) transaction.objectStore(store).clear();

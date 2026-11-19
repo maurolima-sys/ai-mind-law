@@ -26,6 +26,12 @@
   screen_settings_title: "Settings",
   screen_settings_subtitle:
     "Choose your defaults, voice controls, and how local workspace data is handled.",
+  screen_integrations_title: "Integrations",
+  screen_integrations_subtitle:
+    "Run observable diagnostics and review what has actually been verified in this browser.",
+  screen_projects_title: "Projects",
+  screen_projects_subtitle:
+    "Organize private tender documents into local, reviewable project workspaces.",
 
   risk_summary_label: "Risk summary",
   risk_summary_total: "Risks",
@@ -781,6 +787,146 @@
   settings_saved: "Settings saved.",
   settings_save_error: "Settings could not be saved.",
   settings_delete_error: "Local workspace data could not be deleted.",
+
+  integrations_observable_title: "Configuration is not the same as a working response",
+  integrations_observable_detail:
+    "Cards distinguish configured services, successful calls, and failures. Tests record only diagnostic metadata, never tokens or document contents.",
+  integrations_ai_title: "AI service diagnostics",
+  integrations_firebase_title: "Firebase AI Logic / Gemini",
+  integrations_firebase_detail:
+    "Runs one real inference using fixed fictional text and reports the SDK inference source.",
+  integrations_firebase_mode: "Diagnostic inference mode",
+  integrations_firebase_consent:
+    "I explicitly allow this fixed diagnostic text to be sent to the cloud for this test.",
+  integrations_firebase_sample_note:
+    "Only a short prepared public demo sentence is sent. Your local documents are never used here.",
+  integrations_firebase_run: "Run real inference test",
+  integrations_app_check_label: "App Check observed on the last call",
+  integrations_app_check_accepted: "Accepted for a successful cloud response",
+  integrations_app_check_rejected: "Rejected by Firebase",
+  integrations_app_check_unknown: "Not established by this test",
+  integrations_app_check_not_applicable: "Not used for the observed on-device source",
+  integrations_llama_detail:
+    "Checks connector configuration. An OCR operation remains tied to a separately consented PDF.",
+  integrations_llama_consent_note:
+    "No file is uploaded by this screen. Verify a real OCR result from Processing & privacy after per-document consent.",
+  integrations_eleven_detail:
+    "Checks server configuration and can synthesize fixed diagnostic narration.",
+  integrations_eleven_test_note:
+    "The speech test sends only fixed product text shown in this module. It does not include tour or document text from the workspace.",
+  integrations_eleven_run: "Run speech test",
+  integrations_check_configuration: "Check configuration",
+  integrations_checking: "Checking server configuration…",
+  integrations_status_success: "Operational response",
+  integrations_status_failure: "Call failed",
+  integrations_status_configured: "Configured only",
+  integrations_status_not_configured: "Not configured",
+  integrations_status_not_tested: "Not tested",
+  integrations_mcp_title: "MCP readiness",
+  integrations_mcp_detail:
+    "Architecture audit of the proposed model-connector integration. No MCP server or connection is claimed.",
+  integrations_mcp_not_implemented: "Not implemented",
+  integrations_mcp_boundary_title: "A hosted MCP server cannot read this browser's IndexedDB",
+  integrations_mcp_boundary_detail:
+    "Private local documents stay in the current browser. Remote agents need an explicit, authorized bridge; they cannot access IndexedDB automatically.",
+  integrations_mcp_requirement_auth:
+    "Define authentication, authorization, tenant boundaries, and token rotation.",
+  integrations_mcp_requirement_readonly:
+    "Start with read-only tools for public prepared demo data; keep private workspace access disabled.",
+  integrations_mcp_requirement_bridge:
+    "If private access is added later, require an explicit browser-to-server bridge and per-operation user approval.",
+  integrations_mcp_requirement_audit:
+    "Define rate limits, payload limits, audit records, revocation, and incident handling before deployment.",
+  integrations_history_title: "Recent diagnostic history",
+  integrations_history_detail:
+    "The latest 20 observations stay in this browser and can be cleared independently of workspace documents.",
+  integrations_history_clear: "Clear history",
+  integrations_history_error: "Diagnostic history could not be loaded or updated.",
+  integrations_history_time: "Observed",
+  integrations_history_service: "Service",
+  integrations_history_operation: "Operation",
+  integrations_history_source: "Inference source",
+  integrations_history_result: "Result",
+  integrations_history_latency: "Latency",
+  integrations_history_empty: "No diagnostic calls recorded",
+  integrations_history_empty_detail:
+    "Run an inference, configuration, or speech test to create an observed result.",
+  integrations_history_local_note:
+    "Diagnostic history contains no tokens, prompts, answers, or document contents.",
+  integrations_operation_inference: "Real inference",
+  integrations_operation_availability: "Availability check",
+  integrations_operation_speech: "Speech request",
+  integrations_source_device: "On-device",
+  integrations_source_cloud: "Cloud",
+  projects_create: "Create project",
+  projects_create_title: "Create a local project",
+  projects_create_detail: "Start a dossier without moving any document to the cloud.",
+  projects_edit: "Edit project",
+  projects_edit_title: "Edit project",
+  projects_edit_detail: "Update the local dossier identity and description.",
+  projects_save_changes: "Save changes",
+  projects_name_label: "Project name",
+  projects_description_label: "Description",
+  projects_cancel: "Cancel",
+  projects_saving: "Saving…",
+  projects_save_error: "The project could not be saved in this browser.",
+  projects_delete_error: "The project could not be deleted.",
+  projects_status_filter: "Filter projects by status",
+  projects_status_active: "Active",
+  projects_status_archived: "Archived",
+  projects_status_all: "All",
+  projects_empty_title: "Create your first project",
+  projects_empty_detail: "Group multiple local tender documents into a single reviewable dossier.",
+  projects_no_matches: "No matching projects",
+  projects_no_matches_detail: "Change the search or status filter.",
+  projects_open: "Open project",
+  projects_back: "Back to projects",
+  projects_archive: "Archive",
+  projects_restore: "Restore",
+  projects_no_description: "No description added.",
+  projects_local_privacy: "Project metadata and documents stay in this browser.",
+  projects_metric_documents: "Documents",
+  projects_metric_requirements: "Requirements",
+  projects_metric_critical: "Critical risks",
+  projects_metric_pending: "Pending reviews",
+  projects_broken_links: "{{count}} broken document associations were excluded.",
+  projects_documents_title: "Project documents",
+  projects_documents_detail:
+    "Files remain in the local library; this screen organizes only their project association and role.",
+  projects_add_document_title: "Add an existing document",
+  projects_add_document_detail:
+    "Choose an uploaded document from this browser and classify its role in the dossier.",
+  projects_add_document: "Add document",
+  projects_document_label: "Document",
+  projects_role_label: "Document role",
+  projects_document_required: "Choose a document.",
+  projects_link_save_error: "The document could not be associated with this project.",
+  projects_link_remove_error: "The document association could not be removed.",
+  projects_no_available_documents:
+    "All uploaded documents are already associated with this project.",
+  projects_close: "Close",
+  projects_col_document: "Document",
+  projects_col_role: "Role",
+  projects_col_status: "Status",
+  projects_col_size: "Size",
+  projects_col_action: "Actions",
+  projects_role_tender: "Tender",
+  projects_role_terms_of_reference: "Terms of reference",
+  projects_role_annex: "Annex",
+  projects_role_certificate: "Certificate",
+  projects_role_evidence: "Bidder evidence",
+  projects_role_other: "Other",
+  projects_open_document: "Open",
+  projects_remove_document: "Remove {{name}} from this project",
+  projects_no_documents_title: "No documents associated",
+  projects_no_documents_detail:
+    "Add documents already stored in this browser to build the project dossier.",
+  projects_delete_title: "Delete project",
+  projects_delete_detail:
+    "Deletes only the project and its document associations. Files, analyses, and evidence remain in the local library.",
+  projects_delete: "Delete project",
+  projects_delete_confirm:
+    "Delete this project organization now? Local documents will not be deleted.",
 } as const;
 
 export type TranslationKey = keyof typeof en;

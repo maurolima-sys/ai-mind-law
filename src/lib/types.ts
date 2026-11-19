@@ -16,6 +16,9 @@ export type WorkspaceActivityType =
   | "evidence-linked"
   | "evidence-compared"
   | "review-updated";
+export type ProjectStatus = "active" | "archived";
+export type ProjectDocumentRole =
+  "tender" | "terms-of-reference" | "annex" | "certificate" | "evidence" | "other";
 export type Category =
   | "Technical"
   | "Administrative"
@@ -134,6 +137,24 @@ export interface SupportingEvidenceDocument {
   format: DocumentFormat;
   pages: string[];
   sourceLocations: string[];
+  addedAt: string;
+}
+
+export interface ProjectRecord {
+  id: string;
+  name: string;
+  description: string;
+  status: ProjectStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProjectDocumentLink {
+  id: string;
+  projectId: string;
+  documentId: string;
+  role: ProjectDocumentRole;
+  order: number;
   addedAt: string;
 }
 

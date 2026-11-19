@@ -69,8 +69,10 @@ import { buildLabel } from "@/lib/buildInfo";
 import { DocumentQaPanel } from "@/components/pocketmind/DocumentQaPanel";
 import { EvidenceComparisonPanel } from "@/components/pocketmind/EvidenceComparisonPanel";
 import { GuidedTour } from "@/components/pocketmind/GuidedTour";
+import { IntegrationsScreen } from "@/components/pocketmind/IntegrationsScreen";
 import { LanguageSelector } from "@/components/pocketmind/LanguageSelector";
 import { LocalWorkspaceLibrary } from "@/components/pocketmind/LocalWorkspaceLibrary";
+import { ProjectsScreen } from "@/components/pocketmind/ProjectsScreen";
 import { RiskScreen } from "@/components/pocketmind/RiskScreen";
 import { SettingsScreen } from "@/components/pocketmind/SettingsScreen";
 import { SourceDocumentViewer } from "@/components/pocketmind/SourceDocumentViewer";
@@ -101,12 +103,21 @@ import {
 import {
   clearLocalWorkspace,
   deleteEvidenceDocument,
+  deleteProjectDocumentLink,
+  deleteProjectRecord,
   loadLocalWorkspace,
   saveDocumentBundle,
   saveDocumentRecord,
   saveEvidenceDocument,
   saveLocalWorkspaceState,
+  saveProjectDocumentLink,
+  saveProjectRecord,
 } from "@/lib/services/localWorkspace";
+import {
+  createProjectRecord,
+  updateProjectRecord,
+  type ProjectDraft,
+} from "@/lib/services/projects";
 import { riskReviewKey } from "@/lib/services/riskReview";
 import {
   getUploadedDocumentActivities,
@@ -141,11 +152,21 @@ import {
   type Review,
   type SupportingEvidenceDocument,
   type InferencePreference,
+  type ProjectDocumentLink,
+  type ProjectRecord,
   type WorkspaceActivity,
 } from "@/lib/types";
 
 type Screen =
-  "overview" | "library" | "analysis" | "compliance" | "processing" | "risks" | "settings";
+  | "overview"
+  | "library"
+  | "analysis"
+  | "compliance"
+  | "processing"
+  | "risks"
+  | "settings"
+  | "integrations"
+  | "projects";
 type ProcessingChoice = "demo" | InferencePreference;
 type ExternalOcrAvailability = "checking" | "enabled" | "disabled" | "error";
 type FindingKind = "Requirement" | "Deadline" | "Specification" | "Risk" | "Missing information";
@@ -326,6 +347,8 @@ export function PocketMindApp() {
   const [evidenceLinks, setEvidenceLinks] = useState<RequirementEvidenceLink[]>([]);
   const [evidenceMatches, setEvidenceMatches] = useState<EvidenceMatch[]>([]);
   const [activities, setActivities] = useState<WorkspaceActivity[]>([]);
+  const [projects, setProjects] = useState<ProjectRecord[]>([]);
+  const [projectDocumentLinks, setProjectDocumentLinks] = useState<ProjectDocumentLink[]>([]);
   const [workspaceReady, setWorkspaceReady] = useState(false);
   const [workspaceError, setWorkspaceError] = useState("");
   const [preferencesError, setPreferencesError] = useState("");
@@ -391,6 +414,8 @@ export function PocketMindApp() {
         setEvidenceMatches(workspace.evidenceMatches);
         setEvidenceLinks(workspace.evidenceLinks);
         setActivities(workspace.activities);
+        setProjects(workspace.projects);
+        setProjectDocumentLinks(workspace.projectDocumentLinks);
       })
       .catch((error) => {
         if (!active) return;
@@ -486,6 +511,14 @@ export function PocketMindApp() {
     settings: {
       title: t("screen_settings_title"),
       subtitle: t("screen_settings_subtitle"),
+    },
+    integrations: {
+      title: t("screen_integrations_title"),
+      subtitle: t("screen_integrations_subtitle"),
+    },
+    projects: {
+      title: t("screen_projects_title"),
+      subtitle: t("screen_projects_subtitle"),
     },
   };
   const currentScreenCopy = screenTitles[screen];
@@ -862,6 +895,8 @@ export function PocketMindApp() {
       setEvidenceLinks([]);
       setEvidenceMatches([]);
       setActivities([]);
+      setProjects([]);
+      setProjectDocumentLinks([]);
       setReviews({});
       setQuestionDraftsByDocumentId({});
       setDocumentTextSources({});
@@ -878,6 +913,49 @@ export function PocketMindApp() {
       setWorkspaceError(`Local files could not be deleted. ${detail}`);
       throw error;
     }
+  }
+
+  async function createLocalProject(draft: ProjectDraft) {
+    const project = createProjectRecord(draft);
+    await saveProjectRecord(project);
+    setProjects((current) => [project, ...current]);
+  }
+
+  async function updateLocalProject(project: ProjectRecord, draft: ProjectDraft) {
+    const updated = updateProjectRecord(project, draft);
+    await saveProjectRecord(updated);
+    setProjects((current) => current.map((item) => (item.id === updated.id ? updated : item)));
+  }
+
+  async function toggleProjectArchived(project: ProjectRecord) {
+    const updated = updateProjectRecord(project, {
+      status: project.status === "active" ? "archived" : "active",
+    });
+    await saveProjectRecord(updated);
+    setProjects((current) => current.map((item) => (item.id === updated.id ? updated : item)));
+  }
+
+  async function removeLocalProject(project: ProjectRecord) {
+    await deleteProjectRecord(project.id);
+    setProjects((current) => current.filter((item) => item.id !== project.id));
+    setProjectDocumentLinks((current) => current.filter((link) => link.projectId !== project.id));
+  }
+
+  async function addProjectDocument(link: ProjectDocumentLink) {
+    const saved = await saveProjectDocumentLink(link);
+    setProjectDocumentLinks((current) => [
+      saved,
+      ...current.filter(
+        (item) =>
+          item.id !== saved.id &&
+          !(item.projectId === saved.projectId && item.documentId === saved.documentId),
+      ),
+    ]);
+  }
+
+  async function removeProjectDocument(link: ProjectDocumentLink) {
+    await deleteProjectDocumentLink(link.id);
+    setProjectDocumentLinks((current) => current.filter((item) => item.id !== link.id));
   }
 
   function applyPreferences(next: PocketMindPreferences) {
@@ -1204,14 +1282,12 @@ export function PocketMindApp() {
           </button>
           <button
             type="button"
-            className="pm-nav-item pm-nav-item--disabled"
-            disabled
-            aria-disabled="true"
-            title={t("nav_coming_soon")}
+            className={`pm-nav-item${screen === "projects" ? " is-active" : ""}`}
+            aria-current={screen === "projects" ? "page" : undefined}
+            onClick={() => setScreen("projects")}
           >
             <Folder size={19} strokeWidth={1.9} aria-hidden="true" />
             <span>{t("sidebar_nav_projects")}</span>
-            <span className="pm-nav-soon">{t("nav_coming_soon")}</span>
           </button>
           <button
             type="button"
@@ -1226,14 +1302,12 @@ export function PocketMindApp() {
           </button>
           <button
             type="button"
-            className="pm-nav-item pm-nav-item--disabled"
-            disabled
-            aria-disabled="true"
-            title={t("nav_coming_soon")}
+            className={`pm-nav-item${screen === "integrations" ? " is-active" : ""}`}
+            aria-current={screen === "integrations" ? "page" : undefined}
+            onClick={() => setScreen("integrations")}
           >
             <BrainCircuit size={19} strokeWidth={1.9} aria-hidden="true" />
             <span>{t("sidebar_nav_integrations")}</span>
-            <span className="pm-nav-soon">{t("nav_coming_soon")}</span>
           </button>
           <button
             type="button"
@@ -1361,20 +1435,26 @@ export function PocketMindApp() {
               <h1>{currentScreenCopy.title}</h1>
               <p>{currentScreenCopy.subtitle}</p>
             </div>
-            {screen !== "processing" && screen !== "settings" && (
-              <button
-                className="pm-button pm-button--primary"
-                type="button"
-                onClick={() => setScreen("processing")}
-              >
-                <Upload size={16} /> {t("btn_add_document")}
-              </button>
-            )}
+            {screen !== "processing" &&
+              screen !== "settings" &&
+              screen !== "integrations" &&
+              screen !== "projects" && (
+                <button
+                  className="pm-button pm-button--primary"
+                  type="button"
+                  onClick={() => setScreen("processing")}
+                >
+                  <Upload size={16} /> {t("btn_add_document")}
+                </button>
+              )}
           </div>
 
           {selectedDocument?.source === "demo" &&
             selectedDocument.analysis?.mode === "demo" &&
-            screen !== "processing" && (
+            screen !== "processing" &&
+            screen !== "settings" &&
+            screen !== "integrations" &&
+            screen !== "projects" && (
               <div className="pm-demo-banner" role="note">
                 <Sparkles size={17} />
                 <div>
@@ -1434,6 +1514,36 @@ export function PocketMindApp() {
                 );
               }}
               onClearWorkspace={() => void clearWorkspace().catch(() => undefined)}
+            />
+          )}
+          {screen === "projects" && (
+            <ProjectsScreen
+              projects={projects}
+              documents={documents}
+              links={projectDocumentLinks}
+              reviews={reviews}
+              activities={activities}
+              search={search}
+              onCreate={createLocalProject}
+              onUpdate={updateLocalProject}
+              onArchive={toggleProjectArchived}
+              onDelete={removeLocalProject}
+              onAddLink={addProjectDocument}
+              onRemoveLink={removeProjectDocument}
+              onOpenDocument={(id) => {
+                setSelectedDocumentId(id);
+                setCloudConsent(false);
+                setEvidenceCloudConsent(false);
+                setSelectedEvidenceId("");
+                setSelectedRequirementId(null);
+                setActiveExcerpt(null);
+                setActivePage(1);
+                setScreen(
+                  documents.find((document) => document.id === id)?.analysis
+                    ? "analysis"
+                    : "processing",
+                );
+              }}
             />
           )}
           {screen === "analysis" && (
@@ -1615,11 +1725,21 @@ export function PocketMindApp() {
               onClearWorkspace={clearWorkspace}
             />
           )}
+          {screen === "integrations" && (
+            <IntegrationsScreen
+              defaultMode={preferences.defaultProcessingMode}
+              onInference={recordInferenceResponse}
+            />
+          )}
         </main>
       </div>
       <GuidedTour
         active={tourActive}
-        screen={screen === "settings" ? "overview" : screen}
+        screen={
+          screen === "settings" || screen === "integrations" || screen === "projects"
+            ? "overview"
+            : screen
+        }
         narrationEnabled={preferences.tourNarrationEnabled}
         onNavigate={(s) => setScreen(s)}
         onEnd={() => {
