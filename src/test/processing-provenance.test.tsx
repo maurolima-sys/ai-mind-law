@@ -40,6 +40,44 @@ function renderApp() {
 }
 
 describe("processing provenance", () => {
+  it("zooms the source text and expands and restores the document viewer", async () => {
+    renderApp();
+    const navigation = await screen.findByRole("navigation", { name: "Main navigation" });
+    fireEvent.click(within(navigation).getByRole("button", { name: "Analysis" }));
+    const sourceText = screen.getByRole("figure").querySelector("pre");
+    expect(sourceText).not.toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Zoom in" }));
+    expect(screen.getByText("110%")).toBeInTheDocument();
+    expect(sourceText).toHaveStyle({ fontSize: "14.3px" });
+    fireEvent.click(screen.getByRole("button", { name: "Zoom out" }));
+    expect(screen.getByText("100%")).toBeInTheDocument();
+    expect(sourceText).toHaveStyle({ fontSize: "13px" });
+    const zoomOut = screen.getByRole("button", { name: "Zoom out" });
+    const zoomIn = screen.getByRole("button", { name: "Zoom in" });
+    act(() => {
+      for (let i = 0; i < 5; i++) fireEvent.click(zoomOut);
+    });
+    expect(screen.getByText("50%")).toBeInTheDocument();
+    expect(zoomOut).toBeDisabled();
+    act(() => {
+      for (let i = 0; i < 15; i++) fireEvent.click(zoomIn);
+    });
+    expect(screen.getByText("200%")).toBeInTheDocument();
+    expect(zoomIn).toBeDisabled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Expand" }));
+    expect(screen.getByRole("button", { name: "Show analysis panel" })).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Restore" }));
+    expect(screen.getByRole("button", { name: "Hide analysis panel" })).toHaveAttribute(
+      "aria-expanded",
+      "true",
+    );
+  }, 15_000);
+
   it("collapses navigation and analysis without losing the question draft", async () => {
     renderApp();
     const navigation = await screen.findByRole("navigation", { name: "Main navigation" });

@@ -60,6 +60,16 @@ pocketmind-compliance.csv
 # Stray root-level source copies (correct files live under src/)
 /firebaseAi.ts
 /model-fallback.test.ts
+/PocketMindApp.tsx
+
+# Agent skills and external tooling
+.agents/
+
+# Patch files
+*.patch
+
+# Analysis JSON exports at root level
+/*-analysis.json
 
 # watchdog — local dev tool, not part of the repo
 watchdog.py

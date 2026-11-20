@@ -30,6 +30,7 @@
   LoaderCircle,
   LockKeyhole,
   Maximize2,
+  Minimize2,
   MoreHorizontal,
   PanelLeftClose,
   PanelLeftOpen,
@@ -2330,6 +2331,7 @@ function AnalysisScreen({
   const t = useT();
   const [activeTab, setActiveTab] = useState<"analysis" | "summary" | "qa" | "compare">("analysis");
   const [analysisPanelOpen, setAnalysisPanelOpen] = useState(true);
+  const [zoom, setZoom] = useState(100);
   const format = document.format ?? "pdf";
   const hasPdfPagination = format === "pdf" && paginationVerified;
   const canNavigateSources = document.pages.length > 1;
@@ -2563,15 +2565,32 @@ function AnalysisScreen({
               </button>
             </div>
             <div className="pm-toolbar-group">
-              <button type="button" className="pm-toolbar-icon-btn" aria-label="Zoom out">
+              <button
+                type="button"
+                className="pm-toolbar-icon-btn"
+                aria-label={t("source_zoom_out")}
+                disabled={zoom <= 50}
+                onClick={() => setZoom((value) => Math.max(50, value - 10))}
+              >
                 <ZoomOut size={14} />
               </button>
-              <span className="pm-zoom-pill">100%</span>
-              <button type="button" className="pm-toolbar-icon-btn" aria-label="Zoom in">
+              <span className="pm-zoom-pill">{zoom}%</span>
+              <button
+                type="button"
+                className="pm-toolbar-icon-btn"
+                aria-label={t("source_zoom_in")}
+                disabled={zoom >= 200}
+                onClick={() => setZoom((value) => Math.min(200, value + 10))}
+              >
                 <ZoomIn size={14} />
               </button>
-              <button type="button" className="pm-toolbar-icon-btn" aria-label="Expand">
-                <Maximize2 size={14} />
+              <button
+                type="button"
+                className="pm-toolbar-icon-btn"
+                aria-label={t(analysisPanelOpen ? "source_expand" : "source_restore")}
+                onClick={() => setAnalysisPanelOpen((open) => !open)}
+              >
+                {analysisPanelOpen ? <Maximize2 size={14} /> : <Minimize2 size={14} />}
               </button>
             </div>
           </div>
@@ -2584,6 +2603,7 @@ function AnalysisScreen({
             pageCount={document.pages.length}
             sourceLocation={sourceLocation}
             excerpt={activeExcerpt}
+            zoom={zoom}
           />
           {/* Thumbnail strip */}
           {document.pages.length > 1 && (

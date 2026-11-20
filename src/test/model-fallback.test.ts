@@ -64,30 +64,24 @@ describe("Firebase AI retry policy", () => {
       result: "completed",
       modelName: TERTIARY_GEMINI_MODEL,
     });
-    // 4 attempts: PRIMARY x2 (retry), SECONDARY, TERTIARY
-    expect(calls).toEqual([
-      PRIMARY_GEMINI_MODEL,
-      PRIMARY_GEMINI_MODEL,
-      SECONDARY_GEMINI_MODEL,
-      TERTIARY_GEMINI_MODEL,
-    ]);
+    // One bounded attempt per model.
+    expect(calls).toEqual([PRIMARY_GEMINI_MODEL, SECONDARY_GEMINI_MODEL, TERTIARY_GEMINI_MODEL]);
     expect([...new Set(calls)]).toEqual([...GEMINI_MODEL_FALLBACK_CHAIN]);
   });
 
-  it("starts with Gemini 3.5 Flash and falls back after retryable failures", async () => {
+  it("starts with Gemini 3.5 Flash and switches models after a retryable failure", async () => {
     vi.useFakeTimers();
     const calls: string[] = [];
     const request = generateWithModelFallback("cloud", async (modelName) => {
       calls.push(modelName);
-      if (calls.length <= 2) throw { customErrorData: { status: 429 } };
+      if (calls.length === 1) throw { customErrorData: { status: 429 } };
       return "ok";
     });
     await vi.runAllTimersAsync();
-    // First two attempts are PRIMARY (retry), third succeeds on SECONDARY
+    // The next model is used directly; the primary is not repeated.
     await expect(request).resolves.toMatchObject({ modelName: SECONDARY_GEMINI_MODEL });
     expect(calls[0]).toBe("gemini-3.5-flash");
-    expect(calls[1]).toBe("gemini-3.5-flash");
-    expect(calls[2]).toBe("gemini-3.8-flash");
+    expect(calls[1]).toBe("gemini-3.8-flash");
   });
 
   it("does not switch models for permanent errors or local-only requests", async () => {
@@ -167,7 +161,7 @@ describe("Firebase AI retry policy", () => {
       "cloud",
       (modelName, signal) => {
         calls.push(modelName);
-        if (calls.length > 3) return Promise.resolve("completed");
+        if (calls.length > 2) return Promise.resolve("completed");
         return new Promise((_, reject) => {
           signal?.addEventListener("abort", () => {
             const error = Object.assign(new Error("aborted"), { name: "AbortError" });
@@ -186,14 +180,8 @@ describe("Firebase AI retry policy", () => {
       result: "completed",
       modelName: TERTIARY_GEMINI_MODEL,
     });
-    expect(calls).toEqual([
-      PRIMARY_GEMINI_MODEL,
-      PRIMARY_GEMINI_MODEL,
-      SECONDARY_GEMINI_MODEL,
-      TERTIARY_GEMINI_MODEL,
-    ]);
+    expect(calls).toEqual([PRIMARY_GEMINI_MODEL, SECONDARY_GEMINI_MODEL, TERTIARY_GEMINI_MODEL]);
     expect(retryUpdates).toEqual([
-      { modelName: PRIMARY_GEMINI_MODEL, status: undefined },
       { modelName: SECONDARY_GEMINI_MODEL, status: undefined },
       { modelName: TERTIARY_GEMINI_MODEL, status: undefined },
     ]);

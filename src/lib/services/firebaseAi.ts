@@ -26,14 +26,13 @@ export type GeminiModelName = (typeof GEMINI_MODEL_FALLBACK_CHAIN)[number];
 
 const RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503]);
 const TIMEOUT_ERROR_CODE = "TIMEOUT";
-const GENERATION_TIMEOUT_MS = 60_000;
-export const ON_DEVICE_GENERATION_TIMEOUT_MS = 120_000;
-const TOTAL_GENERATION_BUDGET_MS = 300_000;
+const GENERATION_TIMEOUT_MS = 30_000;
+export const ON_DEVICE_GENERATION_TIMEOUT_MS = 180_000;
+const TOTAL_GENERATION_BUDGET_MS = 100_000;
 const RETRY_STEPS = [
   { modelName: PRIMARY_GEMINI_MODEL, delayMs: 0, jitterMs: 0 },
-  { modelName: PRIMARY_GEMINI_MODEL, delayMs: 5_000, jitterMs: 3_000 },
-  { modelName: SECONDARY_GEMINI_MODEL, delayMs: 10_000, jitterMs: 4_000 },
-  { modelName: TERTIARY_GEMINI_MODEL, delayMs: 15_000, jitterMs: 5_000 },
+  { modelName: SECONDARY_GEMINI_MODEL, delayMs: 1_000, jitterMs: 500 },
+  { modelName: TERTIARY_GEMINI_MODEL, delayMs: 2_000, jitterMs: 1_000 },
 ] as const;
 
 export const DEVICE_MODEL_INIT_TIMEOUT_MS = 60_000;
@@ -54,13 +53,31 @@ export function getOnDeviceTimeoutStage(error: unknown): OnDeviceTimeoutStage | 
 export async function initializeDeviceModelWithTimeout(
   initialize: (onProgress: (progress: number) => void) => Promise<void>,
   onProgress: (progress: number) => void,
+  options: { maxDurationMs?: number } = {},
 ): Promise<void> {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  let maxTimeoutId: ReturnType<typeof setTimeout> | undefined;
   let active = true;
   let rejectTimeout!: (error: Error) => void;
+  const maxDurationMs = options.maxDurationMs;
   const timeout = new Promise<never>((_, reject) => {
     rejectTimeout = reject;
   });
+  const maxDuration =
+    maxDurationMs !== undefined
+      ? new Promise<never>((_, reject) => {
+          maxTimeoutId = setTimeout(() => {
+            reject(
+              Object.assign(
+                new Error(
+                  `On-device model initialisation exceeded ${maxDurationMs / 1000} seconds.`,
+                ),
+                { code: DEVICE_MODEL_INIT_TIMEOUT_CODE },
+              ),
+            );
+          }, maxDurationMs);
+        })
+      : new Promise<never>(() => {});
   const resetTimeout = () => {
     if (!active) return;
     if (timeoutId) clearTimeout(timeoutId);
@@ -82,10 +99,11 @@ export async function initializeDeviceModelWithTimeout(
       onProgress(progress);
       resetTimeout();
     });
-    await Promise.race([initialization, timeout]);
+    await Promise.race([initialization, timeout, maxDuration]);
   } finally {
     active = false;
     if (timeoutId) clearTimeout(timeoutId);
+    if (maxTimeoutId) clearTimeout(maxTimeoutId);
   }
 }
 
@@ -121,6 +139,18 @@ export function isInvalidFirebaseAppCheckTokenError(error: unknown): boolean {
   return candidate.cause ? isInvalidFirebaseAppCheckTokenError(candidate.cause) : false;
 }
 
+export function isAppCheckError(error: unknown): boolean {
+  if (typeof error !== "object" || error === null) return false;
+  const candidate = error as { code?: unknown; message?: unknown; cause?: unknown };
+  if (typeof candidate.code === "string" && /appCheck|recaptcha/i.test(candidate.code)) return true;
+  if (
+    typeof candidate.message === "string" &&
+    /appCheck.*recaptcha|recaptcha.*error|app.check/i.test(candidate.message)
+  )
+    return true;
+  return candidate.cause ? isAppCheckError(candidate.cause) : false;
+}
+
 export function isRetryableFirebaseAiError(error: unknown): boolean {
   if (
     typeof error === "object" &&
@@ -152,6 +182,7 @@ export async function generateWithModelFallback<T>(
   generate: (modelName: GeminiModelName, signal?: AbortSignal) => Promise<T>,
   options: {
     onRetry?: (update: { modelName: GeminiModelName; status?: number; attempt: number }) => void;
+    localTimeoutMs?: number;
   } = {},
 ): Promise<{ result: T; modelName: GeminiModelName }> {
   if (preference === "local") {
@@ -159,16 +190,15 @@ export async function generateWithModelFallback<T>(
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     try {
       const timeout = new Promise<never>((_, reject) => {
+        const localTimeoutMs = options.localTimeoutMs ?? ON_DEVICE_GENERATION_TIMEOUT_MS;
         timeoutId = setTimeout(() => {
           const timeoutError = Object.assign(
-            new Error(
-              `On-device inference timed out after ${ON_DEVICE_GENERATION_TIMEOUT_MS / 1000} seconds.`,
-            ),
+            new Error(`On-device inference timed out after ${localTimeoutMs / 1000} seconds.`),
             { code: ON_DEVICE_GENERATION_TIMEOUT_CODE },
           );
           reject(timeoutError);
           controller.abort(timeoutError);
-        }, ON_DEVICE_GENERATION_TIMEOUT_MS);
+        }, options.localTimeoutMs ?? ON_DEVICE_GENERATION_TIMEOUT_MS);
       });
       const result = await Promise.race([
         generate(PRIMARY_GEMINI_MODEL, controller.signal),

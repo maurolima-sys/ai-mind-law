@@ -113,13 +113,13 @@ This is the most important decision in the workflow. On **Processing & privacy**
 
 **3. Hybrid inference** — badge _ON-DEVICE FIRST_
 
-> Firebase AI Logic tries the available on-device model first. If unavailable, the SDK may send extracted text to Gemini in Google's cloud. The cloud model order is Gemini 3.5 Flash, Gemini 3.8 Flash, then Gemini 3.5 Flash-Lite after transient errors; the primary model is retried once before switching.
+> PocketMind tries the on-device model once with a 30-second per-section limit. If it is unavailable or fails, the app sends the section to Gemini in Google's cloud using your consent. Cloud fallback checks Gemini 3.5 Flash, Gemini 3.8 Flash, then Gemini 3.5 Flash-Lite after transient errors, without repeating the same model. Cloud attempts are limited to 30 seconds each and a 100-second total budget per section.
 
 - Actual source shown after analysis
 - Cloud use requires your consent
 - App Check required
 
-Cloud attempts are limited to 60 seconds each, with a 180-second total budget per text section. On-device-only mode never uses this cloud retry chain.
+On-device-only mode never uses this cloud retry chain. Hybrid mode bounds on-device initialization to 30 seconds before moving to cloud, so a slow first-time model download cannot hold cloud analysis indefinitely.
 
 **4. Sample data** — badge _DEMO_
 
@@ -156,6 +156,8 @@ A process strip at the bottom reminds you of the journey: _Choose PDF → Proces
 After analysis, **Document analysis** opens — _“Review extracted findings beside their source pages.”_
 
 Use **Hide navigation** in the top bar and **Hide analysis panel** above the document to give the source more room. Both controls can reopen their panels, and hiding the analysis panel preserves the current question draft.
+
+Use the source toolbar's **Zoom in** and **Zoom out** controls to adjust the PDF page or extracted text from 50% to 200%. **Expand** hides the analysis panel; **Restore** brings it back.
 
 > **Figure 5.1** — _Document analysis._ Place a capture of the document toolbar, filter chips, the two-column source/findings layout, and the evidence link. Reference visual: `public/pocketmind-analysis.jpg`.
 

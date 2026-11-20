@@ -6393,6 +6393,10 @@
   background: #e2e8f0;
   color: var(--pm-ink);
 }
+.pm-toolbar-icon-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 .pm-page-counter-pill {
   font-size: 0.76rem;
   font-weight: 600;
@@ -6441,12 +6445,14 @@
 /* Analysis Tabs */
 .pm-analysis-tabs-header {
   display: flex;
+  overflow-x: auto;
   border-bottom: 1px solid var(--pm-line);
   background: #ffffff;
   padding: 0 12px;
 }
 .pm-analysis-tab-btn {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   gap: 6px;
   padding: 12px 16px;

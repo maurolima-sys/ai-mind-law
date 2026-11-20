@@ -17,6 +17,7 @@ export function SourceDocumentViewer({
   pageCount,
   sourceLocation,
   excerpt,
+  zoom = 100,
 }: {
   file: Blob | null;
   format: DocumentFormat;
@@ -26,6 +27,7 @@ export function SourceDocumentViewer({
   pageCount: number;
   sourceLocation: string;
   excerpt: string | null;
+  zoom?: number;
 }) {
   const t = useT();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -131,7 +133,7 @@ export function SourceDocumentViewer({
       )}
       {format === "pdf" && file ? (
         <div className="pm-pdf-canvas-scroll" aria-label={t("source_page_rendering_region")}>
-          <div className="pm-pdf-canvas-wrap">
+          <div className="pm-pdf-canvas-wrap" style={{ zoom: zoom / 100 }}>
             <canvas
               ref={canvasRef}
               role="img"
@@ -153,7 +155,9 @@ export function SourceDocumentViewer({
           </div>
         </div>
       ) : (
-        <pre className="pm-source-text">{pageText || t("source_no_text")}</pre>
+        <pre className="pm-source-text" style={{ fontSize: `${(13 * zoom) / 100}px` }}>
+          {pageText || t("source_no_text")}
+        </pre>
       )}
       {isRendering && (
         <div className="pm-pdf-render-status" role="status">
