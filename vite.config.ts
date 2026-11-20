@@ -20,13 +20,11 @@ const commitHash = (() => {
 })();
 
 // App Check debug token: injected only in dev builds, never in production.
-// loadEnv with prefix="" reads all variables from .env.local regardless of prefix,
-// so FIREBASE_APPCHECK_DEBUG_TOKEN (no VITE_) is found without being auto-injected
-// into the bundle by Vite's standard VITE_* mechanism.
+// loadEnv with prefix="" reads all variables from .env.local, including VITE_*.
 const devEnv = loadEnv("development", process.cwd(), "");
 const appCheckDebugToken = (() => {
   if (process.env.NODE_ENV === "production") return undefined;
-  return devEnv["FIREBASE_APPCHECK_DEBUG_TOKEN"] ?? undefined;
+  return devEnv["VITE_FIREBASE_APPCHECK_DEBUG_TOKEN"] ?? undefined;
 })();
 
 export default defineConfig({
