@@ -56,7 +56,7 @@ Select the default mode in **Settings**, then navigate to **Processing**:
 - Sends extracted text to Gemini via Firebase AI Logic.
 - Requires explicit consent checkbox — cloud processing is never silent.
 - Badge after analysis: **cloud** or **cloud-fallback**.
-- Model fallback chain: `gemini-3.8-flash` → `gemini-3.5-flash` → `gemini-3.5-flash-lite`, after retryable errors or timeouts. On 2026-11-20 the first model returned 500 and the second returned 200.
+- Model fallback chain: `gemini-3.5-flash` → `gemini-3.8-flash` → `gemini-3.5-flash-lite`, after retryable errors or timeouts, with one retry of the primary model. The production test above used the earlier model order.
 
 ### On-device only
 - Uses Chrome's Prompt API; the exact on-device model depends on Chrome and the device.

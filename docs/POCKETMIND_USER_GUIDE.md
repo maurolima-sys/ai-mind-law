@@ -113,7 +113,7 @@ This is the most important decision in the workflow. On **Processing & privacy**
 
 **3. Hybrid inference** — badge _ON-DEVICE FIRST_
 
-> “Firebase AI Logic tries the available on-device model first. If unavailable, the SDK may send extracted text to Gemini in Google's cloud. Cloud retries use Gemini 3.5 Flash-Lite, Gemini 3.5 Flash, then Gemini 3.8 Flash after transient errors.”
+> Firebase AI Logic tries the available on-device model first. If unavailable, the SDK may send extracted text to Gemini in Google's cloud. The cloud model order is Gemini 3.5 Flash, Gemini 3.8 Flash, then Gemini 3.5 Flash-Lite after transient errors; the primary model is retried once before switching.
 
 - Actual source shown after analysis
 - Cloud use requires your consent

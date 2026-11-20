@@ -12,8 +12,8 @@ import {
 import type { InferencePreference } from "@/lib/types";
 import { TENDER_ANALYSIS_RESPONSE_SCHEMA } from "@/lib/services/tenderAnalysisSchema";
 
-export const PRIMARY_GEMINI_MODEL = "gemini-3.8-flash";
-export const SECONDARY_GEMINI_MODEL = "gemini-3.5-flash";
+export const PRIMARY_GEMINI_MODEL = "gemini-3.5-flash";
+export const SECONDARY_GEMINI_MODEL = "gemini-3.8-flash";
 export const TERTIARY_GEMINI_MODEL = "gemini-3.5-flash-lite";
 
 export const GEMINI_MODEL_FALLBACK_CHAIN = [
@@ -137,9 +137,9 @@ export function isRetryableFirebaseAiError(error: unknown): boolean {
 export function geminiModelLabel(modelName: string): string {
   switch (modelName) {
     case PRIMARY_GEMINI_MODEL:
-      return "Gemini 3.8 Flash";
-    case SECONDARY_GEMINI_MODEL:
       return "Gemini 3.5 Flash";
+    case SECONDARY_GEMINI_MODEL:
+      return "Gemini 3.8 Flash";
     case TERTIARY_GEMINI_MODEL:
       return "Gemini 3.5 Flash-Lite";
     default:
