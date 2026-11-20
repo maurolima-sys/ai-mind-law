@@ -155,6 +155,8 @@ A process strip at the bottom reminds you of the journey: _Choose PDF → Proces
 
 After analysis, **Document analysis** opens — _“Review extracted findings beside their source pages.”_
 
+Use **Hide navigation** in the top bar and **Hide analysis panel** above the document to give the source more room. Both controls can reopen their panels, and hiding the analysis panel preserves the current question draft.
+
 > **Figure 5.1** — _Document analysis._ Place a capture of the document toolbar, filter chips, the two-column source/findings layout, and the evidence link. Reference visual: `public/pocketmind-analysis.jpg`.
 
 **The document toolbar** shows the file name, a subtitle (_“Fictional sample · {n} pages · {size}”_ or _“PDF document · …”_), a processing-source badge (_On-device / Cloud / Cloud fallback / Hybrid / Demo mode_), and — on the right — the **Export JSON** button. If text came from LlamaParse you'll see an amber _“Text: external OCR (LlamaParse)”_ badge.

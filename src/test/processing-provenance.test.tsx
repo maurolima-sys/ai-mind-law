@@ -40,6 +40,31 @@ function renderApp() {
 }
 
 describe("processing provenance", () => {
+  it("collapses navigation and analysis without losing the question draft", async () => {
+    renderApp();
+    const navigation = await screen.findByRole("navigation", { name: "Main navigation" });
+    fireEvent.click(within(navigation).getByRole("button", { name: "Analysis" }));
+    fireEvent.click(screen.getByRole("button", { name: "Qa" }));
+    const question = screen.getByRole("textbox", { name: "Ask a question about this document" });
+    fireEvent.change(question, { target: { value: "A draft question" } });
+
+    fireEvent.click(screen.getByRole("button", { name: "Hide analysis panel" }));
+    expect(screen.getByRole("button", { name: "Show analysis panel" })).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
+    expect(question).not.toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Show analysis panel" }));
+    expect(screen.getByRole("textbox", { name: "Ask a question about this document" })).toHaveValue(
+      "A draft question",
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Hide navigation" }));
+    expect(navigation).not.toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Show navigation" }));
+    expect(navigation).toBeVisible();
+  });
+
   it("distinguishes a failed local attempt from the previously prepared sample analysis", async () => {
     mocks.analyzeTender.mockRejectedValue(
       Object.assign(new Error("timed out"), { code: "ON_DEVICE_GENERATION_TIMEOUT" }),

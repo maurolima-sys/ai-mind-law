@@ -246,6 +246,10 @@
   // ── Analysis — source panel ──────────────────────────────────────────────────
   source_panel_title: "Extracted source text",
   source_panel_title_full: "Source document",
+  sidebar_hide: "Hide navigation",
+  sidebar_show: "Show navigation",
+  analysis_panel_hide: "Hide analysis panel",
+  analysis_panel_show: "Show analysis panel",
   source_llamaparse_paginated: "Text extracted by LlamaParse.",
   source_llamaparse_unpaginated: "LlamaParse text; original page boundaries are unavailable.",
   source_pdfjs: "Text extracted locally in this browser.",

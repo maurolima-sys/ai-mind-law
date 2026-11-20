@@ -239,6 +239,10 @@ export const pt: Translations = {
 
   source_panel_title: "Texto de origem extraído",
   source_panel_title_full: "Documento de origem",
+  sidebar_hide: "Ocultar navegação",
+  sidebar_show: "Mostrar navegação",
+  analysis_panel_hide: "Ocultar painel de análise",
+  analysis_panel_show: "Mostrar painel de análise",
   source_llamaparse_paginated: "Texto extraído pelo LlamaParse.",
   source_llamaparse_unpaginated:
     "Texto LlamaParse; os limites de página originais não estão disponíveis.",

@@ -177,6 +177,39 @@
   background: #fff;
   border-right: 1px solid var(--pm-line);
 }
+.pm-sidebar[hidden],
+.pm-findings-panel[hidden] {
+  display: none;
+}
+.pm-panel-toggle {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 10px;
+  border: 1px solid var(--pm-line);
+  border-radius: 8px;
+  background: #fff;
+  color: #536584;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.pm-panel-toggle:hover {
+  background: #f4f7fc;
+  color: var(--pm-ink);
+}
+.pm-sidebar-toggle {
+  flex: 0 0 auto;
+  width: 36px;
+  padding: 0;
+}
+.pm-analysis-panel-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
 .pm-brand {
   display: flex;
   align-items: center;
@@ -2038,6 +2071,9 @@
   grid-template-columns: minmax(0, 1fr) minmax(360px, 1fr);
   align-items: start;
   gap: 14px;
+}
+.pm-analysis-layout.is-panel-collapsed {
+  grid-template-columns: minmax(0, 1fr);
 }
 .pm-qa-panel {
   overflow: hidden;

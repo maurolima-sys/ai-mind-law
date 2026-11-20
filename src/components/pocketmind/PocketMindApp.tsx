@@ -31,6 +31,10 @@
   LockKeyhole,
   Maximize2,
   MoreHorizontal,
+  PanelLeftClose,
+  PanelLeftOpen,
+  PanelRightClose,
+  PanelRightOpen,
   RotateCw,
   Search,
   ScrollText,
@@ -342,6 +346,7 @@ export function PocketMindApp() {
   const [documents, setDocuments] = useState<DocumentRecord[]>(() => [buildDemoDocument()]);
   const [selectedDocumentId, setSelectedDocumentId] = useState(DEMO_DOC_ID);
   const [screen, setScreen] = useState<Screen>("overview");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [search, setSearch] = useState("");
   const [questionDraftsByDocumentId, setQuestionDraftsByDocumentId] = useState<
     Record<string, string>
@@ -1360,7 +1365,7 @@ export function PocketMindApp() {
 
   return (
     <div className="pm-app">
-      <aside className="pm-sidebar">
+      <aside id="pm-workspace-sidebar" className="pm-sidebar" hidden={!sidebarOpen}>
         <div className="pm-brand">
           <div className="pm-brand-mark">
             <BrainCircuit size={21} strokeWidth={2.2} />
@@ -1502,6 +1507,17 @@ export function PocketMindApp() {
 
       <div className="pm-main">
         <header className="pm-topbar">
+          <button
+            type="button"
+            className="pm-panel-toggle pm-sidebar-toggle"
+            aria-controls="pm-workspace-sidebar"
+            aria-expanded={sidebarOpen}
+            aria-label={t(sidebarOpen ? "sidebar_hide" : "sidebar_show")}
+            title={t(sidebarOpen ? "sidebar_hide" : "sidebar_show")}
+            onClick={() => setSidebarOpen((open) => !open)}
+          >
+            {sidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
+          </button>
           <div className="pm-mobile-brand">
             <div className="pm-brand-mark">
               <BrainCircuit size={19} />
@@ -2312,6 +2328,8 @@ function AnalysisScreen({
   onExport: () => void;
 }) {
   const t = useT();
+  const [activeTab, setActiveTab] = useState<"analysis" | "summary" | "qa" | "compare">("analysis");
+  const [analysisPanelOpen, setAnalysisPanelOpen] = useState(true);
   const format = document.format ?? "pdf";
   const hasPdfPagination = format === "pdf" && paginationVerified;
   const canNavigateSources = document.pages.length > 1;
@@ -2336,12 +2354,27 @@ function AnalysisScreen({
       count: (analysis?.missing.length ?? 0) + (analysis?.inconsistencies.length ?? 0),
     },
   ];
+  const panelToggle = (
+    <div className="pm-analysis-panel-controls">
+      <button
+        type="button"
+        className="pm-panel-toggle"
+        aria-controls="pm-analysis-side-panel"
+        aria-expanded={analysisPanelOpen}
+        onClick={() => setAnalysisPanelOpen((open) => !open)}
+      >
+        {analysisPanelOpen ? <PanelRightClose size={17} /> : <PanelRightOpen size={17} />}
+        {t(analysisPanelOpen ? "analysis_panel_hide" : "analysis_panel_show")}
+      </button>
+    </div>
+  );
 
   if (!analysis) {
     if (document.pages.some((page) => page.trim())) {
       return (
         <div className="pm-analysis-screen">
-          <div className="pm-analysis-layout">
+          {panelToggle}
+          <div className={`pm-analysis-layout${analysisPanelOpen ? "" : " is-panel-collapsed"}`}>
             <section className="pm-panel pm-source-panel">
               <div className="pm-panel-heading pm-source-heading">
                 <div>
@@ -2397,23 +2430,25 @@ function AnalysisScreen({
                 excerpt={activeExcerpt}
               />
             </section>
-            <DocumentQaPanel
-              key={document.id}
-              documentName={document.name}
-              pages={document.pages}
-              format={format}
-              sourceLocations={sourceLocations}
-              draft={questionDraft}
-              onDraftChange={onQuestionDraftChange}
-              preference={preference}
-              cloudConsent={cloudConsent}
-              paginationVerified={hasPdfPagination}
-              onOpenProcessing={onOpenProcessing}
-              onSelectPage={(index, excerpt) => onSelectSource(index, excerpt ?? null)}
-              onModelResponse={onModelResponse}
-              voiceInputEnabled={voiceInputEnabled}
-              answerSpeechEnabled={answerSpeechEnabled}
-            />
+            <div id="pm-analysis-side-panel" hidden={!analysisPanelOpen}>
+              <DocumentQaPanel
+                key={document.id}
+                documentName={document.name}
+                pages={document.pages}
+                format={format}
+                sourceLocations={sourceLocations}
+                draft={questionDraft}
+                onDraftChange={onQuestionDraftChange}
+                preference={preference}
+                cloudConsent={cloudConsent}
+                paginationVerified={hasPdfPagination}
+                onOpenProcessing={onOpenProcessing}
+                onSelectPage={(index, excerpt) => onSelectSource(index, excerpt ?? null)}
+                onModelResponse={onModelResponse}
+                voiceInputEnabled={voiceInputEnabled}
+                answerSpeechEnabled={answerSpeechEnabled}
+              />
+            </div>
           </div>
         </div>
       );
@@ -2422,7 +2457,6 @@ function AnalysisScreen({
   }
   const processingSource = analysisProcessingSource(analysis);
 
-  const [activeTab, setActiveTab] = useState<"analysis" | "summary" | "qa" | "compare">("analysis");
   return (
     <div className="pm-analysis-screen">
       {/* Document header */}
@@ -2497,7 +2531,8 @@ function AnalysisScreen({
       </section>
 
       {/* Split-screen layout */}
-      <div className="pm-analysis-layout">
+      {panelToggle}
+      <div className={`pm-analysis-layout${analysisPanelOpen ? "" : " is-panel-collapsed"}`}>
         {/* Left: source viewer */}
         <section className="pm-panel pm-source-panel">
           {/* Viewer toolbar */}
@@ -2572,7 +2607,11 @@ function AnalysisScreen({
         </section>
 
         {/* Right: tabbed analysis panel */}
-        <section className="pm-findings-panel">
+        <section
+          id="pm-analysis-side-panel"
+          className="pm-findings-panel"
+          hidden={!analysisPanelOpen}
+        >
           {/* Tabs */}
           <div className="pm-analysis-tabs-header">
             {(["analysis", "summary", "qa", "compare"] as const).map((tab) => (
