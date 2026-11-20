@@ -48,6 +48,8 @@ firebase-adminsdk*.json
 
 # Independent evaluation files — out of repo scope
 Avalia*.md
+Evaluator Walkthrough*.md
+PocketMind AI — avaliação*.md
 
 # Compliance exports — out of repo scope
 pocketmind-compliance.csv

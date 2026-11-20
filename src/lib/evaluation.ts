@@ -94,7 +94,8 @@ export const EVALUATION_CRITERIA: EvaluationCriterion[] = [
     category: "Backend",
     section: "Inference",
     title: "On-device inference",
-    description: "Retest a complete Chrome on-device analysis after the reported timeout.",
+    description:
+      "A 2026-11-20 production test initialized the on-device model but the fictional sample failed as too large; no Firebase AI generation request was observed. A successful analysis on supported Chrome remains unverified.",
     critical: true,
   },
   {
@@ -103,7 +104,7 @@ export const EVALUATION_CRITERIA: EvaluationCriterion[] = [
     section: "Inference",
     title: "Cloud inference",
     description:
-      "Production Cloud analysis verified 2026-11-19: cloud-fallback, gemini-3.5-flash-lite, full structured output, all excerpts verified:true. Input was the fictional sample text. Evidence: docs/Riverside Civic Centre - Construction Tender-analysis.json.",
+      "Production test 2026-11-20, build ed19ed4: fictional-sample Cloud AI analysis completed. gemini-3.8-flash returned HTTP 500; gemini-3.5-flash returned HTTP 200. The UI showed Cloud (IN_CLOUD); the raw SDK value was not captured. Availability can change.",
     critical: true,
   },
   {
@@ -126,7 +127,7 @@ export const EVALUATION_CRITERIA: EvaluationCriterion[] = [
     section: "Security",
     title: "Production App Check acceptance",
     description:
-      "Verified 2026-11-19: limited-use App Check token accepted in production. exchangeRecaptchaEnterpriseToken → generateContent → 200. Fix: useLimitedUseAppCheckTokens:true in getAI(). Evidence: commit ef4a84d.",
+      "Production test 2026-11-20, build ed19ed4: exchangeRecaptchaEnterpriseToken returned HTTP 200 and a fallback generateContent request completed with HTTP 200. Firebase Console settings were not independently inspected.",
     critical: true,
   },
   {
@@ -229,7 +230,7 @@ export const EVALUATION_CRITERIA: EvaluationCriterion[] = [
     section: "Submission",
     title: "Hosted demo",
     description:
-      "Verified: https://ai-mind-law.vercel.app/ loads without authentication. Dashboard, Processing, Analysis, and Compliance matrix screens confirmed reachable. Cloud AI analysis completed in production 2026-11-19.",
+      "Verified: https://ai-mind-law.vercel.app/ loads without authentication. Cloud AI analysis of the fictional sample completed in production on 2026-11-20, build ed19ed4.",
   },
   {
     id: "walkthrough",
@@ -237,7 +238,7 @@ export const EVALUATION_CRITERIA: EvaluationCriterion[] = [
     section: "Documentation",
     title: "Evaluator walkthrough accuracy",
     description:
-      "Updated 2026-11-19: walkthrough reflects production Cloud AI verification, correct fallback chain order (gemini-3.8-flash first), App Check confirmed, test count updated to 107. Evidence: docs/EVALUATOR_WALKTHROUGH.md commit 1e3c477.",
+      "Walkthrough includes the 2026-11-20 production test, current fallback order, and unverified on-device and OCR limitations. Documentation changes must be deployed before appearing in production.",
   },
   {
     id: "matrix-doc",

@@ -111,8 +111,8 @@
     },
     "test-count": {
       "status": "verified",
-      "evidence": "npm test reports 107 tests across 29 test files. Walkthrough updated from '11 tests' to '107 tests (29 files)'.",
-      "reference": "src/test/ — 29 files, commit 1e3c477",
+      "evidence": "npm test reports 107 tests across 28 test files. Walkthrough updated from '11 tests' to '107 tests (28 files)'.",
+      "reference": "src/test/ — 28 files, commit 1e3c477",
       "notes": "",
       "verifier": "mauro.frank.lima.lubenham@gmail.com",
       "updatedAt": "2026-11-19T22:00:00.000Z",

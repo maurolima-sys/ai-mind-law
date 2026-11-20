@@ -7,6 +7,14 @@ Format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+The published application identifies itself as 0.4.0. The documentation and changelog below include updates not yet deployed.
+
+### Verification — 2026-11-20
+- Production build `ed19ed4` completed a fictional-sample Cloud AI analysis: reCAPTCHA Enterprise token exchange HTTP 200, primary `gemini-3.8-flash` HTTP 500, fallback `gemini-3.5-flash` HTTP 200, UI source `Cloud (IN_CLOUD)`. The raw SDK value was not captured.
+- An on-device-only attempt initialized the model but failed with “The input is too large”; no Firebase AI generation request was observed. Successful on-device and hybrid inference remain unverified. LlamaParse OCR with a real scanned PDF remains unverified.
+
+## [0.4.0] — 2026-11-19 · commit `ed19ed4`
+
 ### Fixed
 - Firebase runtime indicators now distinguish a cloud response received in the session from configuration and on-device inference. Analysis, Q&A and evidence comparisons show the source reported by the SDK; legacy analyses without a recorded source remain unknown.
 - `f715a2a` — repaired corrupted UTF-8 literals in the interface and English translations.
@@ -14,12 +22,15 @@ Format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 - Compliance now separates source verification, human compliance assessment and review state in the matrix and CSV. Existing reviews and notes remain available; old “unclear” statuses are identified explicitly.
+- The sidebar build label, `vite.config.ts`, and this changelog use the same version: 0.4.0, commit `ed19ed4`.
 
 ### Limitations
-- Firebase AI Logic production inference has not been verified successfully. Selecting a processing mode does not establish a working connection.
+- A production Cloud AI analysis of the fictional sample completed on 2026-11-19 (`processingSource: cloud-fallback`, model `gemini-3.5-flash-lite`). A later attempt returned HTTP 401; see the dated 2026-11-20 verification above for the more recent result. Selecting a processing mode does not guarantee cloud availability.
+- On-device-only inference still needs a successful live test on supported desktop Chrome. An earlier sample timed out; the 2026-11-20 attempt failed because the input was too large. Neither attempt demonstrated cloud fallback.
+- LlamaParse OCR with a real scanned PDF has not been tested end to end.
 - This is a local browser workspace, not a multiuser service; AI output requires human review.
 
-### Earlier changes — i18n EN / PT / ES
+### Earlier changes in this release — i18n EN / PT / ES
 
 ### Added
 - `src/lib/i18n/` — translation system with `en.ts` (200+ keys, source of truth), `pt.ts`, `es.ts`, and `index.tsx` (`LocaleProvider`, `useLocale()`, `useT()`, `interpolate()`).
@@ -122,7 +133,8 @@ Core product — all four screens, Firebase AI Logic hybrid inference, complianc
 
 ---
 
-[Unreleased]: https://github.com/maurofranklima/ai-mind-law/compare/HEAD...HEAD
+[Unreleased]: https://github.com/maurolima-sys/ai-mind-law/compare/ed19ed4...HEAD
+[0.4.0]: https://github.com/maurolima-sys/ai-mind-law/commit/ed19ed4b694d3efeb7934ded026ad3b37540e882
 [0.3.0]: https://github.com/maurofranklima/ai-mind-law/commit/7657c0a
 [0.2.0]: https://github.com/maurofranklima/ai-mind-law/commit/0b6945d
 [0.1.1]: https://github.com/maurofranklima/ai-mind-law/commit/dbfeaa5

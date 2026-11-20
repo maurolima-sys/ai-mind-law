@@ -1,0 +1,204 @@
+{
+  "version": 1,
+  "records": {
+    "cloud": {
+      "status": "verified",
+      "evidence": "Production run completed 2026-11-19: processingSource cloud-fallback, model gemini-3.5-flash-lite, 10 requirements, 5 deadlines, 3 specifications, 1 risk, all excerpts verified:true. Input was the built-in fictional sample text (Northbridge LED street lighting). File named 'Riverside Civic Centre - Construction Tender.pdf' by the user but content was the fictional sample, not a real procurement document.",
+      "reference": "docs/Riverside Civic Centre - Construction Tender-analysis.json",
+      "notes": "cloud-fallback confirms the call reached Firebase AI Logic via the cloud fallback path. Does not confirm that gemini-3.8-flash was attempted before fallback.",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-19T21:45:50.132Z",
+      "verifiedAt": "2026-11-19T21:45:50.132Z"
+    },
+    "app-check-production": {
+      "status": "verified",
+      "evidence": "Limited-use App Check token accepted in production 2026-11-19. exchangeRecaptchaEnterpriseToken returned 200, generateContent returned 200. Fix applied: useLimitedUseAppCheckTokens:true added to getAI() call. Previous session tokens were rejected with 401.",
+      "reference": "src/lib/services/firebaseAi.ts — commit ef4a84d",
+      "notes": "Future sessions depend on reCAPTCHA Enterprise attestation remaining valid for the deployed domain and site key.",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-19T22:00:00.000Z",
+      "verifiedAt": "2026-11-19T22:00:00.000Z"
+    },
+    "firebase-runtime": {
+      "status": "verified",
+      "evidence": "getGenerativeModel called with InferenceMode.ONLY_IN_CLOUD in production. generateContent reached Firebase AI Logic and returned a structured response. Network panel shows outbound requests to firebaseapp.com and generativelanguage.googleapis.com during analysis.",
+      "reference": "src/lib/services/firebaseAi.ts, src/lib/services/tenderAnalysis.ts",
+      "notes": "Confirmed by the same production run that verified cloud inference.",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-19T22:00:00.000Z",
+      "verifiedAt": "2026-11-19T22:00:00.000Z"
+    },
+    "app-check-init": {
+      "status": "verified",
+      "evidence": "initializeAppCheck called before any model call in firebaseAi.ts. ReCaptchaEnterpriseProvider used in production (VITE_FIREBASE_APPCHECK_RECAPTCHA_SITE_KEY). Debug provider used only in dev builds via build-time define __APPCHECK_DEBUG_TOKEN__.",
+      "reference": "src/lib/services/firebaseAi.ts — commit 78bbab8",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-19T22:00:00.000Z",
+      "verifiedAt": "2026-11-19T22:00:00.000Z"
+    },
+    "response-schema": {
+      "status": "verified",
+      "evidence": "Production run returned full structured output: 10 requirements, 5 deadlines, 3 specifications, 1 risk, all with evidence objects. Zod safeParse passed. TENDER_ANALYSIS_RESPONSE_SCHEMA passed as responseSchema for cloud calls.",
+      "reference": "src/lib/services/tenderAnalysisSchema.ts, docs/Riverside Civic Centre - Construction Tender-analysis.json",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-19T22:00:00.000Z",
+      "verifiedAt": "2026-11-19T22:00:00.000Z"
+    },
+    "zod": {
+      "status": "verified",
+      "evidence": "parseTenderResponse uses Zod safeParse with field-path error reporting. Arrays use .default([]) to handle missing fields. Invalid responses fall back to plain-text wrapping. 107 tests pass including tender-analysis.test.ts covering valid and invalid response parsing.",
+      "reference": "src/lib/services/tenderAnalysisSchema.ts, src/test/tender-analysis.test.ts",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-19T22:00:00.000Z",
+      "verifiedAt": "2026-11-19T22:00:00.000Z"
+    },
+    "fallback": {
+      "status": "verified",
+      "evidence": "Model fallback chain: gemini-3.8-flash (x2) -> gemini-3.5-flash -> gemini-3.5-flash-lite. Production run reached gemini-3.5-flash-lite confirming chain traversal. Exponential backoff retry for HTTP 429/500/502/503. 107 tests pass including model-fallback.test.ts.",
+      "reference": "src/lib/services/firebaseAi.ts, src/test/model-fallback.test.ts — commit 3d2ce3a",
+      "notes": "gemini-3.7-flash omitted because Gemini Developer API routes it to gemini-3.8-flash.",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-19T22:00:00.000Z",
+      "verifiedAt": "2026-11-19T22:00:00.000Z"
+    },
+    "secrets-audit": {
+      "status": "verified",
+      "evidence": "git log -- .env.local returns empty (zero history). .env committed in c9eb502 contains only public Firebase client config (VITE_* variables). Debug token moved from VITE_* to build-time define __APPCHECK_DEBUG_TOKEN__ injected only in dev builds. No secrets in Git history.",
+      "reference": "vite.config.ts — commit 78bbab8, git log --all -- .env.local",
+      "notes": "FIRECRAWL_API_KEY and ELEVENLABS_API_KEY are server-side only, never in VITE_* variables.",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-19T22:00:00.000Z",
+      "verifiedAt": "2026-11-19T22:00:00.000Z"
+    },
+    "repository": {
+      "status": "verified",
+      "evidence": "https://github.com/maurolima-sys/ai-mind-law is publicly accessible without authentication. Repository contains full source, commit history from ab25e1a onward, and Apache 2.0 LICENSE.",
+      "reference": "https://github.com/maurolima-sys/ai-mind-law",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-19T22:00:00.000Z",
+      "verifiedAt": "2026-11-19T22:00:00.000Z"
+    },
+    "license": {
+      "status": "verified",
+      "evidence": "LICENSE file present at repository root. Apache License 2.0. Correct copyright header.",
+      "reference": "LICENSE",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-19T22:00:00.000Z",
+      "verifiedAt": "2026-11-19T22:00:00.000Z"
+    },
+    "hosted": {
+      "status": "verified",
+      "evidence": "https://ai-mind-law.vercel.app/ loads without authentication. Dashboard, Processing, Analysis, Compliance matrix, Risks, Projects, Settings, and Integrations screens confirmed reachable. Cloud AI analysis completed in production 2026-11-19.",
+      "reference": "https://ai-mind-law.vercel.app/",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-19T22:00:00.000Z",
+      "verifiedAt": "2026-11-19T22:00:00.000Z"
+    },
+    "walkthrough": {
+      "status": "verified",
+      "evidence": "EVALUATOR_WALKTHROUGH.md updated 2026-11-19: production Cloud AI verification recorded, fallback chain order corrected (gemini-3.8-flash first), App Check confirmed, test count updated to 107 tests (28 files). Evidence artefact committed.",
+      "reference": "docs/EVALUATOR_WALKTHROUGH.md — commit 1e3c477",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-19T22:00:00.000Z",
+      "verifiedAt": "2026-11-19T22:00:00.000Z"
+    },
+    "test-count": {
+      "status": "verified",
+      "evidence": "npm test reports 107 tests across 28 test files. Walkthrough updated from '11 tests' to '107 tests (28 files)'.",
+      "reference": "src/test/ — 28 files, commit 1e3c477",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-19T22:00:00.000Z",
+      "verifiedAt": "2026-11-19T22:00:00.000Z"
+    },
+    "on-device": {
+      "status": "in_progress",
+      "evidence": "Last reported sample timed out after 60 seconds. Chunking reduced to 3,000 characters, generation timeout increased to 60s, total budget to 180s. Live Chrome retest still pending.",
+      "reference": "src/lib/services/tenderAnalysis.ts — commit d2b0356",
+      "notes": "On-device-only mode never falls back to cloud.",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-19T22:00:00.000Z",
+      "verifiedAt": null
+    },
+    "ocr": {
+      "status": "in_progress",
+      "evidence": "LlamaParse OCR path implemented with separate per-document consent. Server function in ocr.functions.ts. UI flow in ProcessingScreen. End-to-end test with a real scanned PDF not yet completed.",
+      "reference": "src/lib/services/externalOcr.ts, src/lib/services/ocr.functions.ts",
+      "notes": "Requires a real scanned PDF with no selectable text to test end-to-end.",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-19T22:00:00.000Z",
+      "verifiedAt": null
+    },
+    "pdf": {
+      "status": "verified",
+      "evidence": "PDF.js extraction runs entirely in the browser. documentProcessing.ts uses pdfjs-dist with no network calls. Text is stored in IndexedDB locally. Cloud consent checkbox is required before any text is sent to Firebase AI Logic.",
+      "reference": "src/lib/services/documentProcessing.ts",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-19T22:00:00.000Z",
+      "verifiedAt": "2026-11-19T22:00:00.000Z"
+    },
+    "consent": {
+      "status": "verified",
+      "evidence": "Cloud consent checkbox is visible on the Processing screen and cannot be bypassed. cloudConsent state in PocketMindApp.tsx gates all cloud inference paths. Consent is session-only and not persisted.",
+      "reference": "src/components/pocketmind/PocketMindApp.tsx",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-19T22:00:00.000Z",
+      "verifiedAt": "2026-11-19T22:00:00.000Z"
+    },
+    "source": {
+      "status": "verified",
+      "evidence": "Production run reported processingSource: cloud-fallback and model: gemini-3.5-flash-lite in the exported JSON. requireInferenceSource() maps SDK InferenceSource enum to typed InferenceSource. Badge displayed in Analysis screen after each run.",
+      "reference": "src/lib/services/inferenceSource.ts, docs/Riverside Civic Centre - Construction Tender-analysis.json",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-19T22:00:00.000Z",
+      "verifiedAt": "2026-11-19T22:00:00.000Z"
+    }
+  },
+  "history": [
+    {
+      "criterionId": "cloud",
+      "previousStatus": "pending",
+      "newStatus": "verified",
+      "timestamp": "2026-11-19T21:45:50.132Z",
+      "notes": "Production Cloud AI analysis completed. cloud-fallback, gemini-3.5-flash-lite."
+    },
+    {
+      "criterionId": "app-check-production",
+      "previousStatus": "pending",
+      "newStatus": "verified",
+      "timestamp": "2026-11-19T22:00:00.000Z",
+      "notes": "Limited-use token accepted. Fix: useLimitedUseAppCheckTokens:true."
+    },
+    {
+      "criterionId": "secrets-audit",
+      "previousStatus": "pending",
+      "newStatus": "verified",
+      "timestamp": "2026-11-19T22:00:00.000Z",
+      "notes": "Git history audited. No secrets committed."
+    },
+    {
+      "criterionId": "on-device",
+      "previousStatus": "pending",
+      "newStatus": "in_progress",
+      "timestamp": "2026-11-19T22:00:00.000Z",
+      "notes": "Timeout mitigations applied. Live retest pending."
+    },
+    {
+      "criterionId": "ocr",
+      "previousStatus": "pending",
+      "newStatus": "in_progress",
+      "timestamp": "2026-11-19T22:00:00.000Z",
+      "notes": "Implementation complete. End-to-end test with real scanned PDF pending."
+    }
+  ]
+}

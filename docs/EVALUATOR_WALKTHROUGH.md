@@ -20,13 +20,15 @@
 
 1. Open **https://ai-mind-law.vercel.app/** in **desktop Chrome** (required for on-device inference).
 2. The dashboard loads with a fictional sample tender already selected — no upload needed.
-3. Click **Processing & privacy** in the left sidebar.
-4. Select **Cloud AI**, read and accept the cloud consent checkbox.
-5. Click **Analyze fictional sample**.
-6. Watch the progress status. If the call succeeds, the badge reads **Connected · a response was received** and the inference source (**cloud** or **cloud-fallback**) appears next to the model name. A configured badge alone does not prove a successful live analysis.
-7. After a successful analysis, navigate to **Document analysis** to inspect findings, then **Compliance matrix** to see the review workflow.
+3. Open **Settings**, select **Cloud AI**, and click **Save changes**.
+4. Open **Processing**, read and accept the cloud consent checkbox.
+5. Click **Confirm and continue →** to analyze the selected fictional sample.
+6. Watch the progress status. On success, the analysis shows the inference source and the status reports **Cloud response received this session · connection not guaranteed**. A configured badge alone does not prove a successful live analysis.
+7. Inspect the findings in **Analysis**, then open **Compliance matrix** to see the review workflow.
 
-> **Production Cloud AI verified (2026-11-19).** A production run completed with `processingSource: cloud-fallback`, model `gemini-3.5-flash-lite`, 10 requirements, 5 deadlines, 3 specifications, and 1 risk — all excerpts with `verified: true`. The input was the built-in fictional sample text (Northbridge LED street lighting); the file was named "Riverside Civic Centre - Construction Tender.pdf" by the user, but the content analysed was the fictional sample, not a real procurement document. The exported JSON (`docs/Riverside Civic Centre - Construction Tender-analysis.json`) is the evidence artefact. `cloud-fallback` confirms the call reached Firebase AI Logic via the cloud fallback path; it does not confirm that the primary `gemini-3.8-flash` model was reached before fallback occurred.
+> **Production test, 2026-11-20:** the hosted page identified build `v0.4.0 · ed19ed4` (2026-11-19 23:54 UTC), matching remote `main` at the time. For the fictional sample in Cloud AI mode, `exchangeRecaptchaEnterpriseToken` returned HTTP 200; `gemini-3.8-flash` returned HTTP 500 and the `gemini-3.5-flash` fallback returned HTTP 200. The analysis completed and the UI reported `Cloud (IN_CLOUD)`, its normalized SDK source; the raw SDK value was not captured. This single run does not guarantee future availability.
+
+> **Historical report (2026-11-19).** A prior run reported `processingSource: cloud-fallback` and `gemini-3.5-flash-lite` for fictional sample text; a later attempt returned HTTP 401. The 2026-11-20 test above is a separate, more recent observation, not a guarantee of continued availability.
 
 ---
 
@@ -39,22 +41,22 @@ The requirement is that Firebase AI Logic is **imported and actually called**, n
 | `src/lib/services/firebaseAi.ts` | `getGenerativeModel` called with `InferenceMode.PREFER_ON_DEVICE` / `ONLY_IN_CLOUD` / `ONLY_ON_DEVICE` |
 | `src/lib/services/tenderAnalysis.ts` | `generateWithModelFallback` orchestrates chunked analysis; calls `model.generateContent` |
 | `src/lib/services/documentQa.ts` | Same hybrid path for follow-up questions |
-| Browser DevTools → Network | Outbound requests to `firebaseapp.com` / `generativelanguage.googleapis.com` during analysis |
+| Browser DevTools → Network | App Check token exchange and requests to `firebasevertexai.googleapis.com` during cloud analysis |
 | UI after analysis | Inference source badge: **on-device**, **cloud**, or **cloud-fallback** |
 
-`initializeAppCheck` runs before model calls, using the debug provider only in local development and `ReCaptchaEnterpriseProvider` in production. A production run on 2026-11-19 confirmed that a limited-use App Check token was accepted and `generateContent` returned 200 (`cloud-fallback`, `gemini-3.5-flash-lite`).
+`initializeAppCheck` runs before model calls, using the debug provider only in local development and `ReCaptchaEnterpriseProvider` in production. The 2026-11-20 production test observed a successful reCAPTCHA Enterprise exchange and completed cloud analysis; Firebase Console settings were not independently inspected.
 
 ---
 
 ## 4. Exploring hybrid inference modes
 
-Navigate to **Processing & privacy** and try each mode:
+Select the default mode in **Settings**, then navigate to **Processing**:
 
 ### Cloud AI
 - Sends extracted text to Gemini via Firebase AI Logic.
 - Requires explicit consent checkbox — cloud processing is never silent.
 - Badge after analysis: **cloud** or **cloud-fallback**.
-- Model fallback chain (most capable first): `gemini-3.8-flash` → `gemini-3.5-flash` → `gemini-3.5-flash-lite`. The production run reached `gemini-3.5-flash-lite`, confirming the chain was traversed.
+- Model fallback chain: `gemini-3.8-flash` → `gemini-3.5-flash` → `gemini-3.5-flash-lite`, after retryable errors or timeouts. On 2026-11-20 the first model returned 500 and the second returned 200.
 
 ### On-device only
 - Uses Chrome's Prompt API; the exact on-device model depends on Chrome and the device.
@@ -68,15 +70,16 @@ Navigate to **Processing & privacy** and try each mode:
 - This is the non-obvious product feature: the inference source is surfaced to the user because it matters for document privacy.
 
 ### Sample data (Demo)
-- No Firebase call. Loads a pre-written fictional analysis.
-- Clearly labelled **DEMO DATA** throughout the UI.
-- Useful for exploring the compliance matrix and export without a live model call.
+- The **Sample data** card does not call Firebase. It loads the pre-written fictional Northbridge analysis.
+- The badge in the interface is **Demo data** (`inference_demo_label`). The sample record itself carries `DEMO_LABEL`: “DEMO DATA — Illustrative analysis, not extracted from a real procurement document.”
+- **Confirm and continue →** on the Processing screen runs a live analysis of the selected fictional sample in the chosen mode. A live result can still be fictional sample content; the displayed file name is not proof that a real procurement PDF was analysed.
+- Dashboard metrics keep uploaded documents and the demonstration sample apart. The library lists uploaded documents only.
 
 ---
 
 ## 5. Document analysis screen
 
-After running analysis, open **Document analysis**:
+After running analysis, open **Analysis**:
 
 - **Findings panel** (left): filter by Requirements, Deadlines, Specifications, Risks, Missing & inconsistencies.
 - **Source panel** (right): extracted page text. Every finding card shows a **Source verified** or **Verify source** badge — the app checks each AI-cited excerpt against the extracted text.
@@ -90,16 +93,20 @@ After running analysis, open **Document analysis**:
 Open **Compliance matrix**:
 
 - Lists every extracted requirement with category, mandatory flag, evidence excerpt, and page number.
-- Each row has a **Review status** dropdown: Pending → Reviewed → Satisfied → Unclear.
+- Three states are independent. A verified quotation does not mean the requirement is met or approved.
+  - **Evidence verification:** Verified, Unverified, or Not found.
+  - **Compliance assessment:** Not assessed, Compliant, Partially compliant, or Non-compliant.
+  - **Review status:** Pending, Reviewed, or Approved.
+- Older rows saved as “unclear” stay visible as **Previous status: unclear**. They are not a current review-status option.
 - Add review notes per requirement.
-- **Export CSV**: downloads the matrix with all statuses and notes.
-- Status is held in the browser session (no cloud storage — intentional for v1 privacy scope).
+- **Export CSV**: downloads evidence verification, assessment, review status, and notes.
+- Those fields are stored locally in this browser (IndexedDB), not in a cloud document store.
 
 ---
 
 ## 7. Document Q&A
 
-In **Document analysis**, the Q&A panel is available after text extraction:
+In **Analysis**, the Q&A panel is available after text extraction:
 
 - Ask a follow-up question about the document in any language (EN, PT, ES).
 - The answer separates **stated facts**, **working hypotheses**, and **unresolved questions**.
@@ -145,13 +152,13 @@ The submission is honest about its current state:
 
 | Item | Status |
 |---|---|
-| Cloud AI analysis with structured-output validation passing end-to-end | ✅ Verified in production (2026-11-19): `cloud-fallback`, `gemini-3.5-flash-lite`, full structured output, all excerpts `verified: true`. Input was the fictional sample text, not a real procurement document. |
-| On-device inference (Chrome Prompt API) | The last reported sample timed out after 60 seconds. Local chunking and recovery guidance have been improved; a live Chrome retest is still pending. On-device-only mode never falls back to cloud. |
+| Cloud AI analysis with structured-output validation passing end-to-end | Successful fictional-sample analysis on 2026-11-20 in build `ed19ed4`, with `gemini-3.5-flash` and UI source `Cloud (IN_CLOUD)`. Individual citations were not independently reviewed; availability can change. |
+| On-device inference (Chrome Prompt API) | On 2026-11-20 an integrated browser initialized the model but the fictional sample failed with “The input is too large”; no cloud generation request was observed. Successful analysis on supported desktop Chrome and hardware remains unverified. On-device-only does not fall back to cloud. |
 | LlamaParse OCR with a real scanned PDF | Not yet tested end-to-end |
-| App Check in production | ✅ A valid limited-use App Check token was accepted by Firebase AI Logic in production (2026-11-19). `exchangeRecaptchaEnterpriseToken` → `generateContent` → 200 path confirmed for that session; future sessions depend on reCAPTCHA Enterprise attestation remaining valid. |
+| App Check in production | On 2026-11-20, `exchangeRecaptchaEnterpriseToken` and the successful fallback `generateContent` both returned HTTP 200. Console enforcement and configuration were not independently inspected. |
 | Responsive layout with PT/ES longer strings on small screens | Not yet validated |
 
-The **Connected · a response was received** badge confirms a Firebase AI Logic response arrived. A successful structured-output analysis (findings displayed) confirms full validation passed.
+The **Cloud response received this session · connection not guaranteed** status confirms that a cloud response arrived in that session. A successful structured-output analysis (findings displayed) confirms validation passed.
 
 ---
 
@@ -183,7 +190,7 @@ CI runs automatically on every push via `.github/workflows/ci.yml`.
 | Requirement | Status |
 |---|---|
 | Firebase AI Logic imported and called at runtime | ✅ `firebaseAi.ts` |
-| App Check initialized | ✅ `initializeAppCheck` before model calls; production token accepted — `generateContent` → 200 confirmed (2026-11-19) |
+| App Check initialized | ✅ `initializeAppCheck` before model calls; production token exchange and fallback generation returned HTTP 200 on 2026-11-20. Console settings were not independently inspected. |
 | Web (Chrome) platform | ✅ |
 | Public GitHub repository | ✅ https://github.com/maurolima-sys/ai-mind-law |
 | Open source license | ✅ Apache 2.0 (`LICENSE`) |

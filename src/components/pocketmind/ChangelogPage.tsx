@@ -41,12 +41,13 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
-    version: "Unreleased",
-    label: "In working tree",
-    date: "2026-11-16",
-    status: "unreleased",
+    version: "0.4.0",
+    label: "Current release",
+    date: "2026-11-19",
+    commit: "ed19ed4",
+    status: "latest",
     summary:
-      "Full multilingual interface: English, Portuguese, and Spanish ship simultaneously. Every UI string, CSV header, and guided-tour step is now localised.",
+      "Version 0.4.0 separates demo and uploaded documents and records evidence verification, assessment, and human review independently. A production Cloud AI sample succeeded on 20 November 2026; availability is not guaranteed.",
     icon: Globe,
     iconColor: "var(--pm-purple)",
     changes: [
@@ -83,8 +84,28 @@ const RELEASES: Release[] = [
         ),
       },
       {
+        kind: "fixed",
+        text: "Runtime indicators distinguish a cloud response received in the session from configuration and on-device inference. Analyses without a recorded source stay unknown.",
+      },
+      {
+        kind: "fixed",
+        text: "Uploaded and demonstration document metrics and activity are separate. Risk filters, counts, and CSV identify each origin. The local library lists uploaded documents only.",
+      },
+      {
+        kind: "changed",
+        text: "The compliance matrix and CSV keep evidence verification, compliance assessment, and human review as separate states. Older “unclear” values are labeled as a previous status.",
+      },
+      {
         kind: "note",
         text: "AI prompt instructions remain in English. documentQa.ts instructs the model to reply in the language of the question. Sample tender text stays in English for v1.",
+      },
+      {
+        kind: "note",
+        text: "Production Cloud AI completed once on 2026-11-19 (cloud-fallback, gemini-3.5-flash-lite) against the fictional sample. A later production attempt returned HTTP 401 (App Check token is invalid). That dated success does not mean cloud inference is available now.",
+      },
+      {
+        kind: "note",
+        text: "On 2026-11-20, production build ed19ed4 completed a fictional-sample Cloud AI analysis: App Check exchange HTTP 200, gemini-3.8-flash HTTP 500, then gemini-3.5-flash HTTP 200. The UI reported Cloud (IN_CLOUD). On-device analysis failed with input too large; a real scanned-PDF LlamaParse test remains pending.",
       },
     ],
   },
@@ -93,7 +114,7 @@ const RELEASES: Release[] = [
     label: "Guided Tour & Docs",
     date: "2026-11-16",
     commit: "7657c0a",
-    status: "latest",
+    status: "stable",
     summary:
       "In-app guided tour walks new users through the full workflow in 9 steps without leaving the app. Complete user-facing documentation suite.",
     icon: Map,
@@ -221,6 +242,27 @@ const RELEASES: Release[] = [
             input, pagination note, inline error, composer styles.
           </>
         ),
+      },
+    ],
+  },
+  {
+    version: "0.1.1",
+    label: "OCR evidence review",
+    date: "2026-11-16",
+    commit: "dbfeaa5",
+    status: "stable",
+    summary:
+      "Optional LlamaParse OCR stays behind a per-document consent gate. Citations without a page mapping are marked unverified for human review.",
+    icon: ScrollText,
+    iconColor: "var(--pm-purple)",
+    changes: [
+      {
+        kind: "added",
+        text: "ocrEvidence.ts normalizes LlamaParse output and marks citations unverified when page mapping is absent. ocr-review.test.ts covers that review path.",
+      },
+      {
+        kind: "changed",
+        text: "Scanned-PDF detection and the external OCR consent gate live in the processing flow. If consent is withheld, analysis continues from browser-extracted text.",
       },
     ],
   },
