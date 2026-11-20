@@ -28,11 +28,12 @@ const RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503]);
 const TIMEOUT_ERROR_CODE = "TIMEOUT";
 const GENERATION_TIMEOUT_MS = 60_000;
 export const ON_DEVICE_GENERATION_TIMEOUT_MS = 120_000;
-const TOTAL_GENERATION_BUDGET_MS = 180_000;
+const TOTAL_GENERATION_BUDGET_MS = 300_000;
 const RETRY_STEPS = [
   { modelName: PRIMARY_GEMINI_MODEL, delayMs: 0, jitterMs: 0 },
-  { modelName: SECONDARY_GEMINI_MODEL, delayMs: 3_000, jitterMs: 2_000 },
-  { modelName: TERTIARY_GEMINI_MODEL, delayMs: 6_000, jitterMs: 3_000 },
+  { modelName: PRIMARY_GEMINI_MODEL, delayMs: 5_000, jitterMs: 3_000 },
+  { modelName: SECONDARY_GEMINI_MODEL, delayMs: 10_000, jitterMs: 4_000 },
+  { modelName: TERTIARY_GEMINI_MODEL, delayMs: 15_000, jitterMs: 5_000 },
 ] as const;
 
 export const DEVICE_MODEL_INIT_TIMEOUT_MS = 60_000;
