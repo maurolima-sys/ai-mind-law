@@ -20,6 +20,7 @@ import {
   getOnDeviceTimeoutStage,
   geminiModelLabel,
   initializeDeviceModelWithTimeout,
+  isAppCheckError,
   PRIMARY_GEMINI_MODEL,
   TOTAL_MODEL_ATTEMPTS,
   type GeminiModelName,
@@ -49,8 +50,10 @@ export type AnalysisProgressEvent =
   | { type: "output-validated"; section: number; total: number }
   | { type: "checking-evidence" };
 
-const MAX_CHUNK_CHARACTERS = 8_000;
-export const ON_DEVICE_CHUNK_CHARACTERS = 3_000;
+export const MAX_CHUNK_CHARACTERS = 16_000;
+export const ON_DEVICE_CHUNK_CHARACTERS = 4_000;
+const HYBRID_DEVICE_INIT_MAX_MS = 30_000;
+const HYBRID_DEVICE_REQUEST_TIMEOUT_MS = 30_000;
 
 export function chunkTenderText(
   pages: string[],
@@ -295,7 +298,13 @@ export async function analyzeTender(
   }
 
   options.onEvent?.({ type: "initializing" });
-  const { model } = createTenderModel(preference);
+  // Hybrid is explicitly on-device first. Use an on-device-only model for that
+  // pass so Firebase's PREFER_ON_DEVICE cloud fallback cannot duplicate the
+  // application-managed cloud fallback below.
+  const initialPreference = preference === "hybrid" ? "local" : preference;
+  const { model } = createTenderModel(initialPreference);
+  let deviceModelReady = preference === "local";
+  let deviceModelError = "On-device model initialization failed.";
 
   if (preference === "cloud") {
     // Cloud-only: skip on-device initialization entirely.
@@ -328,7 +337,9 @@ export async function analyzeTender(
             detail: `Downloading the on-device model (${Math.round(progress * 100)}%)`,
           });
         },
+        preference === "hybrid" ? { maxDurationMs: HYBRID_DEVICE_INIT_MAX_MS } : undefined,
       );
+      deviceModelReady = true;
       options.onEvent?.({ type: "model-ready" });
       onProgress({
         phase: "preparing",
@@ -337,8 +348,10 @@ export async function analyzeTender(
         detail: "On-device model ready; preparing local analysis.",
       });
     } catch (error) {
+      deviceModelReady = false;
       const detail =
         error instanceof Error ? error.message : "On-device model initialization failed";
+      deviceModelError = detail;
       if (preference === "local") {
         if (getOnDeviceTimeoutStage(error)) throw error;
         throw new Error(`On-device inference is unavailable. ${detail}`);
@@ -372,7 +385,7 @@ export async function analyzeTender(
           : `Analyzing text section ${index + 1} of ${chunks.length}`,
     });
     const prompt = buildPrompt(chunk, preference);
-    let forcedCloudFallback = false;
+    let forcedCloudFallback = preference === "hybrid" && !deviceModelReady;
     const generateSection = (candidate: GeminiModelName, signal?: AbortSignal) => {
       const cache = forcedCloudFallback ? cloudModels : models;
       let currentModel = cache.get(candidate);
@@ -434,22 +447,45 @@ export async function analyzeTender(
       }
       records.push(parseTenderResponse(result.response.text()));
     };
+    const firstPassPreference = forcedCloudFallback ? "cloud" : initialPreference;
+    if (forcedCloudFallback) {
+      options.onEvent?.({ type: "cloud-retry" });
+      onProgress({
+        phase: "analyzing",
+        completed: index,
+        total: chunks.length,
+        detail: "On-device model unavailable; starting the cloud fallback.",
+      });
+    }
     try {
       const generated = await generateWithModelFallback(
-        preference,
+        firstPassPreference,
         generateSection,
-        fallbackOptions,
+        preference === "hybrid" && !forcedCloudFallback
+          ? { ...fallbackOptions, localTimeoutMs: HYBRID_DEVICE_REQUEST_TIMEOUT_MS }
+          : fallbackOptions,
       );
-      recordResponse(generated);
+      recordResponse(generated, firstPassPreference === "local");
     } catch (error) {
       if (preference !== "hybrid") throw error;
+      if (forcedCloudFallback) {
+        const cloudDetail = error instanceof Error ? error.message : String(error);
+        throw new Error(
+          `Hybrid processing failed. On-device: ${deviceModelError}. Cloud: ${cloudDetail}`,
+        );
+      }
+      // App Check / reCAPTCHA failures on the on-device path should route
+      // directly to cloud fallback — they are not retryable on-device.
+      const isAppCheck = isAppCheckError(error);
       forcedCloudFallback = true;
       options.onEvent?.({ type: "cloud-retry" });
       onProgress({
         phase: "analyzing",
         completed: index,
         total: chunks.length,
-        detail: "The request failed; retrying this section with Cloud AI under the hybrid policy.",
+        detail: isAppCheck
+          ? "App Check attestation failed; retrying this section with Cloud AI."
+          : "The request failed; retrying this section with Cloud AI under the hybrid policy.",
       });
       try {
         const generated = await generateWithModelFallback(
@@ -459,29 +495,21 @@ export async function analyzeTender(
         );
         recordResponse(generated);
       } catch (cloudError) {
+        const cloudDetail = cloudError instanceof Error ? cloudError.message : String(cloudError);
+        if (!deviceModelReady) {
+          throw new Error(
+            `Hybrid processing failed. On-device: ${deviceModelError}. Cloud: ${cloudDetail}`,
+          );
+        }
         options.onEvent?.({ type: "local-retry" });
         onProgress({
           phase: "analyzing",
           completed: index,
           total: chunks.length,
-          detail: "Cloud processing failed; trying this section on this device.",
+          detail: "Cloud processing failed; retrying this section on the ready on-device model.",
         });
         try {
-          if (!localFallbackModel) {
-            const candidate = createTenderModel("local").model;
-            await initializeDeviceModelWithTimeout(
-              (progress) => candidate.initializeDeviceModel(progress),
-              (progress) => {
-                if (Number.isFinite(progress) && progress >= 0 && progress <= 1) {
-                  options.onEvent?.({
-                    type: "model-download",
-                    percent: Math.round(progress * 100),
-                  });
-                }
-              },
-            );
-            localFallbackModel = candidate;
-          }
+          localFallbackModel ??= model;
           const localModel = localFallbackModel;
           for (const page of chunk.pages) {
             for (let offset = 0; offset < page.text.length; offset += ON_DEVICE_CHUNK_CHARACTERS) {
@@ -491,22 +519,25 @@ export async function analyzeTender(
                 ],
               };
               const localPrompt = buildPrompt(localChunk, "local");
-              const localResult = await generateWithModelFallback("local", (_candidate, signal) => {
-                options.onEvent?.({
-                  type: "request-started",
-                  section: index + 1,
-                  total: chunks.length,
-                });
-                return localModel.generateContent(localPrompt, signal ? { signal } : undefined);
-              });
+              const localResult = await generateWithModelFallback(
+                "local",
+                (_candidate, signal) => {
+                  options.onEvent?.({
+                    type: "request-started",
+                    section: index + 1,
+                    total: chunks.length,
+                  });
+                  return localModel.generateContent(localPrompt, signal ? { signal } : undefined);
+                },
+                { localTimeoutMs: HYBRID_DEVICE_REQUEST_TIMEOUT_MS },
+              );
               recordResponse(localResult, true);
             }
           }
         } catch (localError) {
-          const cloudDetail = cloudError instanceof Error ? cloudError.message : String(cloudError);
           const localDetail = localError instanceof Error ? localError.message : String(localError);
           throw new Error(
-            `Cloud processing failed: ${cloudDetail}. Local fallback failed: ${localDetail}`,
+            `Hybrid processing failed after one on-device pass and one cloud fallback. Cloud: ${cloudDetail}. On-device: ${localDetail}`,
           );
         }
         options.onEvent?.({ type: "output-validated", section: index + 1, total: chunks.length });

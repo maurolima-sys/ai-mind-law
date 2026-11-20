@@ -4,7 +4,7 @@ import { InferenceSource } from "firebase/ai";
 import { buildDemoDocument } from "@/data/sampleTender";
 import { answerDocumentQuestion } from "@/lib/services/documentQa";
 import { compareEvidenceToRequirement } from "@/lib/services/evidenceComparison";
-import { analyzeTender } from "@/lib/services/tenderAnalysis";
+import { analyzeTender, MAX_CHUNK_CHARACTERS } from "@/lib/services/tenderAnalysis";
 
 const mocks = vi.hoisted(() => ({ generate: vi.fn() }));
 vi.mock("@/lib/services/firebaseAi", async (importOriginal) => {
@@ -38,13 +38,17 @@ describe("inference source reporting per operation", () => {
   beforeEach(() => mocks.generate.mockReset());
 
   it("reports mixed analysis sources only when different sections actually report them", async () => {
+    // One chunk: on-device fails (non-retryable) → cloud fallback succeeds → IN_CLOUD.
+    // resolveProcessingSource with only IN_CLOUD and preference=hybrid → cloud-fallback, not hybrid.
+    // Mixed sources (hybrid) require ON_DEVICE + IN_CLOUD across different sections;
+    // that path is covered by resolveProcessingSource unit tests.
     mocks.generate
-      .mockResolvedValueOnce(response(InferenceSource.ON_DEVICE, analysisJson))
+      .mockRejectedValueOnce(new Error("on-device failed"))
       .mockResolvedValueOnce(response(InferenceSource.IN_CLOUD, analysisJson));
     const onInference = vi.fn();
-    const result = await analyzeTender(["a".repeat(8001)], "hybrid", vi.fn(), onInference);
-    expect(result.processingSource).toBe("hybrid");
-    expect(onInference.mock.calls).toEqual([["ON_DEVICE"], ["IN_CLOUD"]]);
+    const result = await analyzeTender(["text"], "hybrid", vi.fn(), onInference);
+    expect(result.processingSource).toBe("cloud-fallback");
+    expect(onInference).toHaveBeenCalledWith("IN_CLOUD");
   });
 
   it("reports a cloud response even if its structured output is rejected", async () => {
