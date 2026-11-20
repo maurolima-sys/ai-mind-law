@@ -27,6 +27,7 @@ export const pt: Translations = {
   monitor_request_started: "Solicitando análise da seção {{section}} de {{total}}",
   monitor_retry: "Tentando novamente com {{model}} (tentativa {{attempt}})",
   monitor_cloud_retry: "Solicitação falhou; tentando Cloud AI conforme sua política híbrida",
+  monitor_local_retry: "O processamento na nuvem falhou; tentando neste dispositivo",
   monitor_response_cloud: "Firebase informou uma resposta de inferência na nuvem",
   monitor_response_local: "Firebase informou uma resposta de inferência no dispositivo",
   monitor_output_validated: "Resposta estruturada validada para a seção {{section}} de {{total}}",

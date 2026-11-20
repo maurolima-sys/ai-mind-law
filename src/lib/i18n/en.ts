@@ -25,6 +25,7 @@
   monitor_request_started: "Requesting analysis of section {{section}} of {{total}}",
   monitor_retry: "Retrying with {{model}} (attempt {{attempt}})",
   monitor_cloud_retry: "Request failed; retrying with Cloud AI under your hybrid policy",
+  monitor_local_retry: "Cloud processing failed; trying on this device",
   monitor_response_cloud: "Firebase reported a cloud inference response",
   monitor_response_local: "Firebase reported an on-device inference response",
   monitor_output_validated: "Structured response validated for section {{section}} of {{total}}",

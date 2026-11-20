@@ -60,6 +60,8 @@ function eventMessage(event: MonitorEvent, t: ReturnType<typeof useT>) {
       return t("monitor_retry", { model: event.model, attempt: event.attempt });
     case "cloud-retry":
       return t("monitor_cloud_retry");
+    case "local-retry":
+      return t("monitor_local_retry");
     case "response":
       return t(event.source === "IN_CLOUD" ? "monitor_response_cloud" : "monitor_response_local");
     case "output-validated":

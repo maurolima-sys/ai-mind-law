@@ -39,6 +39,7 @@ describe("processing monitor", () => {
       ...initial,
       events: [{ type: "initializing" }, { type: "model-unavailable" }, { type: "cloud-retry" }],
     });
+
     expect(
       within(screen.getByRole("list", { name: "Live processing activity" })).getByText(
         /retrying with Cloud AI under your hybrid policy/i,
@@ -49,6 +50,14 @@ describe("processing monitor", () => {
     ).not.toBeInTheDocument();
     expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
     expect(screen.getByText("Processing — duration unknown")).toBeInTheDocument();
+  });
+
+  it("reports an attempted local fallback without claiming it succeeded", () => {
+    show({ ...initial, events: [{ type: "local-retry" }] });
+    expect(screen.getByText("Cloud processing failed; trying on this device")).toBeInTheDocument();
+    expect(
+      screen.queryByText("Firebase reported an on-device inference response"),
+    ).not.toBeInTheDocument();
   });
 
   it("shows real counts and opens results only after completion", () => {

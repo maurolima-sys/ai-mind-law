@@ -27,7 +27,9 @@ $vars = @(
   @{ Key='FIRECRAWL_API_KEY';                         Envs=@('production','preview');               Type='secret' },
   @{ Key='ELEVENLABS_API_KEY';                        Envs=@('production','preview');               Type='secret' },
   @{ Key='LLAMA_CLOUD_API_KEY';                       Envs=@('production','preview');               Type='secret' },
-  @{ Key='VERCEL_AI_GATEWAY_API_KEY';                 Envs=@('production','preview');               Type='secret' }
+  @{ Key='VERCEL_AI_GATEWAY_API_KEY';                 Envs=@('production','preview');               Type='secret' },
+  @{ Key='GOOGLE_OAUTH_CLIENT_ID';                    Envs=@('production','preview');               Type='secret' },
+  @{ Key='GOOGLE_OAUTH_CLIENT_SECRET';                Envs=@('production','preview');               Type='secret' }
 )
 
 $ok = 0; $skipped = 0

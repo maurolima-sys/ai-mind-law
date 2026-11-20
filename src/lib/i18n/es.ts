@@ -27,6 +27,7 @@ export const es: Translations = {
   monitor_request_started: "Solicitando análisis de la sección {{section}} de {{total}}",
   monitor_retry: "Reintentando con {{model}} (intento {{attempt}})",
   monitor_cloud_retry: "La solicitud falló; reintentando con Cloud AI según su política híbrida",
+  monitor_local_retry: "El procesamiento en la nube falló; intentando en este dispositivo",
   monitor_response_cloud: "Firebase informó una respuesta de inferencia en la nube",
   monitor_response_local: "Firebase informó una respuesta de inferencia en el dispositivo",
   monitor_output_validated:

@@ -44,6 +44,7 @@ export type AnalysisProgressEvent =
   | { type: "request-started"; section: number; total: number }
   | { type: "retry"; model: string; attempt: number; status: number | undefined }
   | { type: "cloud-retry" }
+  | { type: "local-retry" }
   | { type: "response"; source: InferenceSource }
   | { type: "output-validated"; section: number; total: number }
   | { type: "checking-evidence" };
@@ -359,6 +360,7 @@ export async function analyzeTender(
     [PRIMARY_GEMINI_MODEL, model],
   ]);
   const cloudModels = new Map<GeminiModelName, ReturnType<typeof createTenderModel>["model"]>();
+  let localFallbackModel: ReturnType<typeof createTenderModel>["model"] | undefined;
   for (const [index, chunk] of chunks.entries()) {
     onProgress({
       phase: "analyzing",
@@ -409,12 +411,36 @@ export async function analyzeTender(
         });
       },
     };
-    let generated: {
+    type Generated = {
       result: Awaited<ReturnType<typeof generateSection>>;
       modelName: GeminiModelName;
     };
+    const recordResponse = ({ result, modelName }: Generated, localOnly = false) => {
+      const source = requireInferenceSource(result.response.inferenceSource);
+      if (localOnly && source !== "ON_DEVICE") {
+        throw new Error("The local fallback returned a response from an unexpected source.");
+      }
+      options.onEvent?.({ type: "response", source });
+      onInference(source);
+      sources.add(source);
+      if (source === "IN_CLOUD") cloudModelNames.add(modelName);
+      if (preference === "hybrid" && source === "IN_CLOUD") {
+        onProgress({
+          phase: "analyzing",
+          completed: index,
+          total: chunks.length,
+          detail: `Firebase reported cloud inference for section ${index + 1} (hybrid mode).`,
+        });
+      }
+      records.push(parseTenderResponse(result.response.text()));
+    };
     try {
-      generated = await generateWithModelFallback(preference, generateSection, fallbackOptions);
+      const generated = await generateWithModelFallback(
+        preference,
+        generateSection,
+        fallbackOptions,
+      );
+      recordResponse(generated);
     } catch (error) {
       if (preference !== "hybrid") throw error;
       forcedCloudFallback = true;
@@ -425,23 +451,68 @@ export async function analyzeTender(
         total: chunks.length,
         detail: "The request failed; retrying this section with Cloud AI under the hybrid policy.",
       });
-      generated = await generateWithModelFallback("cloud", generateSection, fallbackOptions);
+      try {
+        const generated = await generateWithModelFallback(
+          "cloud",
+          generateSection,
+          fallbackOptions,
+        );
+        recordResponse(generated);
+      } catch (cloudError) {
+        options.onEvent?.({ type: "local-retry" });
+        onProgress({
+          phase: "analyzing",
+          completed: index,
+          total: chunks.length,
+          detail: "Cloud processing failed; trying this section on this device.",
+        });
+        try {
+          if (!localFallbackModel) {
+            const candidate = createTenderModel("local").model;
+            await initializeDeviceModelWithTimeout(
+              (progress) => candidate.initializeDeviceModel(progress),
+              (progress) => {
+                if (Number.isFinite(progress) && progress >= 0 && progress <= 1) {
+                  options.onEvent?.({
+                    type: "model-download",
+                    percent: Math.round(progress * 100),
+                  });
+                }
+              },
+            );
+            localFallbackModel = candidate;
+          }
+          const localModel = localFallbackModel;
+          for (const page of chunk.pages) {
+            for (let offset = 0; offset < page.text.length; offset += ON_DEVICE_CHUNK_CHARACTERS) {
+              const localChunk = {
+                pages: [
+                  { ...page, text: page.text.slice(offset, offset + ON_DEVICE_CHUNK_CHARACTERS) },
+                ],
+              };
+              const localPrompt = buildPrompt(localChunk, "local");
+              const localResult = await generateWithModelFallback("local", (_candidate, signal) => {
+                options.onEvent?.({
+                  type: "request-started",
+                  section: index + 1,
+                  total: chunks.length,
+                });
+                return localModel.generateContent(localPrompt, signal ? { signal } : undefined);
+              });
+              recordResponse(localResult, true);
+            }
+          }
+        } catch (localError) {
+          const cloudDetail = cloudError instanceof Error ? cloudError.message : String(cloudError);
+          const localDetail = localError instanceof Error ? localError.message : String(localError);
+          throw new Error(
+            `Cloud processing failed: ${cloudDetail}. Local fallback failed: ${localDetail}`,
+          );
+        }
+        options.onEvent?.({ type: "output-validated", section: index + 1, total: chunks.length });
+        continue;
+      }
     }
-    const { result, modelName } = generated;
-    const source = requireInferenceSource(result.response.inferenceSource);
-    options.onEvent?.({ type: "response", source });
-    onInference(source);
-    sources.add(source);
-    if (source === "IN_CLOUD") cloudModelNames.add(modelName);
-    if (preference === "hybrid" && source === "IN_CLOUD") {
-      onProgress({
-        phase: "analyzing",
-        completed: index,
-        total: chunks.length,
-        detail: `Firebase reported cloud inference for section ${index + 1} (hybrid mode).`,
-      });
-    }
-    records.push(parseTenderResponse(result.response.text()));
     options.onEvent?.({ type: "output-validated", section: index + 1, total: chunks.length });
   }
 

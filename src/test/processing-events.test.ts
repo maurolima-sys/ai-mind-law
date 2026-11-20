@@ -97,4 +97,106 @@ describe("analysis activity events", () => {
     );
     expect(events).toContainEqual({ type: "response", source: "IN_CLOUD" });
   });
+
+  it("falls back to initialized local processing in hybrid mode when cloud processing fails", async () => {
+    const hybridModel = model(validResponse, "on_device");
+    hybridModel.generateContent.mockRejectedValue(new Error("Hybrid request failed"));
+    const cloudModel = model(validResponse, "in_cloud");
+    cloudModel.generateContent.mockRejectedValue(new Error("Cloud unavailable"));
+    const localModel = model(validResponse, "on_device");
+    mocks.createTenderModel.mockImplementation((preference: string) => ({
+      model:
+        preference === "cloud" ? cloudModel : preference === "local" ? localModel : hybridModel,
+    }));
+    const events: AnalysisProgressEvent[] = [];
+    const result = await analyzeTender(
+      ["x".repeat(6500)],
+      "hybrid",
+      () => {},
+      () => {},
+      {
+        onEvent: (event) => events.push(event),
+      },
+    );
+
+    expect(result.processingSource).toBe("on-device");
+    expect(localModel.generateContent).toHaveBeenCalledTimes(3);
+    const input = localModel.generateContent.mock.calls.map(([prompt]) => String(prompt));
+    const sections = input.map((prompt) =>
+      prompt.split("SOURCE TEXT:\n")[1]!.replace(/^--- SOURCE INDEX 1 · Page 1 ---\n/, ""),
+    );
+    expect(sections.every((section) => section.length <= 3000)).toBe(true);
+    expect(sections.join("")).toBe("x".repeat(6500));
+    expect(events).toContainEqual({ type: "local-retry" });
+    expect(events.filter((event) => event.type === "response")).toHaveLength(3);
+  });
+
+  it("does not use cloud processing when local-only processing fails", async () => {
+    const localModel = model(validResponse, "on_device");
+    localModel.generateContent.mockRejectedValue(new Error("Local unavailable"));
+    mocks.createTenderModel.mockReturnValue({ model: localModel });
+
+    await expect(analyzeTender(["text"], "local", () => {})).rejects.toThrow("Local unavailable");
+    expect(mocks.createTenderModel.mock.calls.every(([preference]) => preference === "local")).toBe(
+      true,
+    );
+  });
+
+  it("uses the cloud after an invalid hybrid response and reports both actual sources", async () => {
+    const hybridModel = model("invalid JSON", "on_device");
+    const cloudModel = model(validResponse, "in_cloud");
+    mocks.createTenderModel.mockImplementation((preference: string) => ({
+      model: preference === "cloud" ? cloudModel : hybridModel,
+    }));
+    const onInference = vi.fn();
+
+    const result = await analyzeTender(["text"], "hybrid", () => {}, onInference);
+    expect(onInference.mock.calls).toEqual([["ON_DEVICE"], ["IN_CLOUD"]]);
+    expect(result.processingSource).toBe("hybrid");
+  });
+
+  it("uses the local fallback if the cloud returns invalid structured output", async () => {
+    const hybridModel = model(validResponse, "on_device");
+    hybridModel.generateContent.mockRejectedValue(new Error("Hybrid request failed"));
+    const cloudModel = model("invalid JSON", "in_cloud");
+    const localModel = model(validResponse, "on_device");
+    mocks.createTenderModel.mockImplementation((preference: string) => ({
+      model:
+        preference === "cloud" ? cloudModel : preference === "local" ? localModel : hybridModel,
+    }));
+    const onInference = vi.fn();
+
+    const result = await analyzeTender(["text"], "hybrid", () => {}, onInference);
+    expect(result.processingSource).toBe("hybrid");
+    expect(onInference.mock.calls).toEqual([["IN_CLOUD"], ["ON_DEVICE"]]);
+  });
+
+  it("does not use local processing when cloud-only processing fails", async () => {
+    const cloudModel = model(validResponse, "in_cloud");
+    cloudModel.generateContent.mockRejectedValue(new Error("Cloud unavailable"));
+    mocks.createTenderModel.mockReturnValue({ model: cloudModel });
+
+    await expect(analyzeTender(["text"], "cloud", () => {})).rejects.toThrow("Cloud unavailable");
+    expect(mocks.createTenderModel.mock.calls.every(([preference]) => preference === "cloud")).toBe(
+      true,
+    );
+  });
+
+  it("reports both failures when the cloud and local fallback are unavailable", async () => {
+    const hybridModel = model(validResponse, "on_device");
+    hybridModel.generateContent.mockRejectedValue(new Error("Hybrid request failed"));
+    const cloudModel = model(validResponse, "in_cloud");
+    cloudModel.generateContent.mockRejectedValue(new Error("Cloud unavailable"));
+    const localModel = model(validResponse, "on_device");
+    localModel.initializeDeviceModel = vi.fn().mockRejectedValue(new Error("Local unavailable"));
+    mocks.createTenderModel.mockImplementation((preference: string) => ({
+      model:
+        preference === "cloud" ? cloudModel : preference === "local" ? localModel : hybridModel,
+    }));
+
+    await expect(analyzeTender(["text"], "hybrid", () => {})).rejects.toThrow(
+      /Cloud unavailable.*Local unavailable/,
+    );
+    expect(localModel.generateContent).not.toHaveBeenCalled();
+  });
 });
