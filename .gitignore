@@ -46,6 +46,9 @@ apple-design.md
 *-firebase-adminsdk-*.json
 firebase-adminsdk*.json
 
+# OAuth client secrets — NEVER commit
+client_secret*.json
+
 # Independent evaluation files — out of repo scope
 Avalia*.md
 Evaluator Walkthrough*.md
