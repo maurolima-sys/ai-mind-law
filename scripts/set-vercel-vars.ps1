@@ -22,6 +22,7 @@ $vars = @(
   @{ Key='SECRET_KEY';                                Envs=@('production','preview') },
   @{ Key='VITE_SUPABASE_URL';                         Envs=@('production','preview','development') },
   @{ Key='VITE_SUPABASE_KEY';                         Envs=@('production','preview','development') },
+  @{ Key='VITE_ENABLE_EVALUATION_DASHBOARD';          Envs=@('production') },
   @{ Key='FIRECRAWL_API_KEY';                         Envs=@('production','preview') },
   @{ Key='ELEVENLABS_API_KEY';                        Envs=@('production','preview') },
   @{ Key='LLAMA_CLOUD_API_KEY';                       Envs=@('production','preview') },
