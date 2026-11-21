@@ -7,9 +7,12 @@ import type {
   Category,
   Deadline,
   DocumentFormat,
+  ExecutionReport,
   InferencePreference,
   Requirement,
   Risk,
+  SectionInferenceSource,
+  SectionTrace,
   Severity,
   Specification,
   ProcessingSource,
@@ -52,8 +55,7 @@ export type AnalysisProgressEvent =
 
 export const MAX_CHUNK_CHARACTERS = 16_000;
 export const ON_DEVICE_CHUNK_CHARACTERS = 4_000;
-const HYBRID_DEVICE_INIT_MAX_MS = 30_000;
-const HYBRID_DEVICE_REQUEST_TIMEOUT_MS = 30_000;
+const MIN_ON_DEVICE_SPLIT_CHARACTERS = 128;
 
 export function chunkTenderText(
   pages: string[],
@@ -64,12 +66,21 @@ export function chunkTenderText(
   pages.forEach((text, index) => {
     const normalized = text.trim();
     if (!normalized) return;
-    for (let offset = 0; offset < normalized.length; offset += maxChunkCharacters) {
+    for (let offset = 0; offset < normalized.length;) {
+      let end = Math.min(offset + maxChunkCharacters, normalized.length);
+      if (
+        end < normalized.length &&
+        /[\uD800-\uDBFF]/.test(normalized.charAt(end - 1)) &&
+        /[\uDC00-\uDFFF]/.test(normalized.charAt(end))
+      ) {
+        end += end - offset > 1 ? -1 : 1;
+      }
       units.push({
         sourceIndex: index + 1,
         location: sourceLocations[index] ?? `Source segment ${index + 1}`,
-        text: normalized.slice(offset, offset + maxChunkCharacters),
+        text: normalized.slice(offset, end),
       });
+      offset = end;
     }
   });
 
@@ -87,6 +98,29 @@ export function chunkTenderText(
   }
   if (current.pages.length > 0) chunks.push(current);
   return chunks;
+}
+
+function splitOversizedChunk(chunk: Chunk): [Chunk, Chunk] | undefined {
+  const length = chunk.pages.reduce((total, page) => total + page.text.length, 0);
+  if (length < MIN_ON_DEVICE_SPLIT_CHARACTERS * 2) return undefined;
+  let remaining = Math.floor(length / 2);
+  const first: Chunk = { pages: [] };
+  const second: Chunk = { pages: [] };
+  for (const page of chunk.pages) {
+    let split = Math.min(remaining, page.text.length);
+    if (
+      split > 0 &&
+      split < page.text.length &&
+      /[\uD800-\uDBFF]/.test(page.text.charAt(split - 1)) &&
+      /[\uDC00-\uDFFF]/.test(page.text.charAt(split))
+    ) {
+      split++;
+    }
+    if (split > 0) first.pages.push({ ...page, text: page.text.slice(0, split) });
+    if (split < page.text.length) second.pages.push({ ...page, text: page.text.slice(split) });
+    remaining = Math.max(0, remaining - split);
+  }
+  return first.pages.length && second.pages.length ? [first, second] : undefined;
 }
 
 function buildPrompt(chunk: Chunk, preference: InferencePreference) {
@@ -175,6 +209,21 @@ export function resolveProcessingSource(
   return "cloud";
 }
 
+function buildExecutionReport(
+  traces: SectionTrace[],
+  totalDurationMs: number,
+): ExecutionReport {
+  return {
+    totalSections: traces.length,
+    completedSections: traces.length,
+    onDeviceSections: traces.filter((t) => t.source === "ON_DEVICE").length,
+    cloudSections: traces.filter((t) => t.source === "IN_CLOUD").length,
+    cloudFallbackSections: traces.filter((t) => t.source === "CLOUD_FALLBACK").length,
+    totalDurationMs,
+    sections: traces,
+  };
+}
+
 function mergeFindings(
   pages: string[],
   sourceLocations: string[],
@@ -185,6 +234,7 @@ function mergeFindings(
   sources: Set<InferenceSource>,
   cloudModelNames: Set<GeminiModelName>,
   preference: InferencePreference,
+  executionReport: ExecutionReport,
 ): Analysis {
   const idPrefix = documentId ? `${documentId}-` : "";
   const evidence = (sourceIndex: number, excerpt: string) =>
@@ -265,6 +315,7 @@ function mergeFindings(
     missing: [...new Set(records.flatMap((record) => record.missing))],
     inconsistencies: [...new Set(records.flatMap((record) => record.inconsistencies))],
     generatedAt: new Date().toISOString(),
+    executionReport,
   };
 }
 
@@ -289,7 +340,7 @@ export async function analyzeTender(
     );
   const paginationVerified = options.paginationVerified ?? true;
   const maxChunkCharacters =
-    preference === "local" ? ON_DEVICE_CHUNK_CHARACTERS : MAX_CHUNK_CHARACTERS;
+    preference === "cloud" ? MAX_CHUNK_CHARACTERS : ON_DEVICE_CHUNK_CHARACTERS;
   const chunks = chunkTenderText(pages, sourceLocations, maxChunkCharacters);
   if (chunks.length === 0) {
     throw new Error(
@@ -337,7 +388,6 @@ export async function analyzeTender(
             detail: `Downloading the on-device model (${Math.round(progress * 100)}%)`,
           });
         },
-        preference === "hybrid" ? { maxDurationMs: HYBRID_DEVICE_INIT_MAX_MS } : undefined,
       );
       deviceModelReady = true;
       options.onEvent?.({ type: "model-ready" });
@@ -369,12 +419,16 @@ export async function analyzeTender(
   const records: Array<ReturnType<typeof chunkResponseSchema.parse>> = [];
   const sources = new Set<InferenceSource>();
   const cloudModelNames = new Set<GeminiModelName>();
+  const sectionTraces: SectionTrace[] = [];
+  const analysisStartMs = Date.now();
   const models = new Map<GeminiModelName, ReturnType<typeof createTenderModel>["model"]>([
     [PRIMARY_GEMINI_MODEL, model],
   ]);
   const cloudModels = new Map<GeminiModelName, ReturnType<typeof createTenderModel>["model"]>();
   let localFallbackModel: ReturnType<typeof createTenderModel>["model"] | undefined;
-  for (const [index, chunk] of chunks.entries()) {
+  for (let index = 0; index < chunks.length; index++) {
+    const chunk = chunks[index];
+    if (!chunk) throw new Error(`Missing analysis section ${index + 1}`);
     onProgress({
       phase: "analyzing",
       completed: index,
@@ -384,7 +438,10 @@ export async function analyzeTender(
           ? `Analyzing text section ${index + 1} of ${chunks.length} on this device`
           : `Analyzing text section ${index + 1} of ${chunks.length}`,
     });
-    const prompt = buildPrompt(chunk, preference);
+    let sectionAttempts = 0;
+    let sectionTimedOut = false;
+    let sectionError: string | undefined;
+    const sectionStartMs = Date.now();
     let forcedCloudFallback = preference === "hybrid" && !deviceModelReady;
     const generateSection = (candidate: GeminiModelName, signal?: AbortSignal) => {
       const cache = forcedCloudFallback ? cloudModels : models;
@@ -397,7 +454,10 @@ export async function analyzeTender(
         cache.set(candidate, currentModel);
       }
       options.onEvent?.({ type: "request-started", section: index + 1, total: chunks.length });
-      return currentModel.generateContent(prompt, signal ? { signal } : undefined);
+      return currentModel.generateContent(
+        buildPrompt(chunk, forcedCloudFallback ? "cloud" : initialPreference),
+        signal ? { signal } : undefined,
+      );
     };
     const fallbackOptions = {
       onRetry: ({
@@ -409,6 +469,7 @@ export async function analyzeTender(
         status?: number;
         attempt: number;
       }) => {
+        sectionAttempts++;
         options.onEvent?.({
           type: "retry",
           model: geminiModelLabel(nextModel),
@@ -429,6 +490,7 @@ export async function analyzeTender(
       modelName: GeminiModelName;
     };
     const recordResponse = ({ result, modelName }: Generated, localOnly = false) => {
+      sectionAttempts++;
       const source = requireInferenceSource(result.response.inferenceSource);
       if (localOnly && source !== "ON_DEVICE") {
         throw new Error("The local fallback returned a response from an unexpected source.");
@@ -457,18 +519,40 @@ export async function analyzeTender(
         detail: "On-device model unavailable; starting the cloud fallback.",
       });
     }
+    let sectionSource: SectionInferenceSource = "ON_DEVICE";
     try {
       const generated = await generateWithModelFallback(
         firstPassPreference,
         generateSection,
-        preference === "hybrid" && !forcedCloudFallback
-          ? { ...fallbackOptions, localTimeoutMs: HYBRID_DEVICE_REQUEST_TIMEOUT_MS }
-          : fallbackOptions,
+        fallbackOptions,
       );
+      sectionSource =
+        generated.result.response.inferenceSource === "in_cloud"
+          ? forcedCloudFallback
+            ? "CLOUD_FALLBACK"
+            : "IN_CLOUD"
+          : "ON_DEVICE";
       recordResponse(generated, firstPassPreference === "local");
     } catch (error) {
-      if (preference !== "hybrid") throw error;
+      if (
+        firstPassPreference === "local" &&
+        error instanceof Error &&
+        /\binput (?:is )?too large\b/i.test(error.message)
+      ) {
+        const smallerChunks = splitOversizedChunk(chunk);
+        if (smallerChunks) {
+          chunks.splice(index, 1, ...smallerChunks);
+          index--;
+          continue;
+        }
+      }
+      if (preference !== "hybrid") {
+        sectionError = error instanceof Error ? error.message : String(error);
+        sectionTimedOut = error instanceof Error && /timed out/i.test(error.message);
+        throw error;
+      }
       if (forcedCloudFallback) {
+        sectionError = error instanceof Error ? error.message : String(error);
         const cloudDetail = error instanceof Error ? error.message : String(error);
         throw new Error(
           `Hybrid processing failed. On-device: ${deviceModelError}. Cloud: ${cloudDetail}`,
@@ -478,6 +562,7 @@ export async function analyzeTender(
       // directly to cloud fallback — they are not retryable on-device.
       const isAppCheck = isAppCheckError(error);
       forcedCloudFallback = true;
+      sectionSource = "CLOUD_FALLBACK";
       options.onEvent?.({ type: "cloud-retry" });
       onProgress({
         phase: "analyzing",
@@ -495,6 +580,7 @@ export async function analyzeTender(
         );
         recordResponse(generated);
       } catch (cloudError) {
+        sectionError = cloudError instanceof Error ? cloudError.message : String(cloudError);
         const cloudDetail = cloudError instanceof Error ? cloudError.message : String(cloudError);
         if (!deviceModelReady) {
           throw new Error(
@@ -519,18 +605,14 @@ export async function analyzeTender(
                 ],
               };
               const localPrompt = buildPrompt(localChunk, "local");
-              const localResult = await generateWithModelFallback(
-                "local",
-                (_candidate, signal) => {
-                  options.onEvent?.({
-                    type: "request-started",
-                    section: index + 1,
-                    total: chunks.length,
-                  });
-                  return localModel.generateContent(localPrompt, signal ? { signal } : undefined);
-                },
-                { localTimeoutMs: HYBRID_DEVICE_REQUEST_TIMEOUT_MS },
-              );
+              const localResult = await generateWithModelFallback("local", (_candidate, signal) => {
+                options.onEvent?.({
+                  type: "request-started",
+                  section: index + 1,
+                  total: chunks.length,
+                });
+                return localModel.generateContent(localPrompt, signal ? { signal } : undefined);
+              });
               recordResponse(localResult, true);
             }
           }
@@ -541,9 +623,26 @@ export async function analyzeTender(
           );
         }
         options.onEvent?.({ type: "output-validated", section: index + 1, total: chunks.length });
+        sectionTraces.push({
+          section: index + 1,
+          total: chunks.length,
+          source: "ON_DEVICE",
+          attempts: sectionAttempts,
+          durationMs: Date.now() - sectionStartMs,
+          timedOut: false,
+        });
         continue;
       }
     }
+    sectionTraces.push({
+      section: index + 1,
+      total: chunks.length,
+      source: sectionSource,
+      attempts: sectionAttempts,
+      durationMs: Date.now() - sectionStartMs,
+      timedOut: sectionTimedOut,
+      ...(sectionError ? { error: sectionError } : {}),
+    });
     options.onEvent?.({ type: "output-validated", section: index + 1, total: chunks.length });
   }
 
@@ -558,6 +657,7 @@ export async function analyzeTender(
     total: chunks.length,
     detail: "Verifying cited evidence",
   });
+  const executionReport = buildExecutionReport(sectionTraces, Date.now() - analysisStartMs);
   return mergeFindings(
     pages,
     sourceLocations,
@@ -568,5 +668,6 @@ export async function analyzeTender(
     sources,
     cloudModelNames,
     preference,
+    executionReport,
   );
 }

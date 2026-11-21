@@ -253,4 +253,20 @@ describe("on-device model initialization timeout", () => {
     await vi.advanceTimersByTimeAsync(1_000);
     await rejection;
   });
+
+  it("ignores download progress arriving after initialization has timed out", async () => {
+    vi.useFakeTimers();
+    let reportProgress: ((progress: number) => void) | undefined;
+    const onProgress = vi.fn();
+    const initialization = initializeDeviceModelWithTimeout((progress) => {
+      reportProgress = progress;
+      return new Promise<void>(() => {});
+    }, onProgress);
+    const rejection = expect(initialization).rejects.toThrow("timed out");
+    await vi.advanceTimersByTimeAsync(DEVICE_MODEL_INIT_TIMEOUT_MS);
+    await rejection;
+
+    reportProgress?.(0.5);
+    expect(onProgress).not.toHaveBeenCalled();
+  });
 });

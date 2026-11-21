@@ -101,7 +101,7 @@ This is the most important decision in the workflow. On **Processing & privacy**
 - No cloud fallback
 - Requires supported desktop Chrome
 - Firebase App Check still applies
-- The latest reported sample timed out during local generation. The app now uses shorter prompts and 3,000-character sections, with up to 120 seconds per on-device section. This has not yet been retested in Chrome.
+- The latest reported sample failed because the input was too large. Local analysis starts with sections of up to 4,000 characters and retries smaller sections for that error. Successful analysis in desktop Chrome remains unverified.
 
 **2. Cloud AI** — badge _GEMINI_
 
@@ -113,13 +113,13 @@ This is the most important decision in the workflow. On **Processing & privacy**
 
 **3. Hybrid inference** — badge _ON-DEVICE FIRST_
 
-> PocketMind tries the on-device model once with a 30-second per-section limit. If it is unavailable or fails, the app sends the section to Gemini in Google's cloud using your consent. Cloud fallback checks Gemini 3.5 Flash, Gemini 3.8 Flash, then Gemini 3.5 Flash-Lite after transient errors, without repeating the same model. Cloud attempts are limited to 30 seconds each and a 100-second total budget per section.
+> PocketMind tries the on-device model first, with up to 180 seconds per section. If it is unavailable or fails, the app sends the section to Gemini in Google's cloud using your consent. Cloud fallback checks Gemini 3.5 Flash, Gemini 3.8 Flash, then Gemini 3.5 Flash-Lite after transient errors, without repeating the same model. Cloud attempts are limited to 30 seconds each and a 100-second total budget per section.
 
 - Actual source shown after analysis
 - Cloud use requires your consent
 - App Check required
 
-On-device-only mode never uses this cloud retry chain. Hybrid mode bounds on-device initialization to 30 seconds before moving to cloud, so a slow first-time model download cannot hold cloud analysis indefinitely.
+On-device-only mode never uses this cloud retry chain. Both modes allow a progressing model download to continue; initialization times out after 60 seconds without a progress callback.
 
 **4. Sample data** — badge _DEMO_
 

@@ -8,6 +8,7 @@ vi.mock("@/lib/services/firebaseAi", async (importOriginal) => ({
 
 import {
   analyzeTender,
+  chunkTenderText,
   ON_DEVICE_CHUNK_CHARACTERS,
   type AnalysisProgressEvent,
 } from "@/lib/services/tenderAnalysis";
@@ -34,6 +35,163 @@ function model(response: string, source: string) {
 beforeEach(() => mocks.createTenderModel.mockReset());
 
 describe("analysis activity events", () => {
+  it("preserves Unicode characters at the local section boundary", () => {
+    const text = `${"x".repeat(3999)}😀end`;
+    const chunks = chunkTenderText([text], ["Page 1"], ON_DEVICE_CHUNK_CHARACTERS);
+    const sections = chunks.flatMap((chunk) => chunk.pages.map((page) => page.text));
+
+    expect(sections.join("")).toBe(text);
+    expect(
+      sections.every(
+        (section) =>
+          !/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/u.test(section),
+      ),
+    ).toBe(true);
+    expect(sections.every((section) => section.length <= ON_DEVICE_CHUNK_CHARACTERS)).toBe(true);
+  });
+
+  it("analyzes a large hybrid document locally in bounded sections before considering cloud", async () => {
+    const localModel = model(validResponse, "on_device");
+    localModel.generateContent.mockImplementation(async (prompt: string) => {
+      const source = prompt.split("SOURCE TEXT:\n")[1] ?? "";
+      if (source.replace(/^--- SOURCE INDEX 1 · Page 1 ---\n/, "").length > 4000) {
+        throw new Error("The input is too large");
+      }
+      return { response: { inferenceSource: "on_device", text: () => validResponse } };
+    });
+    const cloudModel = model(validResponse, "in_cloud");
+    mocks.createTenderModel.mockImplementation((preference: string) => ({
+      model: preference === "cloud" ? cloudModel : localModel,
+    }));
+
+    const result = await analyzeTender(["x".repeat(6500)], "hybrid", () => {});
+
+    expect(result.processingSource).toBe("on-device");
+    expect(cloudModel.generateContent).not.toHaveBeenCalled();
+  });
+
+  it("waits for a progressing hybrid model download longer than 30 seconds", async () => {
+    vi.useFakeTimers();
+    try {
+      const localModel = model(validResponse, "on_device");
+      let finishDownload: (() => void) | undefined;
+      localModel.initializeDeviceModel = (progress) =>
+        new Promise<void>((resolve) => {
+          progress(0.1);
+          setTimeout(() => progress(0.5), 20_000);
+          finishDownload = resolve;
+        });
+      const cloudModel = model(validResponse, "in_cloud");
+      mocks.createTenderModel.mockImplementation((preference: string) => ({
+        model: preference === "cloud" ? cloudModel : localModel,
+      }));
+
+      const analysis = analyzeTender(["text"], "hybrid", () => {});
+      await vi.advanceTimersByTimeAsync(35_000);
+      finishDownload?.();
+      const result = await analysis;
+
+      expect(result.processingSource).toBe("on-device");
+      expect(cloudModel.generateContent).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("allows hybrid local generation to continue beyond 30 seconds", async () => {
+    vi.useFakeTimers();
+    try {
+      const localModel = model(validResponse, "on_device");
+      localModel.generateContent.mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            setTimeout(
+              () =>
+                resolve({ response: { inferenceSource: "on_device", text: () => validResponse } }),
+              35_000,
+            );
+          }),
+      );
+      const cloudModel = model(validResponse, "in_cloud");
+      mocks.createTenderModel.mockImplementation((preference: string) => ({
+        model: preference === "cloud" ? cloudModel : localModel,
+      }));
+
+      const analysis = analyzeTender(["text"], "hybrid", () => {});
+      await vi.advanceTimersByTimeAsync(35_000);
+      expect((await analysis).processingSource).toBe("on-device");
+      expect(cloudModel.generateContent).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it.each(["local", "hybrid"] as const)(
+    "retries an oversized %s section locally without losing source text",
+    async (preference) => {
+      const localModel = model(validResponse, "on_device");
+      const accepted: string[] = [];
+      localModel.generateContent.mockImplementation(async (prompt: string) => {
+        const source = (prompt.split("SOURCE TEXT:\n")[1] ?? "").replace(
+          /^--- SOURCE INDEX 1 · Page 1 ---\n/,
+          "",
+        );
+        if (source.length > 1000) throw new Error("The input is too large");
+        accepted.push(source);
+        return { response: { inferenceSource: "on_device", text: () => validResponse } };
+      });
+      mocks.createTenderModel.mockReturnValue({ model: localModel });
+      const text = "a".repeat(1500) + "b".repeat(1500);
+
+      const result = await analyzeTender([text], preference, () => {});
+
+      expect(result.processingSource).toBe("on-device");
+      expect(accepted.join("")).toBe(text);
+      expect(mocks.createTenderModel.mock.calls.every(([mode]) => mode === "local")).toBe(true);
+    },
+  );
+
+  it("surfaces an oversized input error when a local section cannot be split further", async () => {
+    const localModel = model(validResponse, "on_device");
+    localModel.generateContent.mockRejectedValue(new Error("The input is too large"));
+    mocks.createTenderModel.mockReturnValue({ model: localModel });
+
+    await expect(analyzeTender(["short text"], "local", () => {})).rejects.toThrow(
+      "The input is too large",
+    );
+    expect(localModel.generateContent).toHaveBeenCalledTimes(1);
+  });
+
+  it("preserves Unicode and page references when splitting an oversized multi-page section", async () => {
+    const localModel = model(validResponse, "on_device");
+    const accepted = new Map<number, string>();
+    localModel.generateContent.mockImplementation(async (prompt: string) => {
+      const source = prompt.split("SOURCE TEXT:\n")[1] ?? "";
+      if (source.length > 2200) throw new Error("The input is too large");
+      for (const match of source.matchAll(
+        /--- SOURCE INDEX (\d+) · Page (\d+) ---\n([\s\S]*?)(?=\n\n--- SOURCE INDEX \d+ · Page \d+ ---\n|$)/g,
+      )) {
+        if (match[1] === undefined || match[2] === undefined || match[3] === undefined) {
+          throw new Error("Missing source reference or text");
+        }
+        expect(match[1]).toBe(match[2]);
+        expect(
+          /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/u.test(match[3]),
+        ).toBe(false);
+        const index = Number(match[1]);
+        accepted.set(index, (accepted.get(index) ?? "") + match[3]);
+      }
+      return { response: { inferenceSource: "on_device", text: () => validResponse } };
+    });
+    mocks.createTenderModel.mockReturnValue({ model: localModel });
+    const pages = [`${"a".repeat(1499)}😀${"a".repeat(499)}`, "b".repeat(1000)];
+
+    await analyzeTender(pages, "local", () => {});
+
+    expect(accepted.get(1)).toBe(pages[0]);
+    expect(accepted.get(2)).toBe(pages[1]);
+  });
+
   it("reports actual initialization, response source, validation and evidence checks in order", async () => {
     mocks.createTenderModel.mockReturnValue({ model: model(validResponse, "on_device") });
     const events: AnalysisProgressEvent[] = [];
@@ -127,7 +285,7 @@ describe("analysis activity events", () => {
     const sections = input.map((prompt) =>
       prompt.split("SOURCE TEXT:\n")[1]!.replace(/^--- SOURCE INDEX 1 · Page 1 ---\n/, ""),
     );
-    expect(sections[0]).toContain("x".repeat(6500));
+    expect(sections[0]).toBe("x".repeat(4000));
     expect(sections.slice(1).every((section) => section.length <= ON_DEVICE_CHUNK_CHARACTERS)).toBe(
       true,
     );
