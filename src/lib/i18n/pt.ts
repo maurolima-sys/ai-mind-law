@@ -746,6 +746,7 @@ export const pt: Translations = {
   processing_confirm_btn: "Confirmar e continuar →",
   processing_confirm_sub: "Você pode alterar isso mais tarde nas Configurações.",
   processing_confirm_needs_file: "Adicione um documento para continuar.",
+  proc_consent_required: "Ative o consentimento no cartão Cloud AI antes de continuar.",
   processing_flow_title: "Do documento a insights verificados",
   processing_flow_desc:
     "Um fluxo simples e transparente do seu documento para resultados estruturados.",

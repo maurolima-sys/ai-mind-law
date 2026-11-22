@@ -765,6 +765,7 @@
   processing_confirm_btn: "Confirm and continue →",
   processing_confirm_sub: "You can change this later in Settings.",
   processing_confirm_needs_file: "Add a document to continue.",
+  proc_consent_required: "Enable the consent toggle on the Cloud AI card before continuing.",
   processing_flow_title: "From document to verified insights",
   processing_flow_desc: "A simple, transparent flow from your document to structured results.",
   compliance_drawer_title: "Source Evidence",

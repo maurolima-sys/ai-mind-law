@@ -3964,6 +3964,12 @@ export function ProcessingScreen({
             type="button"
             className="pm-confirm-cta-btn"
             onClick={() => {
+              if ((choice === "cloud" || choice === "hybrid") && !cloudConsent) {
+                toast.warning(t("proc_consent_required"));
+                cloudConsentRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+                requestAnimationFrame(() => cloudConsentRef.current?.focus());
+                return;
+              }
               if (choice === "demo") {
                 onOpenDemo();
               } else if (file || hasQuestionText) {
@@ -3974,7 +3980,6 @@ export function ProcessingScreen({
             }}
             disabled={
               isAnalyzing ||
-              ((choice === "cloud" || choice === "hybrid") && !cloudConsent) ||
               (choice !== "demo" && !file && !hasQuestionText)
             }
           >

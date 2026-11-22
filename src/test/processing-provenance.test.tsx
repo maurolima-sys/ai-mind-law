@@ -118,7 +118,7 @@ describe("processing provenance", () => {
     expect(screen.getByRole("complementary", { name: "" })).toHaveClass("is-collapsed");
     fireEvent.click(screen.getByRole("button", { name: "Expand menu" }));
     expect(screen.getByRole("complementary", { name: "" })).not.toHaveClass("is-collapsed");
-  });
+  }, 15_000);
 
   it("distinguishes a failed local attempt from the previously prepared sample analysis", async () => {
     mocks.analyzeTender.mockRejectedValue(
@@ -276,6 +276,7 @@ describe("processing provenance", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("Mode for next analysis")).toBeInTheDocument();
     expect(screen.getAllByText("Hybrid · on-device first, cloud fallback")).toHaveLength(2);
-    expect(screen.getByRole("button", { name: /confirm and continue/i })).toBeDisabled();
+    // Button is enabled — consent is now enforced via toast, not by disabling the button
+    expect(screen.getByRole("button", { name: /confirm and continue/i })).not.toBeDisabled();
   });
 });

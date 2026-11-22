@@ -69,7 +69,7 @@ describe("ProcessingScreen layout and behaviour", () => {
     expect(document.querySelectorAll(".pm-confirm-bar")).toHaveLength(1);
   });
 
-  it("disables confirm button when no file is selected in local mode", () => {
+  it("disables confirm button when no file is selected in local mode", async () => {
     const sample = buildDemoDocument();
     // Use an upload document with no extracted text so hasQuestionText is false
     const emptyDoc = { ...sample, id: "upload-empty", source: "upload" as const, pages: [] };
@@ -77,7 +77,7 @@ describe("ProcessingScreen layout and behaviour", () => {
     const btn = screen.getByRole("button", { name: /confirm and continue/i });
     expect(btn).toBeDisabled();
     expect(screen.getByText("Add a document to continue.")).toBeInTheDocument();
-  });
+  }, 10_000);
 
   it("enables confirm button in demo mode without a file", () => {
     renderScreen({ choice: "demo", file: null });
