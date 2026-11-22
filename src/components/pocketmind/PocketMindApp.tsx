@@ -1677,13 +1677,13 @@ export function PocketMindApp() {
         </header>
 
         <main className="pm-content">
+          {screen !== "processing" && (
           <div className="pm-page-heading">
             <div>
               <h1>{currentScreenCopy.title}</h1>
               <p>{currentScreenCopy.subtitle}</p>
             </div>
-            {screen !== "processing" &&
-              screen !== "settings" &&
+            {screen !== "settings" &&
               screen !== "integrations" &&
               screen !== "projects" && (
                 <button
@@ -1695,6 +1695,7 @@ export function PocketMindApp() {
                 </button>
               )}
           </div>
+          )}
 
           {selectedDocument?.source === "demo" &&
             selectedDocument.analysis?.mode === "demo" &&
@@ -3850,6 +3851,64 @@ export function ProcessingScreen({
         </div>
       </div>
 
+      <div className={`pm-file-drop${choice === "demo" ? " pm-file-drop--dimmed" : ""}`} onDragOver={(event) => event.preventDefault()} onDrop={onDrop}>
+        <input
+          ref={inputRef}
+          className="pm-visually-hidden"
+          type="file"
+          accept=".pdf,.docx,.xlsx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          onChange={onFileChange}
+          aria-label={t("file_input_aria")}
+        />
+        {file ? (
+          <div className="pm-chosen-file">
+            <span className="pm-file-icon pm-file-icon--large">
+              <FileText size={21} />
+            </span>
+            <div>
+              <strong>{file.name}</strong>
+              <span>
+                {formatBytes(file.size)} · {getDocumentFormat(file.name)?.toUpperCase()} ·{" "}
+                {t("file_stored")}
+              </span>
+            </div>
+            {document.source === "upload" && (
+              <button
+                className="pm-button pm-button--outline"
+                type="button"
+                onClick={onExtractTextOnly}
+                disabled={isAnalyzing || (!file && !hasQuestionText)}
+              >
+                <FileText size={15} /> {hasQuestionText ? t("btn_ask_pdf") : t("btn_extract_text")}
+              </button>
+            )}
+            <button
+              className="pm-button pm-button--outline"
+              type="button"
+              onClick={() => inputRef.current?.click()}
+            >
+              <FolderOpen size={15} /> {t("file_replace")}
+            </button>
+          </div>
+        ) : (
+          <div className="pm-drop-empty">
+            <span className="pm-drop-icon">
+              <Upload size={22} />
+            </span>
+            <strong>{t("drop_title")}</strong>
+            <span>{t("drop_or")}</span>
+            <button
+              className="pm-button pm-button--outline"
+              type="button"
+              onClick={() => inputRef.current?.click()}
+            >
+              <FolderOpen size={15} /> {t("drop_choose")}
+            </button>
+            <small>{t("drop_note")}</small>
+          </div>
+        )}
+      </div>
+
       {/* Confirmation Bar */}
       <div className="pm-confirm-bar">
         <div className="pm-confirm-col">
@@ -3913,7 +3972,11 @@ export function ProcessingScreen({
                 inputRef.current?.click();
               }
             }}
-            disabled={isAnalyzing || ((choice === "cloud" || choice === "hybrid") && !cloudConsent)}
+            disabled={
+              isAnalyzing ||
+              ((choice === "cloud" || choice === "hybrid") && !cloudConsent) ||
+              (choice !== "demo" && !file && !hasQuestionText)
+            }
           >
             {isAnalyzing ? (
               <>
@@ -3923,66 +3986,12 @@ export function ProcessingScreen({
               <>{t("processing_confirm_btn")}</>
             )}
           </button>
-          <span className="pm-confirm-subtext">{t("processing_confirm_sub")}</span>
+          <span className="pm-confirm-subtext">
+            {choice !== "demo" && !file && !hasQuestionText
+              ? t("processing_confirm_needs_file")
+              : t("processing_confirm_sub")}
+          </span>
         </div>
-      </div>
-
-      <div className="pm-file-drop" onDragOver={(event) => event.preventDefault()} onDrop={onDrop}>
-        <input
-          ref={inputRef}
-          className="pm-visually-hidden"
-          type="file"
-          accept=".pdf,.docx,.xlsx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-          onChange={onFileChange}
-          aria-label={t("file_input_aria")}
-        />
-        {file ? (
-          <div className="pm-chosen-file">
-            <span className="pm-file-icon pm-file-icon--large">
-              <FileText size={21} />
-            </span>
-            <div>
-              <strong>{file.name}</strong>
-              <span>
-                {formatBytes(file.size)} · {getDocumentFormat(file.name)?.toUpperCase()} ·{" "}
-                {t("file_stored")}
-              </span>
-            </div>
-            {document.source === "upload" && (
-              <button
-                className="pm-button pm-button--outline"
-                type="button"
-                onClick={onExtractTextOnly}
-                disabled={isAnalyzing || (!file && !hasQuestionText)}
-              >
-                <FileText size={15} /> {hasQuestionText ? t("btn_ask_pdf") : t("btn_extract_text")}
-              </button>
-            )}
-            <button
-              className="pm-button pm-button--outline"
-              type="button"
-              onClick={() => inputRef.current?.click()}
-            >
-              <FolderOpen size={15} /> {t("file_replace")}
-            </button>
-          </div>
-        ) : (
-          <div className="pm-drop-empty">
-            <span className="pm-drop-icon">
-              <Upload size={22} />
-            </span>
-            <strong>{t("drop_title")}</strong>
-            <span>{t("drop_or")}</span>
-            <button
-              className="pm-button pm-button--outline"
-              type="button"
-              onClick={() => inputRef.current?.click()}
-            >
-              <FolderOpen size={15} /> {t("drop_choose")}
-            </button>
-            <small>{t("drop_note")}</small>
-          </div>
-        )}
       </div>
 
       {showExternalOcrPrompt && document.source === "upload" && choice !== "demo" && (

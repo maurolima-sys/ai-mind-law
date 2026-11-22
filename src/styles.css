@@ -1225,6 +1225,10 @@
   border-radius: 10px;
   background: #fbfcfe;
 }
+.pm-file-drop--dimmed {
+  opacity: 0.45;
+  pointer-events: none;
+}
 .pm-drop-empty {
   display: flex;
   flex-direction: column;

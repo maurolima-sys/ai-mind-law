@@ -11,6 +11,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { buildDemoDocument } from "@/data/sampleTender";
 import { LocaleProvider } from "@/lib/i18n";
+import { clearLocalWorkspace } from "@/lib/services/localWorkspace";
 import { PocketMindApp, ProcessingScreen } from "@/components/pocketmind/PocketMindApp";
 
 const mocks = vi.hoisted(() => ({ analyzeTender: vi.fn() }));
@@ -20,9 +21,25 @@ vi.mock("@/lib/services/firebaseAi", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/services/firebaseAi")>()),
   isFirebaseConfigured: () => false,
 }));
+vi.mock("@/lib/services/localWorkspace", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/services/localWorkspace")>()),
+  loadLocalWorkspace: vi.fn().mockResolvedValue({
+    documents: [],
+    filesByDocumentId: {},
+    evidenceDocuments: [],
+    filesByEvidenceId: {},
+    projects: [],
+    projectDocumentLinks: [],
+    reviews: {},
+    evidenceMatches: [],
+    evidenceLinks: [],
+    activities: [],
+  }),
+}));
 
-beforeEach(() => {
+beforeEach(async () => {
   localStorage.clear();
+  await clearLocalWorkspace();
   mocks.analyzeTender.mockReset();
 });
 afterEach(cleanup);

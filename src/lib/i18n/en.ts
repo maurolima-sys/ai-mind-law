@@ -479,6 +479,10 @@
   file_input_aria: "Choose a PDF, DOCX, or XLSX document",
   file_replace: "Replace",
   file_stored: "stored in this browser",
+  file_error_invalid_format:
+    "Unsupported file type. Please choose a PDF, DOCX, or XLSX file (max 50 MB).",
+  file_error_empty: "The selected file is empty.",
+  file_error_too_large: "File exceeds the 50 MB limit.",
   drop_title: "Drop a tender PDF, DOCX, or XLSX here",
   drop_or: "or select a file from your device",
   drop_choose: "Choose document",
@@ -760,6 +764,7 @@
     "PocketMind AI gives you flexible processing options. You control your data, every step of the way.",
   processing_confirm_btn: "Confirm and continue →",
   processing_confirm_sub: "You can change this later in Settings.",
+  processing_confirm_needs_file: "Add a document to continue.",
   processing_flow_title: "From document to verified insights",
   processing_flow_desc: "A simple, transparent flow from your document to structured results.",
   compliance_drawer_title: "Source Evidence",

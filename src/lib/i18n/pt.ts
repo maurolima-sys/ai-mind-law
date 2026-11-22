@@ -463,6 +463,10 @@ export const pt: Translations = {
   file_input_aria: "Escolher um documento PDF, DOCX ou XLSX",
   file_replace: "Substituir",
   file_stored: "guardado neste browser",
+  file_error_invalid_format:
+    "Formato não suportado. Escolha um ficheiro PDF, DOCX ou XLSX (máx. 50 MB).",
+  file_error_empty: "O ficheiro selecionado está vazio.",
+  file_error_too_large: "O ficheiro excede o limite de 50 MB.",
   drop_title: "Largue aqui um PDF, DOCX ou XLSX do concurso",
   drop_or: "ou selecione um ficheiro do seu dispositivo",
   drop_choose: "Escolher documento",
@@ -741,6 +745,7 @@ export const pt: Translations = {
     "O PocketMind AI oferece opções de processamento flexíveis. Você controla seus dados em cada etapa.",
   processing_confirm_btn: "Confirmar e continuar →",
   processing_confirm_sub: "Você pode alterar isso mais tarde nas Configurações.",
+  processing_confirm_needs_file: "Adicione um documento para continuar.",
   processing_flow_title: "Do documento a insights verificados",
   processing_flow_desc:
     "Um fluxo simples e transparente do seu documento para resultados estruturados.",
