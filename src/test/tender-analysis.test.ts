@@ -16,6 +16,35 @@ import { analysisProcessingSource, hasCloudResponse } from "@/lib/services/infer
 import { buildDemoDocument } from "@/data/sampleTender";
 
 describe("parseTenderResponse", () => {
+  it("rejects a response that exceeds the maximum allowed size before JSON.parse", () => {
+    const oversized = "x".repeat(512_001);
+    expect(() => parseTenderResponse(oversized)).toThrow(
+      "The AI response exceeded the maximum allowed size",
+    );
+  });
+
+  it("rejects a response whose array fields exceed the per-field limits before Zod runs", () => {
+    const response = {
+      summary: "Oversized response.",
+      requirements: Array(501).fill({
+        description: "r",
+        category: "Technical",
+        mandatory: true,
+        confidence: 0.9,
+        sourceIndex: 1,
+        excerpt: "e",
+      }),
+      deadlines: [],
+      specifications: [],
+      risks: [],
+      missing: [],
+      inconsistencies: [],
+    };
+    expect(() => parseTenderResponse(JSON.stringify(response))).toThrow(
+      'exceeded the maximum allowed items for "requirements" (501 > 500)',
+    );
+  });
+
   it("accepts a complete JSON response wrapped in a code fence", () => {
     const response = {
       summary: "One tender requirement was identified.",
@@ -26,7 +55,6 @@ describe("parseTenderResponse", () => {
       missing: [],
       inconsistencies: [],
     };
-
     expect(parseTenderResponse(`\`\`\`json\n${JSON.stringify(response)}\n\`\`\``)).toEqual(
       response,
     );

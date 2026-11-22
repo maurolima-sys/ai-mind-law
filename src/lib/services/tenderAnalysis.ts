@@ -150,7 +150,41 @@ SOURCE TEXT:
 ${source}`;
 }
 
+// Maximum raw response size accepted before JSON.parse — guards against
+// GHSA-mrhx-c7xc-m3w5: a crafted response with millions of array elements
+// would exhaust memory in JSON.parse before Zod ever runs.
+const MAX_RESPONSE_BYTES = 512_000;
+
+// Maximum number of elements accepted in each top-level array field before
+// passing to Zod. Zod 3 traverses all elements even when .max() is exceeded
+// (issue #6653), so we enforce limits here, before safeParse.
+const ARRAY_LIMITS: Record<string, number> = {
+  requirements: 500,
+  deadlines: 500,
+  specifications: 500,
+  risks: 200,
+  missing: 200,
+  inconsistencies: 200,
+};
+
+function enforceArrayLimits(parsed: unknown): void {
+  if (typeof parsed !== "object" || parsed === null) return;
+  for (const [key, limit] of Object.entries(ARRAY_LIMITS)) {
+    const value = (parsed as Record<string, unknown>)[key];
+    if (Array.isArray(value) && value.length > limit) {
+      throw new Error(
+        `The AI response exceeded the maximum allowed items for "${key}" (${value.length} > ${limit}). The response was rejected.`,
+      );
+    }
+  }
+}
+
 export function parseTenderResponse(text: string) {
+  if (text.length > MAX_RESPONSE_BYTES) {
+    throw new Error(
+      `The AI response exceeded the maximum allowed size (${text.length} > ${MAX_RESPONSE_BYTES} bytes). The response was rejected.`,
+    );
+  }
   const trimmed = text.trim();
   const json = trimmed.startsWith("```")
     ? trimmed.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "")
@@ -162,6 +196,7 @@ export function parseTenderResponse(text: string) {
     const detail = error instanceof Error ? error.message : "Invalid JSON response";
     throw new Error(`The AI response could not be parsed as structured analysis: ${detail}`);
   }
+  enforceArrayLimits(parsed);
   const result = chunkResponseSchema.safeParse(parsed);
   if (!result.success) {
     const issue = result.error.issues[0];

@@ -177,7 +177,42 @@ function extractJsonBlock(text: string): string {
   return match ? match[0] : fenced;
 }
 
+// Maximum raw response size accepted before JSON.parse — guards against
+// GHSA-mrhx-c7xc-m3w5: a crafted response with millions of array elements
+// would exhaust memory in JSON.parse before Zod ever runs.
+const MAX_QA_RESPONSE_BYTES = 128_000;
+
+// Maximum array lengths enforced before safeParse — Zod 3 traverses all
+// elements even when .max() is exceeded (issue #6653).
+const QA_ARRAY_LIMITS: Record<string, number> = {
+  hypotheses: 20,
+  unresolvedQuestions: 20,
+  documentCitations: 50,
+  researchSourceIds: 20,
+};
+
+function enforceQaArrayLimits(parsed: unknown): void {
+  if (typeof parsed !== "object" || parsed === null) return;
+  for (const [key, limit] of Object.entries(QA_ARRAY_LIMITS)) {
+    const value = (parsed as Record<string, unknown>)[key];
+    if (Array.isArray(value) && value.length > limit) {
+      throw new Error(
+        `The AI response exceeded the maximum allowed items for "${key}" (${value.length} > ${limit}). The response was rejected.`,
+      );
+    }
+  }
+}
+
 function parseResponse(text: string) {
+  if (text.length > MAX_QA_RESPONSE_BYTES) {
+    return {
+      answer: "The response was too large to process safely.",
+      hypotheses: [] as string[],
+      unresolvedQuestions: [] as string[],
+      documentCitations: [] as Array<{ sourceIndex: number; excerpt: string }>,
+      researchSourceIds: [] as string[],
+    };
+  }
   const json = extractJsonBlock(text);
   let parsed: unknown;
   try {
@@ -190,6 +225,17 @@ function parseResponse(text: string) {
       unresolvedQuestions: [],
       documentCitations: [],
       researchSourceIds: [],
+    };
+  }
+  try {
+    enforceQaArrayLimits(parsed);
+  } catch {
+    return {
+      answer: text.trim(),
+      hypotheses: [] as string[],
+      unresolvedQuestions: [] as string[],
+      documentCitations: [] as Array<{ sourceIndex: number; excerpt: string }>,
+      researchSourceIds: [] as string[],
     };
   }
   const result = responseSchema.safeParse(parsed);
