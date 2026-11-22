@@ -56,7 +56,7 @@ Select the default mode in **Settings**, then navigate to **Processing**:
 - Sends extracted text to Gemini via Firebase AI Logic.
 - Requires explicit consent checkbox — cloud processing is never silent.
 - Badge after analysis: **cloud** or **cloud-fallback**.
-- Model fallback chain: `gemini-3.5-flash` → `gemini-3.8-flash` → `gemini-3.5-flash-lite`, after retryable errors or timeouts, with one bounded attempt per model. Cloud attempts are limited to 15 seconds each and a 55-second total budget per section. Local generation has a 180-second per-section timeout; oversized local inputs are split and retried before cloud fallback. The 2026-11-20 production test used the earlier model chain.
+- Model fallback chain: `gemini-3.8-flash` → `gemini-3.7-flash` → `gemini-3.6-flash` → `gemini-3.5-flash-lite`, after retryable errors or timeouts, with one bounded attempt per model. Cloud attempts are limited to 15 seconds each and a 55-second total budget per section. Local generation has a 180-second per-section timeout; oversized local inputs are split and retried before cloud fallback. The 2026-11-20 production test observed `gemini-3.8-flash` HTTP 500 followed by `gemini-3.5-flash` HTTP 200.
 
 ### On-device only
 - Uses Chrome's Prompt API; the exact on-device model depends on Chrome and the device.
@@ -177,7 +177,7 @@ npm run dev
 Open in desktop Chrome. Register the App Check debug token (printed in the browser console) in Firebase Console → App Check → Debug tokens.
 
 ```sh
-npm test       # 107 tests (29 files)
+npm test       # 128 tests (29 files)
 npm run lint
 npm run build
 ```
