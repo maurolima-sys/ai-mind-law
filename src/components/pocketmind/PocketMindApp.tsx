@@ -73,7 +73,7 @@ import {
 import { buildLabel } from "@/lib/buildInfo";
 import { DocumentQaPanel } from "@/components/pocketmind/DocumentQaPanel";
 import { EvidenceComparisonPanel } from "@/components/pocketmind/EvidenceComparisonPanel";
-import { GuidedTour } from "@/components/pocketmind/GuidedTour";
+import { GuidedTour, hasSeenTour } from "@/components/pocketmind/GuidedTour";
 import { IntegrationsScreen } from "@/components/pocketmind/IntegrationsScreen";
 import { LanguageSelector } from "@/components/pocketmind/LanguageSelector";
 import { LocalWorkspaceLibrary } from "@/components/pocketmind/LocalWorkspaceLibrary";
@@ -477,6 +477,12 @@ export function PocketMindApp() {
       setTourActive(false);
     }
   }, [tourActive, tourRequestedByUser]);
+
+  useEffect(() => {
+    if (!workspaceReady || hasSeenTour()) return;
+    setTourRequestedByUser(true);
+    setTourActive(true);
+  }, [workspaceReady]);
 
   const selectedDocument =
     documents.find((document) => document.id === selectedDocumentId) ?? documents[0];
