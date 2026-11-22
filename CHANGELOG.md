@@ -7,11 +7,20 @@ Format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-The published application identifies itself as 0.4.0. The documentation and changelog below include updates not yet deployed.
+The application has identified itself as 0.4.0 in historical observations. The current deployment commit has not been independently rechecked.
+
+### Changed
+- `ae14f7b` — updated Vite, Vitest and TypeScript ESLint, and added `js-yaml` and `seroval` overrides. No new dependency audit is claimed here.
+- `5cac563` — added an optional execution report to successful analysis exports and changed Cloud limits from 30 seconds per attempt / 100 seconds per section to a maximum of 15 seconds / 55 seconds, with shorter retry delays. Real-browser comparisons of latency and success rate remain pending.
+- The execution report is not a complete audit trail: failed or split attempts can be omitted; `timedOut` does not reliably record prior timeouts; failures do not return a report; total duration excludes extraction, model initialization and evidence verification. It does not record consent. Exports contain document-derived findings and may include error messages; review them before sharing.
+
+### Verification — 2026-11-21
+- A local desktop Chrome hybrid run on a real 17-page PDF produced a `hybrid` JSON analysis with 45 requirements, 17 deadlines, 18 specifications and 13 risks. Of 93 evidence references, 84 were marked verified and 9 unverified.
+- The monitor reported locally validated sections 1 and 4 and Cloud fallback for sections 2, 3 and 5. The raw SDK source values, complete section history, durations, attempt counts and consent state were not independently captured. This run preceded the execution-report instrumentation and does not prove a complete on-device-only run or production deployment.
 
 ### Verification — 2026-11-20
 - Production build `ed19ed4` completed a fictional-sample Cloud AI analysis: reCAPTCHA Enterprise token exchange HTTP 200, primary `gemini-3.8-flash` HTTP 500, fallback `gemini-3.5-flash` HTTP 200, UI source `Cloud (IN_CLOUD)`. The raw SDK value was not captured.
-- An on-device-only attempt initialized the model but failed with “The input is too large”; no Firebase AI generation request was observed. Successful on-device and hybrid inference remain unverified. LlamaParse OCR with a real scanned PDF remains unverified.
+- An on-device-only attempt initialized the model but failed with “The input is too large”; no Firebase AI generation request was observed. At that date, successful complete on-device-only and hybrid analyses were unverified. LlamaParse OCR with a real scanned PDF remains unverified.
 
 ## [0.4.0] — 2026-11-19 · commit `ed19ed4`
 
@@ -105,7 +114,7 @@ Core product — all four screens, Firebase AI Logic hybrid inference, complianc
 - `src/lib/services/firebaseAi.ts` — Firebase AI Logic integration (112 lines):
   - `getGenerativeModel` with `InferenceMode.PREFER_ON_DEVICE` (hybrid on-device-first).
   - `InferenceMode.ONLY_ON_DEVICE` and `InferenceMode.ONLY_IN_CLOUD` for explicit mode selection.
-  - App Check enforced for all calls; debug provider for development.
+  - App Check integration for calls; debug provider for development. Enforcement depends on Firebase configuration.
   - Actual inference source (`on-device`, `cloud`, `cloud-fallback`) surfaced to the user after every analysis.
 - `src/lib/services/tenderAnalysis.ts` — `buildPrompt` and analysis pipeline (297 lines): chunked text processing, evidence verification against extracted page text, progress reporting.
 - `src/lib/services/csv.ts` — compliance matrix CSV export.
