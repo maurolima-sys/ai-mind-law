@@ -26,13 +26,13 @@ export type GeminiModelName = (typeof GEMINI_MODEL_FALLBACK_CHAIN)[number];
 
 const RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503]);
 const TIMEOUT_ERROR_CODE = "TIMEOUT";
-const GENERATION_TIMEOUT_MS = 30_000;
+const GENERATION_TIMEOUT_MS = 15_000;
 export const ON_DEVICE_GENERATION_TIMEOUT_MS = 180_000;
-const TOTAL_GENERATION_BUDGET_MS = 100_000;
+const TOTAL_GENERATION_BUDGET_MS = 55_000;
 const RETRY_STEPS = [
   { modelName: PRIMARY_GEMINI_MODEL, delayMs: 0, jitterMs: 0 },
-  { modelName: SECONDARY_GEMINI_MODEL, delayMs: 1_000, jitterMs: 500 },
-  { modelName: TERTIARY_GEMINI_MODEL, delayMs: 2_000, jitterMs: 1_000 },
+  { modelName: SECONDARY_GEMINI_MODEL, delayMs: 500, jitterMs: 250 },
+  { modelName: TERTIARY_GEMINI_MODEL, delayMs: 1_000, jitterMs: 500 },
 ] as const;
 
 export const DEVICE_MODEL_INIT_TIMEOUT_MS = 60_000;
@@ -96,6 +96,7 @@ export async function initializeDeviceModelWithTimeout(
   try {
     resetTimeout();
     const initialization = initialize((progress) => {
+      if (!active) return;
       onProgress(progress);
       resetTimeout();
     });

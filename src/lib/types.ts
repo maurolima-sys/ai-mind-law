@@ -97,6 +97,28 @@ export interface Risk {
   evidence: Evidence;
 }
 
+export type SectionInferenceSource = "ON_DEVICE" | "IN_CLOUD" | "CLOUD_FALLBACK";
+
+export interface SectionTrace {
+  section: number;
+  total: number;
+  source: SectionInferenceSource;
+  attempts: number;
+  durationMs: number;
+  timedOut: boolean;
+  error?: string;
+}
+
+export interface ExecutionReport {
+  totalSections: number;
+  completedSections: number;
+  onDeviceSections: number;
+  cloudSections: number;
+  cloudFallbackSections: number;
+  totalDurationMs: number;
+  sections: SectionTrace[];
+}
+
 export interface Analysis {
   mode: ProcessingMode;
   processingSource?: ProcessingSource;
@@ -110,6 +132,7 @@ export interface Analysis {
   missing: string[];
   inconsistencies: string[];
   generatedAt: string;
+  executionReport?: ExecutionReport;
 }
 
 export interface DocumentRecord {

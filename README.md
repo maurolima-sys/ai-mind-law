@@ -12,15 +12,15 @@ The core problem: tender documents run to dozens of pages of dense prose. The ob
 
 ## Firebase AI Logic — how it's used at runtime
 
-- **Hybrid inference (on-device-first):** the code configures Firebase AI Logic's web hybrid API (`getGenerativeModel` with `InferenceMode.PREFER_ON_DEVICE`) in `src/lib/services/firebaseAi.ts`. The intended path requests Chrome's on-device model first and permits Gemini cloud fallback only with consent. The 2026-11-20 production test used cloud-only mode, not hybrid.
+- **Hybrid inference (on-device-first):** the main document analysis explicitly tries `ONLY_ON_DEVICE` before an application-managed cloud fallback, which requires consent. Other operations can use Firebase's `PREFER_ON_DEVICE` mode. The 2026-11-20 production test used cloud-only mode; the 2026-11-21 local test used hybrid mode.
 - **Analysis recovery:** if hybrid analysis and its cloud retry fail, the application attempts on-device-only processing using smaller text sections; it reports the actual inference source and reports an error if both paths fail. Exclusive local and cloud modes do not switch processing locations.
 - **Cloud-only and on-device-only modes:** selectable from the Processing & privacy screen and configured through Firebase AI Logic. Their end-to-end behavior depends on valid App Check configuration and a supported browser.
 - **App Check:** development uses the debug provider; treat its token as sensitive and never commit or publish it. A manual Firebase Console check reported the production web app as **Registered (Enforced)** with reCAPTCHA Enterprise. This does not by itself prove every browser request receives a valid token; see Verification notes.
-- **Document Q&A:** follow-up questions about extracted PDF, DOCX, or XLSX text use the same inference path, separating stated facts, working hypotheses, and unresolved questions, with citations to pages or source sections.
+- **Document Q&A:** follow-up questions about extracted PDF, DOCX, or XLSX text use Firebase AI Logic with a separate inference flow, separating stated facts, working hypotheses, and unresolved questions, with citations to pages or source sections.
 
 ## What makes this a non-obvious use of hybrid inference
 
-Most hybrid AI demos run a single prompt against a fixed input. PocketMind AI is designed to apply hybrid inference to a *document review workflow* where the inference source matters to the user: sensitive procurement documents may not leave the device; the app requires explicit consent before any cloud path is used and is designed to surface the reported inference source. On-device and hybrid inference still need successful end-to-end verification.
+Most hybrid AI demos run a single prompt against a fixed input. PocketMind AI is designed to apply hybrid inference to a *document review workflow* where the inference source matters to the user: sensitive procurement documents may not leave the device; the app requires explicit consent before any cloud path is used and is designed to surface the reported inference source. A mixed local/cloud analysis completed in a local Chrome test; a complete on-device-only analysis is still unverified.
 
 ## Who it's for
 
@@ -28,7 +28,7 @@ Procurement and tendering teams, consultants, and anyone who reviews public or p
 
 ## Built during the submission period
 
-The repository began as a standard TanStack/Lovable starter during the submission period and was substantially rebuilt into PocketMind AI. Work completed during the submission period includes: Firebase AI Logic hybrid inference integration and App Check integration (production verification pending), local PDF/DOCX/XLSX extraction and storage, source verification, the compliance matrix with persistent per-requirement review tracking, bidder evidence linking and comparison, document Q&A with structured fact/hypothesis/unresolved separation, optional LlamaParse OCR for scanned PDFs (via the Lovable connector), optional Firecrawl external research (server-side only), and the Dashboard, Library, Document analysis, Compliance matrix, Risks, Processing & privacy, Settings, and Integrations screens.
+The repository began as a standard TanStack/Lovable starter during the submission period and was substantially rebuilt into PocketMind AI. Work completed during the submission period includes: Firebase AI Logic hybrid inference and App Check integration, local PDF/DOCX/XLSX extraction and storage, source verification, the compliance matrix with persistent per-requirement review tracking, bidder evidence linking and comparison, document Q&A with structured fact/hypothesis/unresolved separation, optional LlamaParse OCR for scanned PDFs (via the Lovable connector), optional Firecrawl external research (server-side only), and the Dashboard, Library, Document analysis, Compliance matrix, Risks, Processing & privacy, Settings, and Integrations screens. Historical production cloud responses do not independently establish the current enforcement configuration.
 
 ## Design references—not screenshots of this build
 
@@ -48,7 +48,7 @@ The images below are concept mockups used as visual references; they are not scr
 - Keep tender files, extracted text, analyses, review notes, evidence files, comparison results, and activity in a persistent local browser library. This IndexedDB data is not encrypted or synced and can be deleted from the library.
 - See uploaded and fictional sample metrics separately on the Dashboard; the library lists uploaded documents only. The risk register identifies origin in its filters and CSV export.
 - Offer optional LlamaParse OCR for scanned or very sparse PDFs, only after separate per-document consent and when the Lovable connector is enabled.
-- Select cloud-only, on-device-only, or on-device-first hybrid inference. Cloud processing and fallback require explicit consent. Cloud-only analysis succeeded in production on 2026-11-20; on-device and hybrid remain unverified end-to-end.
+- Select cloud-only, on-device-only, or on-device-first hybrid inference. Cloud processing and fallback require explicit consent. Cloud-only analysis succeeded in production on 2026-11-20; a mixed hybrid analysis completed locally on 2026-11-21. A complete on-device-only analysis remains unverified.
 - Validate returned excerpts against extracted source text. The 2026-11-20 cloud analysis rendered findings from the fictional sample; individual citation correctness requires human review.
 - Report the inference source supplied by Firebase separately for analyses, document answers, and evidence comparisons. A cloud response received during the current session is a past event, not a guarantee of current connectivity or valid structured output; an on-device response never marks cloud as connected. Older analyses without a recorded source are shown as unknown. The prepared sample-data workflow does not call Firebase.
 - Use the built-in fictional tender text for a live model test without uploading a real procurement PDF. **Sample data** loads a prepared analysis and does not call Firebase. Live analysis sends the fictional text through the selected mode. Live results on the sample remain fictional sample content.
@@ -59,7 +59,7 @@ The images below are concept mockups used as visual references; they are not scr
 - Optionally search external legal sources through Firecrawl after separate consent. Only the question and jurisdiction are sent to Firecrawl; the PDF is not. Configure `FIRECRAWL_API_KEY` on the server, never in a `VITE_*` variable.
 - Attach separate bidder evidence documents to tender requirements and compare their extracted text using the selected inference mode. Cloud use requires separate consent for each selected evidence document.
 - Review requirements using independent source-verification, compliance-assessment, and human-review states. Assessments, review states, and notes are stored locally and exported in the compliance CSV. A verified quote does not establish compliance or approval.
-- Export a document's analysis as JSON.
+- Export a document's analysis as JSON. New successful analyses can include an `executionReport` with section-level source, attempt and timing fields; see the limitations below before relying on those fields.
 
 Accounts, shared workspaces, and cloud document storage are not implemented. Local browser data is not encrypted and may be removed by clearing browser data. AI findings and evidence comparisons are suggestions and must be checked by a person against the source document; they are not legal advice.
 
@@ -93,7 +93,7 @@ The current local checkout has no `.env.local` file with Firebase configuration 
 
 ## Development
 
-Requirements: Bun (the repository's tracked lockfile is `bun.lock`).
+Requirements: Bun for the local workflow below. Both `bun.lock` and `package-lock.json` are tracked; the Vercel configuration currently uses npm.
 
 ```sh
 bun install
@@ -114,12 +114,16 @@ GitHub Actions runs the full test suite and production build, plus targeted ESLi
 
 **Implemented:** Cloud, on-device and hybrid inference, explicit cloud consent, App Check and model fallback are in the code.
 
-**Configured:** Production serves `v0.4.0 · ed19ed4` (build time 2026-11-19 23:54 UTC); this matched remote `main` on 2026-11-20. The deployed browser successfully exchanged a reCAPTCHA Enterprise token. Console settings were not independently inspected.
+**Historical production configuration:** On 2026-11-20, build `v0.4.0 · ed19ed4` was observed and the browser exchanged a reCAPTCHA Enterprise token. The current deployment and enforcement settings have not been independently rechecked.
 
 **Tested in production:** On 2026-11-20, a browser test of the fictional sample in Cloud AI mode recorded `exchangeRecaptchaEnterpriseToken` HTTP 200, `gemini-3.8-flash` HTTP 500, then `gemini-3.5-flash` HTTP 200. The analysis completed and the app displayed `Cloud (IN_CLOUD)`. The UI maps the SDK inference source to `IN_CLOUD`; the raw SDK value was not captured. This single run is not an availability guarantee.
 
-**Not yet proved:** On 2026-11-20, an on-device-only test initialized the model but failed on the fictional sample with “The input is too large”; no Firebase AI generation request was observed. This was an integrated browser test, not a validation across supported Chrome hardware. A successful on-device or hybrid analysis and LlamaParse OCR with a real scanned PDF remain unverified.
+**Local hybrid test:** On 2026-11-21, a desktop Chrome test of a real 17-page PDF produced a structured mixed-source analysis. The monitor reported local responses and validated sections 1 and 4 locally; sections 2, 3 and 5 used cloud fallback. The exported result recorded `hybrid`, 45 requirements, 17 deadlines, 18 specifications and 13 risks. Of their 93 evidence references, 84 were marked verified and 9 unverified; verification is an excerpt match, not a legal or factual endorsement. The raw SDK source values, complete section history, actual duration and the consent state for that run were not independently captured. This run preceded the observability commit.
 
-The cloud fallback sequence is `gemini-3.5-flash` → `gemini-3.8-flash` → `gemini-3.5-flash-lite` after retryable errors (429, 500, 502, 503) or timeouts. Each section gets one bounded attempt per model; a failed primary is not repeated. Cloud requests have a 30-second per-attempt timeout and a 100-second total budget per section. Hybrid mode makes one bounded on-device-first pass, then uses the same cloud fallback sequence; it does not run both Firebase's implicit hybrid fallback and a second full cloud chain. Firebase AI Logic lists these models in its [model catalog](https://firebase.google.com/docs/ai-logic/models); for the Gemini Developer API, requests for `gemini-3.5-flash` route to `gemini-3.6-flash`.
+**Not yet proved:** On 2026-11-20, an on-device-only test initialized the model but failed on the fictional sample with “The input is too large”; no Firebase AI generation request was observed. A complete on-device-only analysis and LlamaParse OCR with a real scanned PDF remain unverified. The local hybrid test does not prove a fully local analysis or production deployment.
+
+The cloud fallback sequence is `gemini-3.5-flash` → `gemini-3.8-flash` → `gemini-3.5-flash-lite` after retryable errors (429, 500, 502, 503) or timeouts. Each section gets one bounded attempt per model; a failed primary is not repeated. Since `5cac563`, Cloud requests have a maximum 15-second per-attempt timeout and a 55-second total budget per section. These limits have not been compared against the earlier 30-second/100-second limits in controlled real-browser tests. Local and hybrid analyses start with up to 4,000 characters per section and split oversized local inputs further; local generation has a 180-second per-section timeout. Initialization times out after 60 seconds without a download progress callback. Hybrid then uses the same cloud fallback sequence; it does not run both Firebase's implicit hybrid fallback and a second full cloud chain. Firebase AI Logic lists these models in its [model catalog](https://firebase.google.com/docs/ai-logic/models); for the Gemini Developer API, requests for `gemini-3.5-flash` route to `gemini-3.6-flash`.
+
+**Execution-report limits:** `5cac563` added an optional `executionReport` to successful analysis exports. Its total duration starts after model initialization and ends before evidence verification; it excludes document extraction. Attempts, timeouts, failures and fallback sources are not a complete audit trail: failed or split attempts can be omitted, `timedOut` is not a reliable record of prior timeouts, and the report is not returned when analysis throws. It does not record consent. Exports also contain document-derived findings and can include error messages; review them before sharing. The prior 2026-11-21 JSON predates this instrumentation.
 
 A real scanned-PDF OCR test and responsive checks for longer Portuguese and Spanish text on small screens are still pending. Optional Firecrawl research also requires `FIRECRAWL_API_KEY` in the server-side deployment environment. The repository includes the Apache License 2.0 in the root-level `LICENSE` file.
