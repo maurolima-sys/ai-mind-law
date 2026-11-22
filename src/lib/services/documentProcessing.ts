@@ -12,11 +12,13 @@ export function getDocumentFormat(fileName: string): DocumentFormat | null {
   return null;
 }
 
-export function validateDocumentFile(file: File): string | null {
+export type FileValidationError = "invalid_format" | "empty" | "too_large";
+
+export function validateDocumentFile(file: File): FileValidationError | null {
   const format = getDocumentFormat(file.name);
-  if (!format) return "Choose a PDF, DOCX, or XLSX file.";
-  if (file.size === 0) return "The selected file is empty.";
-  if (file.size > MAX_FILE_BYTES) return "File exceeds the 50 MB limit.";
+  if (!format) return "invalid_format";
+  if (file.size === 0) return "empty";
+  if (file.size > MAX_FILE_BYTES) return "too_large";
   return null;
 }
 

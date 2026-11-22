@@ -25,8 +25,8 @@ describe("document format validation", () => {
 
     expect(validateDocumentFile(supported)).toBeNull();
     expect(validateDocumentFile(atLimit)).toBeNull();
-    expect(validateDocumentFile(empty)).toBe("The selected file is empty.");
-    expect(validateDocumentFile(unsupported)).toBe("Choose a PDF, DOCX, or XLSX file.");
-    expect(validateDocumentFile(oversized)).toBe("File exceeds the 50 MB limit.");
+    expect(validateDocumentFile(empty)).toBe("empty");
+    expect(validateDocumentFile(unsupported)).toBe("invalid_format");
+    expect(validateDocumentFile(oversized)).toBe("too_large");
   });
 });

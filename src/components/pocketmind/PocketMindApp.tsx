@@ -679,13 +679,13 @@ export function PocketMindApp() {
     }
     const validationError = validateDocumentFile(selectedFile);
     if (validationError) {
-      setErrorMessage(validationError);
+      setErrorMessage(t(`file_error_${validationError}`));
       return;
     }
 
     const format = getDocumentFormat(selectedFile.name);
     if (!format) {
-      setErrorMessage("Choose a PDF, DOCX, or XLSX file.");
+      setErrorMessage(t("file_error_invalid_format"));
       return;
     }
     const id = `upload-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -877,12 +877,12 @@ export function PocketMindApp() {
     }
     const validationError = validateDocumentFile(evidenceFile);
     if (validationError) {
-      setEvidenceComparisonError(validationError);
+      setEvidenceComparisonError(t(`file_error_${validationError}`));
       return;
     }
     const format = getDocumentFormat(evidenceFile.name);
     if (!format) {
-      setEvidenceComparisonError("Choose a PDF, DOCX, or XLSX evidence file.");
+      setEvidenceComparisonError(t("file_error_invalid_format"));
       return;
     }
 
