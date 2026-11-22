@@ -6801,3 +6801,139 @@
     display: none;
   }
 }
+
+/* ── Collapsible sidebar ─────────────────────────────────────────────────── */
+.pm-sidebar {
+  transition: width 220ms cubic-bezier(0.22, 1, 0.36, 1),
+              flex-basis 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.pm-sidebar--collapsed {
+  width: 60px;
+  flex-basis: 60px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.pm-sidebar--collapsed .pm-brand {
+  padding: 2px 4px 16px;
+  justify-content: center;
+}
+
+.pm-sidebar--collapsed .pm-brand-text,
+.pm-sidebar--collapsed .pm-side-caption {
+  display: none;
+}
+
+.pm-sidebar-collapse-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  margin-left: auto;
+  border: 1px solid var(--pm-line);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--pm-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 120ms ease, color 120ms ease;
+}
+.pm-sidebar-collapse-btn:hover {
+  background: var(--pm-blue-pale);
+  color: var(--pm-blue);
+}
+.pm-sidebar-collapse-btn:focus-visible {
+  outline: 2px solid #86a7ff;
+  outline-offset: 2px;
+}
+
+/* Collapsed nav items — icon only, centred */
+.pm-sidebar--collapsed .pm-nav-item {
+  justify-content: center;
+  padding: 0;
+  width: 44px;
+  min-height: 44px;
+}
+
+.pm-sidebar--collapsed .pm-nav-soon {
+  display: none;
+}
+
+/* Tooltip via data-tooltip on collapsed items */
+.pm-icon-tooltip {
+  position: relative;
+}
+.pm-icon-tooltip[data-tooltip]:hover::after,
+.pm-sidebar--collapsed .pm-nav-item[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  background: var(--pm-ink);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 9px;
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 9999;
+  box-shadow: 0 2px 8px oklch(0.24 0.05 265 / 0.18);
+}
+
+/* Collapsed tour replay button */
+.pm-sidebar--collapsed .pm-tour-replay {
+  width: 44px;
+  padding: 0;
+  justify-content: center;
+}
+
+/* Collapsed workspace user */
+.pm-sidebar--collapsed .pm-workspace-user {
+  justify-content: center;
+}
+.pm-sidebar--collapsed .pm-workspace-user > div:nth-child(2),
+.pm-sidebar--collapsed .pm-workspace-user > svg {
+  display: none;
+}
+
+/* ── Compliance: collapsible evidence panel ──────────────────────────────── */
+.pm-compliance-layout.is-evidence-collapsed {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.pm-compliance-layout.is-evidence-collapsed .pm-source-drawer {
+  display: none;
+}
+
+/* Reopen button sits inline in the toolbar */
+.pm-evidence-reopen-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* ── SourceEvidencePanel close button ────────────────────────────────────── */
+.pm-source-drawer-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--pm-line);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--pm-muted);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+.pm-source-drawer-close:hover {
+  background: var(--pm-blue-pale);
+  color: var(--pm-blue);
+}
+.pm-source-drawer-close:focus-visible {
+  outline: 2px solid #86a7ff;
+  outline-offset: 2px;
+}

@@ -393,6 +393,69 @@ export async function deleteProjectRecord(projectId: string): Promise<void> {
   }
 }
 
+export async function deleteDocumentRecord(documentId: string): Promise<void> {
+  const database = await openDatabase();
+  try {
+    const stores = [
+      DOCUMENTS,
+      DOCUMENT_FILES,
+      WORKSPACE_STATE,
+      PROJECT_DOCUMENT_LINKS,
+    ];
+    const transaction = database.transaction(stores, "readwrite");
+    const done = transactionDone(transaction);
+
+    transaction.objectStore(DOCUMENTS).delete(documentId);
+    transaction.objectStore(DOCUMENT_FILES).delete(documentId);
+
+    // Remove project-document links for this document
+    const linkCursor = transaction
+      .objectStore(PROJECT_DOCUMENT_LINKS)
+      .index("documentId")
+      .openCursor(IDBKeyRange.only(documentId));
+    linkCursor.onsuccess = () => {
+      const cursor = linkCursor.result;
+      if (!cursor) return;
+      cursor.delete();
+      cursor.continue();
+    };
+
+    // Patch workspace state: remove reviews, evidenceLinks, evidenceMatches, activities for this document
+    const stateStore = transaction.objectStore(WORKSPACE_STATE);
+    const stateRequest = stateStore.get("workspace") as IDBRequest<
+      { key: string; value: LocalWorkspaceState } | undefined
+    >;
+    stateRequest.onsuccess = () => {
+      const record = stateRequest.result;
+      if (!record) return;
+      const state = record.value;
+      const reviews: Record<string, Review> = {};
+      for (const [key, value] of Object.entries(state.reviews)) {
+        if (!key.startsWith(documentId)) reviews[key] = value;
+      }
+      stateStore.put({
+        key: "workspace",
+        value: {
+          reviews,
+          evidenceMatches: state.evidenceMatches.filter(
+            (item) => item.tenderDocumentId !== documentId,
+          ),
+          evidenceLinks: state.evidenceLinks.filter(
+            (item) => item.tenderDocumentId !== documentId,
+          ),
+          activities: state.activities.filter(
+            (item) => item.documentId !== documentId && item.relatedDocumentId !== documentId,
+          ),
+        } satisfies LocalWorkspaceState,
+      });
+    };
+
+    await done;
+  } finally {
+    database.close();
+  }
+}
+
 export async function clearLocalWorkspace(): Promise<void> {
   const database = await openDatabase();
   try {

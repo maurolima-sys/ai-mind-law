@@ -19,6 +19,9 @@ Object.assign(globalThis, {
 
 expect.extend(matchers);
 
+// Mark the guided tour as already seen so it never auto-starts during tests.
+localStorage.setItem("pocketmind.tour.completed", "1");
+
 Object.defineProperty(window, "scrollTo", {
   writable: true,
   value: () => {},

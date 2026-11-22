@@ -249,6 +249,8 @@
   source_panel_title_full: "Source document",
   sidebar_hide: "Hide navigation",
   sidebar_show: "Show navigation",
+  sidebar_collapse: "Collapse menu",
+  sidebar_expand: "Expand menu",
   analysis_panel_hide: "Hide analysis panel",
   analysis_panel_show: "Show analysis panel",
   source_llamaparse_paginated: "Text extracted by LlamaParse.",
@@ -385,6 +387,8 @@
 
   // ── Compliance — evidence panel ───────────────────────────────────────────────
   evidence_panel_title: "Source evidence",
+  evidence_panel_collapse: "Collapse source evidence",
+  evidence_panel_expand: "Expand source evidence",
   evidence_panel_subtitle: "Selected requirement",
   evidence_no_excerpt: "No source excerpt was returned. Verify this requirement manually.",
   evidence_notes_label: "Review notes",
@@ -995,6 +999,19 @@
   projects_delete: "Delete project",
   projects_delete_confirm:
     "Delete this project organization now? Local documents will not be deleted.",
+
+  // ── Document delete ───────────────────────────────────────────────────────────
+  doc_delete_action: "Delete document",
+  doc_delete_menu_aria: "Document options for {{name}}",
+  doc_delete_dialog_title: "Delete document?",
+  doc_delete_dialog_body:
+    "This permanently removes the file, extracted text, analysis, review notes, evidence links, and activity for {{name}} from this browser. This cannot be undone.",
+  doc_delete_dialog_projects:
+    "This document is linked to {{count}} project(s). Those links will also be removed.",
+  doc_delete_confirm: "Delete document",
+  doc_delete_cancel: "Keep document",
+  doc_delete_success: "{{name}} was deleted.",
+  doc_delete_error: "The document could not be deleted. Your data has not been changed.",
 } as const;
 
 export type TranslationKey = keyof typeof en;

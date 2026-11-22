@@ -243,6 +243,8 @@ export const es: Translations = {
   source_panel_title_full: "Documento de origen",
   sidebar_hide: "Ocultar navegación",
   sidebar_show: "Mostrar navegación",
+  sidebar_collapse: "Contraer menú",
+  sidebar_expand: "Expandir menú",
   analysis_panel_hide: "Ocultar panel de análisis",
   analysis_panel_show: "Mostrar panel de análisis",
   source_llamaparse_paginated: "Texto extraído por LlamaParse.",
@@ -374,6 +376,8 @@ export const es: Translations = {
     "Los requisitos de muestra y los resultados de revisión son ficticios e ilustrativos.",
 
   evidence_panel_title: "Evidencia de origen",
+  evidence_panel_collapse: "Contraer evidencia de origen",
+  evidence_panel_expand: "Expandir evidencia de origen",
   evidence_panel_subtitle: "Requisito seleccionado",
   evidence_no_excerpt:
     "No se devolvió ningún fragmento de origen. Verifica este requisito manualmente.",
@@ -980,4 +984,17 @@ export const es: Translations = {
   projects_delete: "Eliminar proyecto",
   projects_delete_confirm:
     "¿Eliminar ahora esta organización del proyecto? Los documentos locales no se borrarán.",
+
+  // ── Document delete ───────────────────────────────────────────────────────────
+  doc_delete_action: "Eliminar documento",
+  doc_delete_menu_aria: "Opciones del documento {{name}}",
+  doc_delete_dialog_title: "¿Eliminar documento?",
+  doc_delete_dialog_body:
+    "Esto elimina permanentemente el archivo, el texto extraído, el análisis, las notas de revisión, los vínculos de evidencia y la actividad de {{name}} de este navegador. Esta acción no se puede deshacer.",
+  doc_delete_dialog_projects:
+    "Este documento está vinculado a {{count}} proyecto(s). Esos vínculos también se eliminarán.",
+  doc_delete_confirm: "Eliminar documento",
+  doc_delete_cancel: "Conservar documento",
+  doc_delete_success: "{{name}} fue eliminado.",
+  doc_delete_error: "No se pudo eliminar el documento. Sus datos no han sido modificados.",
 };

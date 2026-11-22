@@ -97,10 +97,10 @@ describe("processing provenance", () => {
       "A draft question",
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Hide navigation" }));
-    expect(navigation).not.toBeVisible();
-    fireEvent.click(screen.getByRole("button", { name: "Show navigation" }));
-    expect(navigation).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Collapse menu" }));
+    expect(screen.getByRole("complementary", { name: "" })).toHaveClass("is-collapsed");
+    fireEvent.click(screen.getByRole("button", { name: "Expand menu" }));
+    expect(screen.getByRole("complementary", { name: "" })).not.toHaveClass("is-collapsed");
   });
 
   it("distinguishes a failed local attempt from the previously prepared sample analysis", async () => {

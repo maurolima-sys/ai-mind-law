@@ -1,4 +1,4 @@
-﻿import {
+import {
   AlertCircle,
   AlertTriangle,
   ArrowDownToLine,
@@ -45,6 +45,7 @@
   Sliders,
   Sparkles,
   Table2,
+  Trash2,
   Upload,
   Users,
   X,
@@ -59,9 +60,11 @@ import {
   useState,
   type ChangeEvent,
   type DragEvent,
+  type KeyboardEvent,
   type ReactNode,
   type RefObject,
 } from "react";
+import { createPortal } from "react-dom";
 
 import {
   buildDemoDocument,
@@ -112,6 +115,7 @@ import {
 } from "@/lib/services/documentProcessing";
 import {
   clearLocalWorkspace,
+  deleteDocumentRecord,
   deleteEvidenceDocument,
   deleteProjectDocumentLink,
   deleteProjectRecord,
@@ -149,7 +153,15 @@ import {
   savePreferences,
   type PocketMindPreferences,
 } from "@/lib/preferences";
+import {
+  loadEvidencePanelExpanded,
+  loadSidebarExpanded,
+  saveEvidencePanelExpanded,
+  saveSidebarExpanded,
+} from "@/lib/layoutPreferences";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Link } from "@tanstack/react-router";
+import { toast } from "sonner";
 import {
   CATEGORIES,
   type Analysis,
@@ -347,7 +359,7 @@ export function PocketMindApp() {
   const [documents, setDocuments] = useState<DocumentRecord[]>(() => [buildDemoDocument()]);
   const [selectedDocumentId, setSelectedDocumentId] = useState(DEMO_DOC_ID);
   const [screen, setScreen] = useState<Screen>("overview");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [search, setSearch] = useState("");
   const [questionDraftsByDocumentId, setQuestionDraftsByDocumentId] = useState<
     Record<string, string>
@@ -419,6 +431,26 @@ export function PocketMindApp() {
   }, [configuredDefaultMode]);
 
   useEffect(() => {
+    try {
+      setSidebarExpanded(loadSidebarExpanded());
+    } catch {
+      setSidebarExpanded(true);
+    }
+  }, []);
+
+  function toggleSidebar() {
+    setSidebarExpanded((expanded) => {
+      const next = !expanded;
+      try {
+        saveSidebarExpanded(next);
+      } catch {
+        // Keep the choice for this session when browser storage is unavailable.
+      }
+      return next;
+    });
+  }
+
+  useEffect(() => {
     let active = true;
     void loadLocalWorkspace()
       .then((workspace) => {
@@ -479,7 +511,7 @@ export function PocketMindApp() {
   }, [tourActive, tourRequestedByUser]);
 
   useEffect(() => {
-    if (!workspaceReady || hasSeenTour()) return;
+    if (!workspaceReady || hasSeenTour() || import.meta.env.MODE === "test") return;
     setTourRequestedByUser(true);
     setTourActive(true);
   }, [workspaceReady]);
@@ -1018,6 +1050,53 @@ export function PocketMindApp() {
     }
   }
 
+  const [deleteDocumentPending, setDeleteDocumentPending] = useState<DocumentRecord | null>(null);
+
+  async function deleteDocument(documentId: string) {
+    const target = documents.find((document) => document.id === documentId);
+    if (!target || target.source === "demo") return;
+    try {
+      await deleteDocumentRecord(documentId);
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : "Storage error.";
+      toast.error(`${t("doc_delete_error")} ${detail}`);
+      return;
+    }
+    setDocuments((current) => current.filter((document) => document.id !== documentId));
+    setFilesByDocumentId((current) => {
+      const next = { ...current };
+      delete next[documentId];
+      return next;
+    });
+    setEvidenceLinks((current) =>
+      current.filter((link) => link.tenderDocumentId !== documentId),
+    );
+    setEvidenceMatches((current) =>
+      current.filter((item) => item.tenderDocumentId !== documentId),
+    );
+    setActivities((current) =>
+      current.filter(
+        (item) => item.documentId !== documentId && item.relatedDocumentId !== documentId,
+      ),
+    );
+    setProjectDocumentLinks((current) =>
+      current.filter((link) => link.documentId !== documentId),
+    );
+    setReviews((current) => {
+      const next: Record<string, Review> = {};
+      for (const [key, value] of Object.entries(current)) {
+        if (!key.startsWith(documentId)) next[key] = value;
+      }
+      return next;
+    });
+    if (selectedDocumentId === documentId) {
+      setSelectedDocumentId(DEMO_DOC_ID);
+      setScreen("overview");
+    }
+    setDeleteDocumentPending(null);
+    toast.success(t("doc_delete_success", { name: target.name }));
+  }
+
   async function createLocalProject(draft: ProjectDraft) {
     const project = createProjectRecord(draft);
     await saveProjectRecord(project);
@@ -1372,12 +1451,15 @@ export function PocketMindApp() {
 
   return (
     <div className="pm-app">
-      <aside id="pm-workspace-sidebar" className="pm-sidebar" hidden={!sidebarOpen}>
+      <aside
+        id="pm-workspace-sidebar"
+        className={`pm-sidebar${sidebarExpanded ? "" : " is-collapsed"}`}
+      >
         <div className="pm-brand">
-          <div className="pm-brand-mark">
+          <div className="pm-brand-mark" aria-hidden="true">
             <BrainCircuit size={21} strokeWidth={2.2} />
           </div>
-          <div>
+          <div className="pm-brand-copy pm-collapse-label">
             <span className="pm-brand-name">PocketMind AI</span>
             <span className="pm-brand-tagline">Tender intelligence</span>
           </div>
@@ -1391,124 +1473,148 @@ export function PocketMindApp() {
               type="button"
               className={`pm-nav-item${screen === id ? " is-active" : ""}`}
               aria-current={screen === id ? "page" : undefined}
+              data-tooltip={label}
               onClick={() => setScreen(id)}
             >
               <Icon size={19} strokeWidth={1.9} aria-hidden="true" />
-              <span>{label}</span>
+              <span className="pm-collapse-label">{label}</span>
             </button>
           ))}
           <button
             type="button"
             className={`pm-nav-item${screen === "risks" ? " is-active" : ""}`}
             aria-current={screen === "risks" ? "page" : undefined}
+            data-tooltip={t("sidebar_nav_risks")}
             onClick={() => setScreen("risks")}
           >
             <AlertTriangle size={19} strokeWidth={1.9} aria-hidden="true" />
-            <span>{t("sidebar_nav_risks")}</span>
+            <span className="pm-collapse-label">{t("sidebar_nav_risks")}</span>
           </button>
           <button
             type="button"
             className={`pm-nav-item${screen === "projects" ? " is-active" : ""}`}
             aria-current={screen === "projects" ? "page" : undefined}
+            data-tooltip={t("sidebar_nav_projects")}
             onClick={() => setScreen("projects")}
           >
             <Folder size={19} strokeWidth={1.9} aria-hidden="true" />
-            <span>{t("sidebar_nav_projects")}</span>
+            <span className="pm-collapse-label">{t("sidebar_nav_projects")}</span>
           </button>
           <button
             type="button"
             className="pm-nav-item pm-nav-item--disabled"
             disabled
             aria-disabled="true"
-            title={t("nav_coming_soon")}
+            data-tooltip={`${t("sidebar_nav_team")} (${t("nav_coming_soon")})`}
           >
             <Users size={19} strokeWidth={1.9} aria-hidden="true" />
-            <span>{t("sidebar_nav_team")}</span>
-            <span className="pm-nav-soon">{t("nav_coming_soon")}</span>
+            <span className="pm-collapse-label">{t("sidebar_nav_team")}</span>
+            <span className="pm-nav-soon pm-collapse-label">{t("nav_coming_soon")}</span>
           </button>
           <button
             type="button"
             className={`pm-nav-item${screen === "integrations" ? " is-active" : ""}`}
             aria-current={screen === "integrations" ? "page" : undefined}
+            data-tooltip={t("sidebar_nav_integrations")}
             onClick={() => setScreen("integrations")}
           >
             <BrainCircuit size={19} strokeWidth={1.9} aria-hidden="true" />
-            <span>{t("sidebar_nav_integrations")}</span>
+            <span className="pm-collapse-label">{t("sidebar_nav_integrations")}</span>
           </button>
           <button
             type="button"
             className={`pm-nav-item${screen === "settings" ? " is-active" : ""}`}
             aria-current={screen === "settings" ? "page" : undefined}
+            data-tooltip={t("sidebar_nav_settings")}
             onClick={() => setScreen("settings")}
           >
             <Settings size={19} strokeWidth={1.9} aria-hidden="true" />
-            <span>{t("sidebar_nav_settings")}</span>
+            <span className="pm-collapse-label">{t("sidebar_nav_settings")}</span>
           </button>
         </nav>
 
         <div className="pm-pro-card">
           <div className="pm-pro-card-header">
-            <Crown size={16} className="pm-crown-icon" />
-            <strong>{t("sidebar_upgrade_title")}</strong>
+            <Crown size={16} className="pm-crown-icon" aria-hidden="true" />
+            <strong className="pm-collapse-label">{t("sidebar_upgrade_title")}</strong>
           </div>
-          <p>{t("sidebar_upgrade_desc")}</p>
-          <button type="button" className="pm-pro-btn">
-            {t("sidebar_view_plans")}
+          <p className="pm-collapse-label">{t("sidebar_upgrade_desc")}</p>
+          <button
+            type="button"
+            className="pm-pro-btn"
+            data-tooltip={t("sidebar_view_plans")}
+          >
+            <span className="pm-collapse-label">{t("sidebar_view_plans")}</span>
           </button>
         </div>
 
-        <div className="pm-workspace-switcher">
-          <div className="pm-avatar-ss">SS</div>
-          <div className="pm-workspace-meta">
+        <div
+          className="pm-workspace-switcher"
+          data-tooltip={t("sidebar_workspace_name")}
+        >
+          <div className="pm-avatar-ss" aria-hidden="true">
+            SS
+          </div>
+          <div className="pm-workspace-meta pm-collapse-label">
             <strong>{t("sidebar_workspace_name")}</strong>
             <span>Workspace</span>
           </div>
-          <ChevronRight size={16} className="pm-switcher-arrow" />
+          <ChevronRight size={16} className="pm-switcher-arrow" aria-hidden="true" />
         </div>
 
         <div className="pm-sidebar-spacer" />
         <div className="pm-privacy-note">
-          <Shield size={21} strokeWidth={1.8} />
-          <div>
+          <Shield size={21} strokeWidth={1.8} aria-hidden="true" />
+          <div className="pm-collapse-label">
             <strong>{t("sidebar_privacy_title")}</strong>
             <span>{t("sidebar_privacy_note")}</span>
           </div>
         </div>
-        <Link to="/changelog" className="pm-changelog-link">
+        <Link
+          to="/changelog"
+          className="pm-changelog-link"
+          data-tooltip={t("sidebar_whats_new")}
+        >
           <ScrollText size={15} aria-hidden="true" />
-          <span>{t("sidebar_whats_new")}</span>
+          <span className="pm-collapse-label">{t("sidebar_whats_new")}</span>
         </Link>
         <button
           ref={tourButtonRef}
           type="button"
           className="pm-tour-replay"
+          data-tooltip={t("sidebar_take_tour")}
           onClick={() => {
             setTourRequestedByUser(true);
             setTourActive(true);
           }}
         >
           <Compass size={15} aria-hidden="true" />
-          {t("sidebar_take_tour")}
+          <span className="pm-collapse-label">{t("sidebar_take_tour")}</span>
         </button>
-        <div className="pm-workspace-user">
-          <div className="pm-avatar">PM</div>
-          <div>
+        <div className="pm-workspace-user" data-tooltip={t("sidebar_user_workspace")}>
+          <div className="pm-avatar" aria-hidden="true">
+            PM
+          </div>
+          <div className="pm-collapse-label">
             <strong>{t("sidebar_user_workspace")}</strong>
             <span>{t("sidebar_user_session")}</span>
           </div>
-          <ChevronDown size={16} aria-hidden="true" />
+          <ChevronDown size={16} className="pm-collapse-label" aria-hidden="true" />
         </div>
-        <div className="pm-build-info" title={buildLabel()}>
+        <div className="pm-build-info">
           <a
             href="https://github.com/maurolima-sys/ai-mind-law"
             target="_blank"
             rel="noreferrer"
             className="pm-build-info-link"
+            data-tooltip="GitHub"
           >
             GitHub ↗
           </a>
-          <span>·</span>
-          {buildLabel()}
+          <span className="pm-collapse-label" aria-hidden="true">
+            ·
+          </span>
+          <span className="pm-collapse-label">{buildLabel()}</span>
         </div>
       </aside>
 
@@ -1516,14 +1622,18 @@ export function PocketMindApp() {
         <header className="pm-topbar">
           <button
             type="button"
-            className="pm-panel-toggle pm-sidebar-toggle"
+            className="pm-panel-toggle pm-sidebar-toggle pm-icon-tooltip"
             aria-controls="pm-workspace-sidebar"
-            aria-expanded={sidebarOpen}
-            aria-label={t(sidebarOpen ? "sidebar_hide" : "sidebar_show")}
-            title={t(sidebarOpen ? "sidebar_hide" : "sidebar_show")}
-            onClick={() => setSidebarOpen((open) => !open)}
+            aria-expanded={sidebarExpanded}
+            aria-label={t(sidebarExpanded ? "sidebar_collapse" : "sidebar_expand")}
+            data-tooltip={t(sidebarExpanded ? "sidebar_collapse" : "sidebar_expand")}
+            onClick={toggleSidebar}
           >
-            {sidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
+            {sidebarExpanded ? (
+              <PanelLeftClose size={18} aria-hidden="true" />
+            ) : (
+              <PanelLeftOpen size={18} aria-hidden="true" />
+            )}
           </button>
           <div className="pm-mobile-brand">
             <div className="pm-brand-mark">
@@ -1637,6 +1747,7 @@ export function PocketMindApp() {
                 const nextDocument = documents.find((document) => document.id === id);
                 setScreen(id === DEMO_DOC_ID || nextDocument?.analysis ? "analysis" : "processing");
               }}
+              onDeleteDocument={(document) => setDeleteDocumentPending(document)}
             />
           )}
           {screen === "library" && (
@@ -1901,6 +2012,18 @@ export function PocketMindApp() {
         }}
         returnFocusRef={tourButtonRef}
       />
+      {deleteDocumentPending && (
+        <DeleteDocumentDialog
+          document={deleteDocumentPending}
+          projectLinkCount={
+            projectDocumentLinks.filter(
+              (link) => link.documentId === deleteDocumentPending.id,
+            ).length
+          }
+          onConfirm={() => void deleteDocument(deleteDocumentPending.id)}
+          onCancel={() => setDeleteDocumentPending(null)}
+        />
+      )}
     </div>
   );
 }
@@ -1913,6 +2036,7 @@ function OverviewScreen({
   onOpenAnalysis,
   onOpenProcessing,
   onSelectDocument,
+  onDeleteDocument,
 }: {
   documents: DocumentRecord[];
   reviews: Record<string, Review>;
@@ -1921,6 +2045,7 @@ function OverviewScreen({
   onOpenAnalysis: () => void;
   onOpenProcessing: () => void;
   onSelectDocument: (id: string) => void;
+  onDeleteDocument: (document: DocumentRecord) => void;
 }) {
   const t = useT();
   const metrics = summarizeWorkspaceBySource(documents, reviews);
@@ -2141,17 +2266,31 @@ function OverviewScreen({
                           </span>
                         </td>
                         <td>
-                          <button
-                            className="pm-icon-button"
-                            type="button"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              onSelectDocument(document.id);
-                            }}
-                            aria-label={`Open ${document.name}`}
-                          >
-                            <MoreHorizontal size={16} />
-                          </button>
+                          {document.source === "upload" ? (
+                            <button
+                              className="pm-icon-button"
+                              type="button"
+                              aria-label={t("doc_delete_menu_aria", { name: document.name })}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                onDeleteDocument(document);
+                              }}
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          ) : (
+                            <button
+                              className="pm-icon-button"
+                              type="button"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                onSelectDocument(document.id);
+                              }}
+                              aria-label={`Open ${document.name}`}
+                            >
+                              <MoreHorizontal size={16} />
+                            </button>
+                          )}
                         </td>
                       </tr>
                     );
@@ -2860,6 +2999,140 @@ function AnalysisScreen({
   );
 }
 
+function SourceEvidencePanel({
+  mode,
+  reviews,
+  selectedRequirement,
+  onClose,
+  onUpdateReview,
+}: {
+  mode: "column" | "dialog";
+  document: DocumentRecord;
+  reviews: Record<string, Review>;
+  selectedRequirement: Analysis["requirements"][number] | undefined;
+  onClose: () => void;
+  onUpdateReview: (id: string, patch: Partial<Review>) => void;
+}) {
+  const t = useT();
+  const panel = (
+    <aside className="pm-source-drawer" aria-label={t("evidence_panel_title")}>
+      <div className="pm-source-drawer-head">
+        <h3>{t("evidence_panel_title")}</h3>
+        <button type="button" className="pm-source-drawer-close" aria-label={t("evidence_panel_close")} onClick={onClose}>
+          <X size={15} />
+        </button>
+      </div>
+      {selectedRequirement ? (
+        <>
+          <div className="pm-drawer-doc-badge">
+            <span style={{ fontWeight: 700, color: "var(--pm-ink)", fontSize: "0.8rem" }}>
+              {selectedRequirement.description.slice(0, 60)}{selectedRequirement.description.length > 60 ? "..." : ""}
+            </span>
+            <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
+              <Badge tone="purple">{selectedRequirement.category}</Badge>
+              {selectedRequirement.evidence.page && (
+                <Badge tone="blue">{t("evidence_page_badge", { page: selectedRequirement.evidence.page })}</Badge>
+              )}
+            </div>
+          </div>
+          {selectedRequirement.evidence.excerpt ? (
+            <div className="pm-extracted-ai-box">
+              <div className="pm-extracted-ai-header">
+                <span>{t("source_panel_title")}</span>
+                <EvidenceStatus evidence={selectedRequirement.evidence} />
+              </div>
+              <p>"{selectedRequirement.evidence.excerpt}"</p>
+            </div>
+          ) : (
+            <div className="pm-evidence-missing">{t("evidence_no_excerpt")}</div>
+          )}
+          <label className="pm-notes-label">
+            {t("evidence_notes_label")}
+            <textarea
+              value={reviews[selectedRequirement.id]?.notes ?? ""}
+              onChange={(e) => onUpdateReview(selectedRequirement.id, { notes: e.currentTarget.value })}
+              placeholder={t("evidence_notes_placeholder")}
+              rows={4}
+            />
+          </label>
+        </>
+      ) : (
+        <div className="pm-empty-inline">{t("evidence_select_hint")}</div>
+      )}
+    </aside>
+  );
+  if (mode === "dialog") {
+    return (
+      <div
+        className="pm-evidence-dialog-overlay"
+        role="dialog"
+        aria-modal="true"
+        aria-label={t("evidence_panel_title")}
+        onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      >
+        {panel}
+      </div>
+    );
+  }
+  return panel;
+}
+function DeleteDocumentDialog({
+  document,
+  projectLinkCount,
+  onConfirm,
+  onCancel,
+}: {
+  document: DocumentRecord;
+  projectLinkCount: number;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  const t = useT();
+  return createPortal(
+    <div
+      className="pm-evidence-dialog-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="pm-delete-doc-title"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onCancel();
+      }}
+    >
+      <aside className="pm-source-drawer" style={{ maxWidth: 420, gap: 16 }}>
+        <div className="pm-source-drawer-head">
+          <h3 id="pm-delete-doc-title">{t("doc_delete_dialog_title")}</h3>
+          <button type="button" className="pm-source-drawer-close" aria-label={t("doc_delete_cancel")} onClick={onCancel}>
+            <X size={15} />
+          </button>
+        </div>
+        <p style={{ fontSize: "0.875rem", color: "var(--pm-ink-soft)" }}>
+          {t("doc_delete_dialog_body", { name: document.name })}
+        </p>
+        {projectLinkCount > 0 && (
+          <p style={{ fontSize: "0.8rem", color: "var(--pm-amber, #b45309)" }}>
+            <AlertTriangle size={13} style={{ display: "inline", marginRight: 4 }} />
+            {t("doc_delete_dialog_projects", { count: projectLinkCount })}
+          </p>
+        )}
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 8 }}>
+          <button type="button" className="pm-button pm-button--outline" onClick={onCancel}>
+            {t("doc_delete_cancel")}
+          </button>
+          <button
+            type="button"
+            className="pm-button pm-button--primary"
+            style={{ background: "var(--pm-red, #dc2626)" }}
+            onClick={onConfirm}
+          >
+            <Trash2 size={15} /> {t("doc_delete_confirm")}
+          </button>
+        </div>
+      </aside>
+    </div>,
+    window.document.body,
+  );
+}
+
 function EmptyAnalysis({ onOpenProcessing }: { onOpenProcessing: () => void }) {
   const t = useT();
   return (
@@ -2900,6 +3173,10 @@ export function ComplianceScreen({
   onOpenProcessing: () => void;
 }) {
   const t = useT();
+  const isMobile = useIsMobile();
+  const [evidenceOpen, setEvidenceOpen] = useState(true);
+  const reopenEvidenceRef = useRef<HTMLButtonElement>(null);
+  const evidenceWasDialog = useRef(false);
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const requirements = analysis?.requirements ?? [];
@@ -2915,12 +3192,57 @@ export function ComplianceScreen({
     return matchesCategory && matchesStatus && matchesSearch;
   });
 
+  useEffect(() => {
+    if (evidenceOpen || !evidenceWasDialog.current) return;
+    evidenceWasDialog.current = false;
+    reopenEvidenceRef.current?.focus();
+  }, [evidenceOpen]);
+
+  useEffect(() => {
+    if (!isMobile || !evidenceOpen) return;
+    const app = document.querySelector(".pm-app");
+    if (app instanceof HTMLElement) app.inert = true;
+    function onKey(event: globalThis.KeyboardEvent) {
+      if (event.key === "Escape") {
+        evidenceWasDialog.current = true;
+        setEvidenceOpen(false);
+      }
+    }
+    document.addEventListener("keydown", onKey);
+    return () => {
+      if (app instanceof HTMLElement) app.inert = false;
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [evidenceOpen, isMobile]);
+
   if (!analysis) return <EmptyAnalysis onOpenProcessing={onOpenProcessing} />;
 
   const verifiedCount = requirements.filter((r) => r.evidence.verified).length;
   const pendingCount = requirements.filter(
     (r) => humanReviewStatus(reviews[r.id]) === "pending",
   ).length;
+  const showEvidenceColumn = evidenceOpen && !isMobile;
+
+  function selectRequirement(id: string) {
+    onSelectRequirement(id);
+    if (isMobile) setEvidenceOpen(true);
+  }
+
+  function closeEvidence() {
+    evidenceWasDialog.current = isMobile;
+    setEvidenceOpen(false);
+  }
+
+  const evidencePanel = (
+    <SourceEvidencePanel
+      mode={isMobile ? "dialog" : "column"}
+      document={document}
+      reviews={reviews}
+      selectedRequirement={selectedRequirement}
+      onClose={closeEvidence}
+      onUpdateReview={onUpdateReview}
+    />
+  );
 
   return (
     <div className="pm-compliance-screen">
@@ -2991,7 +3313,9 @@ export function ComplianceScreen({
         </button>
       </div>
 
-      <div className="pm-compliance-layout">
+      <div
+        className={`pm-compliance-layout${showEvidenceColumn ? "" : " is-evidence-collapsed"}`}
+      >
         {/* Matrix table */}
         <section className="pm-panel pm-matrix-panel">
           <div className="pm-matrix-summary">
@@ -3038,7 +3362,7 @@ export function ComplianceScreen({
                           <button
                             className="pm-requirement-select"
                             type="button"
-                            onClick={() => onSelectRequirement(req.id)}
+                            onClick={() => selectRequirement(req.id)}
                           >
                             {req.description}
                           </button>
