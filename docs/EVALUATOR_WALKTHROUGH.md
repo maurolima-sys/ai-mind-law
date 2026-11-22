@@ -56,7 +56,7 @@ Select the default mode in **Settings**, then navigate to **Processing**:
 - Sends extracted text to Gemini via Firebase AI Logic.
 - Requires explicit consent checkbox — cloud processing is never silent.
 - Badge after analysis: **cloud** or **cloud-fallback**.
-- Model fallback chain: `gemini-3.5-flash` → `gemini-3.8-flash` → `gemini-3.5-flash-lite`, after retryable errors or timeouts, with one bounded attempt per model. Cloud attempts are limited to 30 seconds each and a 100-second total budget per section. Local generation has a 180-second per-section timeout; oversized local inputs are split and retried before cloud fallback. The production test above used the earlier model order.
+- Model fallback chain: `gemini-3.5-flash` → `gemini-3.8-flash` → `gemini-3.5-flash-lite`, after retryable errors or timeouts, with one bounded attempt per model. Cloud attempts are limited to 15 seconds each and a 55-second total budget per section. Local generation has a 180-second per-section timeout; oversized local inputs are split and retried before cloud fallback. The 2026-11-20 production test used the earlier model chain.
 
 ### On-device only
 - Uses Chrome's Prompt API; the exact on-device model depends on Chrome and the device.
@@ -66,7 +66,7 @@ Select the default mode in **Settings**, then navigate to **Processing**:
 
 ### Hybrid (on-device first)
 - Tries on-device first; falls back to cloud if the model is unavailable or times out.
-- Badge: **on-device**, **cloud-fallback**, or **mixed** depending on what Firebase AI Logic reports.
+- The application derives **on-device**, **cloud-fallback**, or **hybrid** from the sources reported for its sections; the label does not capture every attempted or failed request.
 - This is the non-obvious product feature: the inference source is surfaced to the user because it matters for document privacy.
 
 ### Sample data (Demo)
@@ -153,12 +153,13 @@ The submission is honest about its current state:
 | Item | Status |
 |---|---|
 | Cloud AI analysis with structured-output validation passing end-to-end | Successful fictional-sample analysis on 2026-11-20 in build `ed19ed4`, with `gemini-3.5-flash` and UI source `Cloud (IN_CLOUD)`. Individual citations were not independently reviewed; availability can change. |
+| Hybrid analysis | On 2026-11-21, a local desktop Chrome run on a real 17-page PDF completed and exported `hybrid`: 45 requirements, 17 deadlines, 18 specifications and 13 risks. Of 93 evidence references, 84 were marked verified and 9 unverified. The monitor reported locally validated sections 1 and 4 and Cloud fallback for sections 2, 3 and 5. Raw SDK source values, complete section history, timings and consent state were not captured. This was not an on-device-only run or a production deployment test. |
 | On-device inference (Chrome Prompt API) | On 2026-11-20 an integrated browser initialized the model but the fictional sample failed with “The input is too large”; no cloud generation request was observed. Successful analysis on supported desktop Chrome and hardware remains unverified. On-device-only does not fall back to cloud. |
 | LlamaParse OCR with a real scanned PDF | Not yet tested end-to-end |
 | App Check in production | On 2026-11-20, `exchangeRecaptchaEnterpriseToken` and the successful fallback `generateContent` both returned HTTP 200. Console enforcement and configuration were not independently inspected. |
 | Responsive layout with PT/ES longer strings on small screens | Not yet validated |
 
-The **Cloud response received this session · connection not guaranteed** status confirms that a cloud response arrived in that session. A successful structured-output analysis (findings displayed) confirms validation passed.
+The **Cloud response received this session · connection not guaranteed** status confirms that a cloud response arrived in that session. A successful structured-output analysis (findings displayed) confirms validation passed. Successful exports created after commit `5cac563` may include an `executionReport`, but it is not a complete audit trail: failed or split attempts can be omitted, and consent is not recorded. The 2026-11-21 hybrid JSON predates that instrumentation.
 
 ---
 
