@@ -10,10 +10,12 @@ import {
 import { requireInferenceSource } from "@/lib/services/tenderAnalysis";
 import type { ChatCitation, DocumentFormat, InferencePreference } from "@/lib/types";
 
+// Array bounds guard against GHSA-mrhx-c7xc-m3w5 (Zod DoS via oversized constrained
+// collections). Limits are set well above any realistic Q&A response output.
 const responseSchema = z.object({
   answer: z.string().min(1),
-  hypotheses: z.array(z.string()).default([]),
-  unresolvedQuestions: z.array(z.string()).default([]),
+  hypotheses: z.array(z.string()).max(20).default([]),
+  unresolvedQuestions: z.array(z.string()).max(20).default([]),
   documentCitations: z
     .array(
       z.object({
@@ -21,8 +23,9 @@ const responseSchema = z.object({
         excerpt: z.string().max(500),
       }),
     )
+    .max(50)
     .default([]),
-  researchSourceIds: z.array(z.string()).default([]),
+  researchSourceIds: z.array(z.string()).max(20).default([]),
 });
 
 const stopWords = new Set([
