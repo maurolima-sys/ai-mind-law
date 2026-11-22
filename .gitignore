@@ -65,6 +65,9 @@ pocketmind-compliance.csv
 # Agent skills and external tooling
 .agents/
 
+# Nested repository (next-forge monorepo template) — not part of PocketMind AI
+ai-mind-law/
+
 # Patch files
 *.patch
 

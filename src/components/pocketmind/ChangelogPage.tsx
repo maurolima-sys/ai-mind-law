@@ -68,8 +68,8 @@ const RELEASES: Release[] = [
         kind: "added",
         text: (
           <>
-            <strong>Language selector</strong> — compact flag + <code>&lt;select&gt;</code>{" "}
-            dropdown in the top bar (<code>LanguageSelector.tsx</code>).
+            <strong>Language selector</strong> — compact flag + <code>&lt;select&gt;</code> dropdown
+            in the top bar (<code>LanguageSelector.tsx</code>).
           </>
         ),
       },
@@ -78,8 +78,8 @@ const RELEASES: Release[] = [
         text: (
           <>
             All UI strings localised across <code>PocketMindApp.tsx</code>,{" "}
-            <code>DocumentQaPanel.tsx</code>, <code>GuidedTour.tsx</code>; CSV export column
-            headers and cell values (<code>csv.ts</code> now accepts a <code>t</code> parameter).
+            <code>DocumentQaPanel.tsx</code>, <code>GuidedTour.tsx</code>; CSV export column headers
+            and cell values (<code>csv.ts</code> now accepts a <code>t</code> parameter).
           </>
         ),
       },
@@ -124,12 +124,12 @@ const RELEASES: Release[] = [
         kind: "added",
         text: (
           <>
-            <strong>Guided Tour</strong> (<code>GuidedTour.tsx</code>) — 9-step onboarding
-            overlay. Spotlight highlights target elements with smooth CSS transitions. Dismissed
-            state persisted to <code>localStorage</code> (<code>pocketmind.tour.completed</code>
+            <strong>Guided Tour</strong> (<code>GuidedTour.tsx</code>) — 9-step onboarding overlay.
+            Spotlight highlights target elements with smooth CSS transitions. Dismissed state
+            persisted to <code>localStorage</code> (<code>pocketmind.tour.completed</code>
             ). Keyboard navigation (← →, Enter, Escape). Focus management and{" "}
-            <code>aria-modal</code> dialog semantics. Replayable via a{" "}
-            <strong>Take a tour</strong> button in the sidebar.
+            <code>aria-modal</code> dialog semantics. Replayable via a <strong>Take a tour</strong>{" "}
+            button in the sidebar.
           </>
         ),
       },
@@ -141,11 +141,11 @@ const RELEASES: Release[] = [
         kind: "added",
         text: (
           <>
-            <strong>User-facing documentation</strong>:{" "}
-            <code>docs/POCKETMIND_USER_GUIDE.md</code> (12 chapters, verbatim app UI strings,
-            full NB-2026-114 walkthrough), <code>docs/POCKETMIND_VIDEO_STORYBOARD.md</code> (10
-            scenes, narration script, recording checklist),{" "}
-            <code>docs/POCKETMIND_POWERPOINT.md</code> (12-slide deck with speaker notes).
+            <strong>User-facing documentation</strong>: <code>docs/POCKETMIND_USER_GUIDE.md</code>{" "}
+            (12 chapters, verbatim app UI strings, full NB-2026-114 walkthrough),{" "}
+            <code>docs/POCKETMIND_VIDEO_STORYBOARD.md</code> (10 scenes, narration script, recording
+            checklist), <code>docs/POCKETMIND_POWERPOINT.md</code> (12-slide deck with speaker
+            notes).
           </>
         ),
       },
@@ -200,9 +200,9 @@ const RELEASES: Release[] = [
         kind: "added",
         text: (
           <>
-            <code>documentQa.ts</code> — model prompt separates facts, conditional hypotheses,
-            and unresolved questions in structured JSON response.{" "}
-            <code>verifyQuestionCitations</code> checks every quoted excerpt.
+            <code>documentQa.ts</code> — model prompt separates facts, conditional hypotheses, and
+            unresolved questions in structured JSON response. <code>verifyQuestionCitations</code>{" "}
+            checks every quoted excerpt.
           </>
         ),
       },
@@ -220,8 +220,8 @@ const RELEASES: Release[] = [
         kind: "added",
         text: (
           <>
-            Unit tests: <code>ocr-review.test.ts</code> (80 lines),{" "}
-            <code>document-qa.test.ts</code> (94 lines).
+            Unit tests: <code>ocr-review.test.ts</code> (80 lines), <code>document-qa.test.ts</code>{" "}
+            (94 lines).
           </>
         ),
       },
@@ -297,10 +297,10 @@ const RELEASES: Release[] = [
         kind: "added",
         text: (
           <>
-            Processing & privacy — four mode cards (On-device only{" "}
-            <code>PRIVATE</code>, Cloud AI <code>GEMINI</code>, Hybrid inference{" "}
-            <code>ON-DEVICE FIRST</code>, Sample data <code>DEMO</code>). Explicit cloud consent
-            checkbox (session-scoped, resets on reload). Process flow strip.
+            Processing & privacy — four mode cards (On-device only <code>PRIVATE</code>, Cloud AI{" "}
+            <code>GEMINI</code>, Hybrid inference <code>ON-DEVICE FIRST</code>, Sample data{" "}
+            <code>DEMO</code>). Explicit cloud consent checkbox (session-scoped, resets on reload).
+            Process flow strip.
           </>
         ),
       },
@@ -309,11 +309,11 @@ const RELEASES: Release[] = [
         text: (
           <>
             <strong>Firebase AI Logic</strong> (<code>firebaseAi.ts</code>, 112 lines) —{" "}
-            <code>InferenceMode.PREFER_ON_DEVICE</code> for hybrid mode;{" "}
-            <code>ON_DEVICE_ONLY</code> and <code>DEFAULT</code> for the other modes. Actual
-            inference source (<code>on-device</code>, <code>cloud</code>,{" "}
-            <code>cloud-fallback</code>) surfaced to the user after every analysis. Firebase
-            shown as connected only after a real model response is received.
+            <code>InferenceMode.PREFER_ON_DEVICE</code> for hybrid mode; <code>ON_DEVICE_ONLY</code>{" "}
+            and <code>DEFAULT</code> for the other modes. Actual inference source (
+            <code>on-device</code>, <code>cloud</code>, <code>cloud-fallback</code>) surfaced to the
+            user after every analysis. Firebase shown as connected only after a real model response
+            is received.
           </>
         ),
       },
@@ -364,36 +364,31 @@ const RELEASES: Release[] = [
     summary: "TanStack Start TypeScript template.",
     icon: Package,
     iconColor: "var(--pm-muted)",
-    changes: [
-      { kind: "added", text: "TanStack Start TypeScript project scaffold." },
-    ],
+    changes: [{ kind: "added", text: "TanStack Start TypeScript project scaffold." }],
   },
 ];
 
 // ─── sub-components ──────────────────────────────────────────────────────────
 
 const KIND_META: Record<ChangeKind, { label: string; color: string; bg: string }> = {
-  added:    { label: "Added",    color: "var(--pm-green)",  bg: "var(--pm-green-pale)" },
-  changed:  { label: "Changed",  color: "var(--pm-blue)",   bg: "var(--pm-blue-pale)" },
-  fixed:    { label: "Fixed",    color: "var(--pm-purple)", bg: "#f3f0ff" },
-  removed:  { label: "Removed",  color: "var(--pm-red)",    bg: "var(--pm-red-pale)" },
-  security: { label: "Security", color: "var(--pm-amber)",  bg: "var(--pm-amber-pale)" },
-  note:     { label: "Note",     color: "var(--pm-muted)",  bg: "#f5f7fb" },
+  added: { label: "Added", color: "var(--pm-green)", bg: "var(--pm-green-pale)" },
+  changed: { label: "Changed", color: "var(--pm-blue)", bg: "var(--pm-blue-pale)" },
+  fixed: { label: "Fixed", color: "var(--pm-purple)", bg: "#f3f0ff" },
+  removed: { label: "Removed", color: "var(--pm-red)", bg: "var(--pm-red-pale)" },
+  security: { label: "Security", color: "var(--pm-amber)", bg: "var(--pm-amber-pale)" },
+  note: { label: "Note", color: "var(--pm-muted)", bg: "#f5f7fb" },
 };
 
 const STATUS_META = {
   unreleased: { label: "Unreleased", bg: "var(--pm-amber-pale)", color: "var(--pm-amber)" },
-  latest:     { label: "Latest",     bg: "var(--pm-blue-pale)",  color: "var(--pm-blue)" },
-  stable:     { label: "Stable",     bg: "var(--pm-green-pale)", color: "var(--pm-green)" },
+  latest: { label: "Latest", bg: "var(--pm-blue-pale)", color: "var(--pm-blue)" },
+  stable: { label: "Stable", bg: "var(--pm-green-pale)", color: "var(--pm-green)" },
 };
 
 function KindPill({ kind }: { kind: ChangeKind }) {
   const { label, color, bg } = KIND_META[kind];
   return (
-    <span
-      className="cl-pill"
-      style={{ color, background: bg }}
-    >
+    <span className="cl-pill" style={{ color, background: bg }}>
       {label}
     </span>
   );

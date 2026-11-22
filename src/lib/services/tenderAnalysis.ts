@@ -209,10 +209,7 @@ export function resolveProcessingSource(
   return "cloud";
 }
 
-function buildExecutionReport(
-  traces: SectionTrace[],
-  totalDurationMs: number,
-): ExecutionReport {
+function buildExecutionReport(traces: SectionTrace[], totalDurationMs: number): ExecutionReport {
   return {
     totalSections: traces.length,
     completedSections: traces.length,

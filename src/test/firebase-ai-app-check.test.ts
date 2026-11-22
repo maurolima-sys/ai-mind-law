@@ -9,10 +9,7 @@ import { join } from "path";
 // this setting; this test ensures the setting is not accidentally removed.
 describe("Firebase AI App Check", () => {
   it("uses limited-use tokens for cloud and hybrid requests", () => {
-    const source = readFileSync(
-      join(process.cwd(), "src/lib/services/firebaseAi.ts"),
-      "utf8",
-    );
+    const source = readFileSync(join(process.cwd(), "src/lib/services/firebaseAi.ts"), "utf8");
     expect(source).toContain("useLimitedUseAppCheckTokens: true");
     // Confirm it is inside getAI() call, not in a comment
     const getAICallIndex = source.indexOf("getAI(app,");

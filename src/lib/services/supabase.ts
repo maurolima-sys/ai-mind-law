@@ -10,9 +10,7 @@ export function getSupabase(): SupabaseClient {
     const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
     const key = import.meta.env.VITE_SUPABASE_KEY as string | undefined;
     if (!url || !key)
-      throw new Error(
-        "Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_KEY.",
-      );
+      throw new Error("Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_KEY.");
     _client = createClient(url, key);
   }
   return _client;

@@ -24,7 +24,11 @@ const commitHash = (() => {
 const devEnv = loadEnv("development", process.cwd(), "");
 const appCheckDebugToken = (() => {
   if (process.env.NODE_ENV === "production") return undefined;
-  return devEnv["VITE_FIREBASE_APPCHECK_DEBUG_TOKEN"] ?? devEnv["FIREBASE_APPCHECK_DEBUG_TOKEN"] ?? undefined;
+  return (
+    devEnv["VITE_FIREBASE_APPCHECK_DEBUG_TOKEN"] ??
+    devEnv["FIREBASE_APPCHECK_DEBUG_TOKEN"] ??
+    undefined
+  );
 })();
 
 export default defineConfig({
