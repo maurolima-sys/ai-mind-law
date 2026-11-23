@@ -24,7 +24,9 @@ export const GEMINI_MODEL_FALLBACK_CHAIN = [
 
 export type GeminiModelName = (typeof GEMINI_MODEL_FALLBACK_CHAIN)[number];
 
-const RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503]);
+// 401 is included: App Check limited-use token rejection is transient — a fresh
+// token is requested on the next attempt with a different model instance.
+const RETRYABLE_STATUS_CODES = new Set([401, 429, 500, 502, 503]);
 const TIMEOUT_ERROR_CODE = "TIMEOUT";
 const GENERATION_TIMEOUT_MS = 30_000;
 export const ON_DEVICE_GENERATION_TIMEOUT_MS = 180_000;

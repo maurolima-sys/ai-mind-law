@@ -15,7 +15,9 @@ const commitHash = (() => {
   try {
     return execSync("git rev-parse --short HEAD").toString().trim();
   } catch {
-    return "unknown";
+    // Vercel build environment has no git history — use the injected commit SHA instead.
+    const vercelSha = process.env["VERCEL_GIT_COMMIT_SHA"];
+    return vercelSha ? vercelSha.slice(0, 7) : "unknown";
   }
 })();
 
