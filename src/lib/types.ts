@@ -203,6 +203,18 @@ export interface RequirementEvidenceLink {
   createdAt: string;
 }
 
+export interface DiscoveryCandidate {
+  id: string;
+  title: string;
+  issuer: string;
+  sourceUrl: string;
+  pdfUrl: string;
+  pages: number;
+  relevanceScore: number;
+  publishedDate: string | null;
+  description: string;
+}
+
 export interface WorkspaceActivity {
   id: string;
   type: WorkspaceActivityType;

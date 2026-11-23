@@ -79,6 +79,7 @@ import { buildLabel } from "@/lib/buildInfo";
 import { DocumentQaPanel } from "@/components/pocketmind/DocumentQaPanel";
 import { EvidenceComparisonPanel } from "@/components/pocketmind/EvidenceComparisonPanel";
 import { GuidedTour, hasSeenTour } from "@/components/pocketmind/GuidedTour";
+import { SmartDiscoveryPanel } from "@/components/pocketmind/SmartDiscoveryPanel";
 import { IntegrationsScreen } from "@/components/pocketmind/IntegrationsScreen";
 import { LanguageSelector } from "@/components/pocketmind/LanguageSelector";
 import { LocalWorkspaceLibrary } from "@/components/pocketmind/LocalWorkspaceLibrary";
@@ -1782,6 +1783,7 @@ export function PocketMindApp() {
                 setScreen(id === DEMO_DOC_ID || nextDocument?.analysis ? "analysis" : "processing");
               }}
               onDeleteDocument={(document) => setDeleteDocumentPending(document)}
+              onLoadDiscoveredDocument={addDocumentFromUrl}
             />
           )}
           {screen === "library" && (
@@ -2078,6 +2080,7 @@ function OverviewScreen({
   onOpenAnalysis: () => void;
   onOpenProcessing: () => void;
   onLoadSampleRfp: () => void;
+  onLoadDiscoveredDocument: (url: string, docId: string, fileName: string) => Promise<void>;
   onSelectDocument: (id: string) => void;
   onDeleteDocument: (document: DocumentRecord) => void;
 }) {
@@ -2158,6 +2161,8 @@ function OverviewScreen({
           </button>
         </div>
       </section>
+
+      <SmartDiscoveryPanel onLoadDocument={onLoadDiscoveredDocument} />
 
       <section className="pm-kpi-grid" aria-label="Workspace summary">
         <div className="pm-kpi-card">

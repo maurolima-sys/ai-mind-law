@@ -1005,6 +1005,34 @@ export const pt: Translations = {
   hero_rfp_cta: "Analisar o documento de exemplo",
   hero_upload_cta: "Carregar o seu próprio documento",
 
+  // ── Smart Document Discovery ─────────────────────────────────────────────────
+  discovery_panel_aria: "Smart Document Discovery",
+  discovery_title: "Smart Document Discovery",
+  discovery_badge: "BETA",
+  discovery_privacy_note:
+    "Os downloads e a validação dos PDFs ocorrem no servidor. Nenhum conteúdo é enviado para IA antes de clicar em Analisar.",
+  discovery_description_label: "Descreva o documento que procura",
+  discovery_description_placeholder:
+    "ex. Contratação de iluminação pública LED, manutenção por 5 anos",
+  discovery_jurisdiction_label: "Jurisdição",
+  discovery_jurisdiction_placeholder: "ex. Município de São Paulo, SP",
+  discovery_country_label: "Código do país",
+  discovery_consent_label:
+    "Consinto o envio desta descrição e jurisdição ao Firecrawl para pesquisar documentos públicos de contratação.",
+  discovery_search_btn: "Pesquisar documentos",
+  discovery_searching: "A pesquisar…",
+  discovery_results_aria: "Candidatos a documentos encontrados",
+  discovery_no_results:
+    "Nenhum PDF validado foi encontrado. Tente uma descrição mais abrangente ou outra jurisdição.",
+  discovery_error_generic:
+    "A descoberta de documentos falhou. Verifique se o Firecrawl está configurado e tente novamente.",
+  discovery_source_link: "Fonte",
+  discovery_source_link_aria: "Abrir página de origem num novo separador",
+  discovery_analyze_btn: "Analisar",
+  discovery_loading: "A carregar…",
+  discovery_disclaimer:
+    "Os candidatos são validados apenas quanto ao formato e número de páginas. Verifique a autoridade do emissor e a autenticidade do documento antes de utilizar qualquer conclusão.",
+
   // ── Document delete ───────────────────────────────────────────────────────────
   doc_delete_action: "Eliminar documento",
   doc_delete_menu_aria: "Opções do documento {{name}}",

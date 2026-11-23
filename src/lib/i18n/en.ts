@@ -1023,6 +1023,32 @@
   hero_rfp_cta: "Analyse the sample document",
   hero_upload_cta: "Upload your own document",
 
+  // ── Smart Document Discovery ─────────────────────────────────────────────────
+  discovery_panel_aria: "Smart Document Discovery",
+  discovery_title: "Smart Document Discovery",
+  discovery_badge: "BETA",
+  discovery_privacy_note:
+    "PDF downloads and validation happen on the server. No document content is sent to AI before you click Analyze.",
+  discovery_description_label: "Describe the document you are looking for",
+  discovery_description_placeholder:
+    "e.g. Street lighting infrastructure procurement, LED fixtures, 5-year maintenance contract",
+  discovery_jurisdiction_label: "Jurisdiction",
+  discovery_jurisdiction_placeholder: "e.g. City of Austin, Texas",
+  discovery_country_label: "Country code",
+  discovery_consent_label:
+    "I consent to sending this description and jurisdiction to Firecrawl to search for public procurement documents.",
+  discovery_search_btn: "Search for documents",
+  discovery_searching: "Searching…",
+  discovery_results_aria: "Discovered document candidates",
+  discovery_no_results: "No validated PDF documents were found. Try a broader description or different jurisdiction.",
+  discovery_error_generic: "Document discovery failed. Check that Firecrawl is configured and try again.",
+  discovery_source_link: "Source",
+  discovery_source_link_aria: "Open source page in a new tab",
+  discovery_analyze_btn: "Analyze",
+  discovery_loading: "Loading…",
+  discovery_disclaimer:
+    "Candidates are validated for format and page count only. Verify issuer authority and document authenticity before relying on any finding.",
+
   // ── Document delete ───────────────────────────────────────────────────────────
   doc_delete_action: "Delete document",
   doc_delete_menu_aria: "Document options for {{name}}",
