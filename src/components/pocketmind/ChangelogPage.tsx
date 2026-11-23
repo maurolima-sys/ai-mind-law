@@ -41,11 +41,73 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: "0.4.9",
+    label: "On-device inference verified",
+    date: "2026-11-23",
+    commit: "da88078",
+    status: "latest",
+    summary:
+      "First confirmed end-to-end on-device analysis: SEDA-Vinyl-Siding-Facia-RFP.pdf (4 pages) completed 3/3 sections with ON_DEVICE inference — zero cloud fallback, 18 findings. Root cause chain resolved across 4 commits: Zod enum case, sourceIndex as string, empty fields, prose-prefixed JSON, .min(1) on text fields, .positive() rejecting 0, null confidence. Evaluation criteria descriptions and video storyboard updated.",
+    icon: BrainCircuit,
+    iconColor: "var(--pm-green)",
+    changes: [
+      {
+        kind: "fixed",
+        text: "tenderAnalysisSchema.ts: all strict validators removed for on-device tolerance. description/item/details/title/explanation use .default(''); sourceIndex uses .min(0).catch(1); confidence accepts null → 0.5; all category/severity/kind enums normalised case-insensitively with fallbacks; mandatory accepts string or boolean; excerpt defaults ''.",
+      },
+      {
+        kind: "fixed",
+        text: "tenderAnalysis.ts: parseTenderResponse extracts JSON robustly — checks for code fences first, then uses indexOf('{') / lastIndexOf('}') to handle prose-prefixed responses from on-device models.",
+      },
+      {
+        kind: "fixed",
+        text: "processing-provenance.test.tsx: zoom test timeout increased from 15 s to 25 s to prevent load-dependent failures.",
+      },
+      {
+        kind: "note",
+        text: "2026-11-23 verified: SEDA-Vinyl-Siding-Facia-RFP.pdf (4 pages, 851 KB) — 3/3 sections ON_DEVICE, 18 findings, zero cloud fallback. Exported JSON preserved as SEDA-Vinyl-Siding-Facia-RFP-analysis.json. Larger documents (10+ pages) and production deployment remain unverified.",
+      },
+      {
+        kind: "added",
+        text: "docs/POCKETMIND_VIDEO_STORYBOARD.md: replaced 5-minute sample-data storyboard with 3-minute on-device evidence-first hackathon cut. Scenes cover upload, mode selection, live progress, inference source badge, findings, compliance matrix, and JSON export.",
+      },
+      {
+        kind: "changed",
+        text: "evaluation.ts: criterion descriptions updated — on-device now records verified 2026-11-23 result; test-count updated to 149 tests / 31 files; walkthrough description synced to commit 61c5e07.",
+      },
+      {
+        kind: "changed",
+        text: "docs/EVALUATOR_WALKTHROUGH.md: section 4 On-device bullet and section 10 verification table updated with confirmed 2026-11-23 result.",
+      },
+    ],
+  },
+  {
+    version: "0.4.8",
+    label: "Evaluation workspace seed",
+    date: "2026-11-23",
+    commit: "93f88ff",
+    status: "stable",
+    summary:
+      "evaluation-seed-v3.json generated with all 37 criterion IDs, validated against the app's own Zod schema (37 records, schema OK). Video storyboard replaced with 3-minute on-device evidence-first cut.",
+    icon: ScrollText,
+    iconColor: "var(--pm-blue)",
+    changes: [
+      {
+        kind: "added",
+        text: "docs/evaluation-seed-v3.json: complete snapshot with all 37 criterion IDs matching evaluation.ts. 29 verified, 5 in_progress, 3 pending. Validated with node -e parseEvaluation before commit.",
+      },
+      {
+        kind: "changed",
+        text: "docs/POCKETMIND_VIDEO_STORYBOARD.md: 5-minute sample-data storyboard replaced with 3-minute on-device evidence-first hackathon cut (commit 93f88ff).",
+      },
+    ],
+  },
+  {
     version: "0.4.6",
     label: "Firebase reliability",
     date: "2026-11-23",
     commit: "a8a8861",
-    status: "latest",
+    status: "stable",
     summary:
       "Restored gemini-3.8-flash as the primary model, raised cloud timeouts to 30 s / 100 s, added a defensive fallback for unrecognised inferenceSource values, and fixed .env.local encoding (UTF-16 → UTF-8) so the App Check debug token is read correctly in local dev.",
     icon: Shield,
