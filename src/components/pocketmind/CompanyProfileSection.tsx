@@ -4,7 +4,9 @@ import { useState } from "react";
 import { useT } from "@/lib/i18n";
 import {
   getJurisdictionDefaults,
+  getJurisdictionInfo,
   saveCompanyProfile,
+  SUPPORTED_COUNTRIES,
   type ActivityCode,
   type CompanyProfile,
   type CompanyRegistration,
@@ -126,6 +128,8 @@ export function CompanyProfileSection({ profile, onProfileChange }: CompanyProfi
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
+  const jurisdictionInfo = getJurisdictionInfo(profile.identity.primaryCountry);
+
   return (
     <section className="pm-panel pm-settings-card pm-cp-section" aria-labelledby="cp-section-title">
       <div className="pm-settings-heading">
@@ -171,17 +175,21 @@ export function CompanyProfileSection({ profile, onProfileChange }: CompanyProfi
             <div className="pm-cp-field-row pm-cp-field-row--half">
               <div>
                 <label htmlFor="cp-country">{t("cp_country_label")}</label>
-                <input
+                <select
                   id="cp-country"
-                  type="text"
                   value={profile.identity.primaryCountry}
-                  placeholder="BR"
-                  maxLength={2}
-                  className="pm-cp-input--short"
-                  onChange={(e) =>
-                    patchIdentity({ primaryCountry: e.currentTarget.value.toUpperCase() })
-                  }
-                />
+                  onChange={(e) => {
+                    const newCountry = e.currentTarget.value;
+                    patchIdentity({ primaryCountry: newCountry });
+                  }}
+                >
+                  <option value="">— select —</option>
+                  {SUPPORTED_COUNTRIES.map((j) => (
+                    <option key={j.code} value={j.code}>
+                      {j.flag} {j.label}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label htmlFor="cp-legal-form">{t("cp_legal_form_label")}</label>
@@ -195,6 +203,33 @@ export function CompanyProfileSection({ profile, onProfileChange }: CompanyProfi
                 />
               </div>
             </div>
+
+            {jurisdictionInfo && (
+              <div className="pm-cp-jurisdiction-card">
+                <div className="pm-cp-jurisdiction-row">
+                  <span className="pm-cp-jurisdiction-label">Tax / business ID</span>
+                  <span className="pm-cp-jurisdiction-value">{jurisdictionInfo.taxIdLabel}</span>
+                </div>
+                <div className="pm-cp-jurisdiction-row">
+                  <span className="pm-cp-jurisdiction-label">Registration authority</span>
+                  <span className="pm-cp-jurisdiction-value">{jurisdictionInfo.registrationAuthority}</span>
+                </div>
+                <div className="pm-cp-jurisdiction-row">
+                  <span className="pm-cp-jurisdiction-label">Suggested language</span>
+                  <span className="pm-cp-jurisdiction-value">{jurisdictionInfo.suggestedLanguageLabel}</span>
+                </div>
+                <div className="pm-cp-jurisdiction-row">
+                  <span className="pm-cp-jurisdiction-label">Address format</span>
+                  <span className="pm-cp-jurisdiction-value">{jurisdictionInfo.addressFormat}</span>
+                </div>
+                {jurisdictionInfo.secondaryIdLabel && (
+                  <div className="pm-cp-jurisdiction-row">
+                    <span className="pm-cp-jurisdiction-label">{jurisdictionInfo.secondaryIdLabel}</span>
+                    <span className="pm-cp-jurisdiction-value pm-cp-jurisdiction-value--muted">{jurisdictionInfo.secondaryIdPlaceholder}</span>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="pm-cp-field-row">
               <label htmlFor="cp-address">{t("cp_address_label")}</label>
@@ -228,58 +263,85 @@ export function CompanyProfileSection({ profile, onProfileChange }: CompanyProfi
                 <p className="pm-cp-empty">{t("cp_registrations_empty")}</p>
               )}
 
-              {profile.identity.registrations.map((reg) => (
-                <div key={reg.id} className="pm-cp-registration-row">
-                  <input
-                    type="text"
-                    value={reg.country}
-                    placeholder="BR"
-                    maxLength={2}
-                    aria-label={t("cp_reg_country_label")}
-                    className="pm-cp-input--short"
-                    onChange={(e) =>
-                      updateRegistration(reg.id, { country: e.currentTarget.value.toUpperCase() })
-                    }
-                  />
-                  <input
-                    type="text"
-                    value={reg.system}
-                    placeholder="CNPJ"
-                    maxLength={60}
-                    aria-label={t("cp_reg_system_label")}
-                    onChange={(e) => updateRegistration(reg.id, { system: e.currentTarget.value })}
-                  />
-                  <input
-                    type="text"
-                    value={reg.number}
-                    placeholder={t("cp_reg_number_placeholder")}
-                    maxLength={60}
-                    aria-label={t("cp_reg_number_label")}
-                    onChange={(e) => updateRegistration(reg.id, { number: e.currentTarget.value })}
-                  />
-                  <select
-                    value={reg.verificationStatus}
-                    aria-label={t("cp_reg_status_label")}
-                    onChange={(e) =>
-                      updateRegistration(reg.id, {
-                        verificationStatus: e.currentTarget.value as CompanyRegistration["verificationStatus"],
-                      })
-                    }
-                  >
-                    <option value="unverified">{t("cp_reg_status_unverified")}</option>
-                    <option value="self-declared">{t("cp_reg_status_self_declared")}</option>
-                    <option value="document-extracted">{t("cp_reg_status_extracted")}</option>
-                  </select>
-                  <button
-                    type="button"
-                    className="pm-cp-remove-btn"
-                    aria-label={t("cp_registration_remove")}
-                    onClick={() => removeRegistration(reg.id)}
-                  >
-                    <Trash2 size={13} aria-hidden="true" />
-                  </button>
-                </div>
-              ))}
+              {profile.identity.registrations.map((reg) => {
+                const regJurisdiction = getJurisdictionInfo(reg.country);
+                const isCA = reg.country === "CA";
+                const caSubJurisdictions = isCA
+                  ? (getJurisdictionInfo("CA")?.subJurisdictions ?? [])
+                  : [];
+                const caSubMatch = caSubJurisdictions.find((s) => s.registrationSystem === reg.system);
+                const regNumberLabel = caSubMatch?.registrationNumberLabel ?? regJurisdiction?.taxIdLabel ?? t("cp_reg_number_label");
+                return (
+                  <div key={reg.id} className="pm-cp-registration-row">
+                    <select
+                      value={reg.country}
+                      aria-label={t("cp_reg_country_label")}
+                      className="pm-cp-input--short"
+                      onChange={(e) => {
+                        const newCountry = e.currentTarget.value;
+                        const defaults = getJurisdictionDefaults(newCountry);
+                        updateRegistration(reg.id, { country: newCountry, system: defaults.registrationSystem });
+                      }}
+                    >
+                      <option value="">—</option>
+                      {SUPPORTED_COUNTRIES.map((j) => (
+                        <option key={j.code} value={j.code}>{j.flag} {j.code}</option>
+                      ))}
+                    </select>
+                    {isCA && caSubJurisdictions.length > 0 ? (
+                      <select
+                        value={reg.system}
+                        aria-label="Province / territory"
+                        onChange={(e) => updateRegistration(reg.id, { system: e.currentTarget.value })}
+                      >
+                        {caSubJurisdictions.map((s) => (
+                          <option key={s.code} value={s.registrationSystem ?? s.code}>
+                            {s.label}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        value={reg.system}
+                        placeholder={regJurisdiction?.registrationAuthority ?? "Registry"}
+                        maxLength={60}
+                        aria-label={t("cp_reg_system_label")}
+                        onChange={(e) => updateRegistration(reg.id, { system: e.currentTarget.value })}
+                      />
+                    )}
+                    <input
+                      type="text"
+                      value={reg.number}
+                      placeholder={regJurisdiction?.taxIdPlaceholder ?? t("cp_reg_number_placeholder")}
+                      maxLength={60}
+                      aria-label={regNumberLabel}
+                      onChange={(e) => updateRegistration(reg.id, { number: e.currentTarget.value })}
+                    />
+                    <select
+                      value={reg.verificationStatus}
+                      aria-label={t("cp_reg_status_label")}
+                      onChange={(e) =>
+                        updateRegistration(reg.id, {
+                          verificationStatus: e.currentTarget.value as CompanyRegistration["verificationStatus"],
+                        })
+                      }
+                    >
+                      <option value="unverified">{t("cp_reg_status_unverified")}</option>
+                      <option value="self-declared">{t("cp_reg_status_self_declared")}</option>
+                      <option value="document-extracted">{t("cp_reg_status_extracted")}</option>
+                    </select>
+                    <button
+                      type="button"
+                      className="pm-cp-remove-btn"
+                      aria-label={t("cp_registration_remove")}
+                      onClick={() => removeRegistration(reg.id)}
+                    >
+                      <Trash2 size={13} aria-hidden="true" />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

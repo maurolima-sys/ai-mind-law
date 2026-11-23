@@ -3,8 +3,7 @@ import { verifyEvidence } from "@/lib/services/evidence";
 
 export const DEMO_DOC_ID = "demo-tender";
 export const DEMO_RFP_DOC_ID = "demo-rfp-sample";
-export const DEMO_RFP_URL =
-  "https://bksgztuqvflsvoffilay.supabase.co/storage/v1/object/public/pdfs_samples/request_for_proposal.pdf";
+export const DEMO_RFP_URL = "/request_for_proposal.pdf";
 export const DEMO_LABEL =
   "DEMO DATA — Illustrative analysis, not extracted from a real procurement document.";
 

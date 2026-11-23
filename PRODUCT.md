@@ -1,61 +1,42 @@
-# Product
+# PRODUCT.md — PocketMind AI
 
-<!-- impeccable:product-schema 1 -->
+> Impeccable context file. Read before any design or UI work.
 
-## Platform
+## What it is
 
-web
+PocketMind AI is a **procurement document intelligence workspace** for the browser. It extracts text from PDF, DOCX, and XLSX files locally, then — under explicit user consent — sends it to Firebase AI Logic for analysis in cloud-only, on-device-only, or hybrid mode. The output is a structured compliance matrix with source-verified findings, review tracking, and CSV/JSON export.
 
-## Users
+Hackathon: **#BuildHybridAI 2026** — Web (Chrome) · Firebase AI Logic hybrid inference.
 
-Teams in procurement and tendering who review PDF tender documents and need to verify requirements, deadlines, risks, and supporting evidence.
+## Audience
 
-## Product Purpose
+- Procurement and tendering teams reviewing public or private tenders
+- Bid consultants who need to track compliance across dozens of requirements
+- Anyone who reads dense legal/commercial documents and needs to surface obligations fast
 
-PocketMind AI helps procurement teams turn complex tender PDFs into structured findings that people can review against the source document.
+**Mental model of the user**: a careful professional who distrusts AI output by default. They want to see the source. They want to know *where* the AI found something, not just *what* it found. Privacy matters — they may be reviewing sensitive commercial documents.
 
-## Positioning
+## Voice
 
-The intended workflow combines local PDF text extraction with Firebase AI Logic inference: cloud-only, on-device-only, or on-device-first hybrid with consent-gated cloud fallback. The actual processing source is visible to the user.
+- **Direct, precise, low-noise.** No buzzwords. No "supercharge", "empower", "streamline".
+- **Transparent about uncertainty.** The UI always surfaces inference source, verification status, and confidence. Never hides limitations.
+- **Professional, not corporate.** Warm enough to be usable, serious enough to be trusted.
+- **Multilingual-ready.** EN primary, PT and ES supported. Translations must not alter evidence or dates.
 
-## Operating Context
+## Anti-references (what this is NOT)
 
-Users upload or select a tender PDF, review extracted requirements, dates, specifications, risks, and missing information, then verify each finding against a source page and track compliance status.
+- Not a consumer AI chat app (no bubbly gradients, no "magic" language)
+- Not a SaaS marketing site (no hero sections with floating screenshots)
+- Not a developer tool (no monospace-heavy, terminal-aesthetic UI)
+- Not a generic dashboard template (no cardocalypse, no side-tab accent borders)
 
-## Capabilities and Constraints
+## Design register
 
-- The target platform is Web in Chrome. Firebase AI Logic's web on-device inference requires a supported desktop Chrome version and browser model availability; other environments may use cloud fallback.
-- PDFs are preprocessed into text in the browser before model analysis; the hybrid on-device API does not directly process PDF files as multimodal input.
-- Scanned or very sparse PDFs can use optional LlamaParse OCR through the Lovable connector, with separate consent for each document. If provider output has no page mapping, citations remain unverified and findings require human review.
-- Firebase AI Logic requires Firebase App Check. Firebase project configuration and App Check setup are deployment prerequisites; debug tokens must not be committed or shipped in production.
-- The app supports prepared fictional demo findings, PDF text extraction, cloud-only and on-device-only analysis, and consent-gated hybrid inference through Firebase AI Logic.
-- Users can run a live model call on the built-in fictional tender text without uploading a real procurement document; results remain labeled as demo content.
-- Analysis results display the inference source reported by Firebase AI Logic, and cited excerpts are checked against extracted page text.
-- Users can ask follow-up questions about extracted PDF text, dictate questions with browser speech recognition, and optionally listen to answers with browser speech synthesis.
-- Document answers distinguish stated facts, conditional hypotheses, and unresolved questions. Page excerpts are verified against extracted text; page citations are withheld when OCR pagination is unverified.
-- Optional Firecrawl research is off by default and requires separate consent. Only the user's question, country code, and jurisdiction are sent to its server-side integration; PDF text is never sent to Firecrawl. External results require human verification and do not constitute legal advice.
-- Review statuses and notes are held in the current browser session; persistent accounts and cloud document storage are not implemented.
-- Sample tender details are fictional and must remain clearly labeled as illustrative.
-- AI findings require human review and verifiable evidence; the product must not imply that generated procurement analysis is authoritative legal advice.
+**Product Mode** — density, semantic states, repeatable components. This is a workspace tool, not a landing page.
 
-## Brand Commitments
+## Core UX principles
 
-- Product name: PocketMind AI.
-- The provided dashboard, document-analysis, compliance-matrix, and hybrid-processing screenshots are visual references for the requested application.
-- Make data-processing mode and cloud consent understandable to users.
-
-## Evidence on Hand
-
-- Fictional sample tender and explicitly simulated analysis: `src/data/sampleTender.ts`.
-- Browser-side PDF text extraction utility: `src/lib/services/documentProcessing.ts`.
-- Optional LlamaParse OCR server function, client helper, and page normalization: `src/lib/services/ocr.functions.ts`, `src/lib/services/externalOcr.ts`, and `src/lib/services/ocrNormalize.ts`.
-- Firebase AI Logic and App Check runtime integration: `src/lib/services/firebaseAi.ts` and `src/lib/services/tenderAnalysis.ts`.
-- User-provided visual references: `public/pocketmind-dashboard.jpg`, `public/pocketmind-analysis.jpg`, `public/pocketmind-compliance.jpg`, and `public/pocketmind-hybrid-processing.jpg`.
-- No real tender documents, production Firebase configuration, App Check registration, or verified live AI analysis are present in the repository.
-
-## Product Principles
-
-- Clearly distinguish live model output from illustrative demo content.
-- Preserve traceable links between findings and source evidence.
-- Keep users in control of whether document text can be processed in the cloud.
-- Treat AI results as reviewable suggestions, not final decisions.
+1. **Source first**: every AI finding links to a verifiable excerpt. The UI must make verification easy, not buried.
+2. **Consent visible**: cloud processing requires explicit consent. The processing mode must always be surfaced.
+3. **Human in the loop**: review states (pending / reviewed / satisfied / unclear) are first-class UI elements.
+4. **Local by default**: data stays in the browser. Cloud is opt-in. The UI must communicate this without anxiety.

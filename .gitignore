@@ -39,6 +39,7 @@ dist-ssr
 # Reference files — do not commit
 *.zip
 *.pdf
+!public/*.pdf
 Impeccable_*.md
 apple-design.md
 

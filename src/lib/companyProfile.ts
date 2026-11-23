@@ -129,13 +129,165 @@ export interface JurisdictionDefaults {
   activityVersion: string;
 }
 
-export const JURISDICTION_DEFAULTS: Record<string, JurisdictionDefaults> = {
-  BR: { registrationSystem: "CNPJ", activitySystem: "CNAE", activityVersion: "2.3" },
-  GB: { registrationSystem: "Companies House", activitySystem: "UK SIC", activityVersion: "2007" },
-  US: { registrationSystem: "EIN", activitySystem: "NAICS", activityVersion: "2022" },
-  ES: { registrationSystem: "NIF", activitySystem: "CNAE", activityVersion: "2025" },
-  MX: { registrationSystem: "RFC", activitySystem: "SCIAN", activityVersion: "2023" },
-  PT: { registrationSystem: "NIPC/NIF", activitySystem: "CAE", activityVersion: "Rev.3" },
+// ─── Rich jurisdiction catalogue ─────────────────────────────────────────────
+
+export interface SubJurisdiction {
+  code: string;
+  label: string;
+  /** Override registration system label for this sub-jurisdiction. */
+  registrationSystem?: string;
+  /** Override registration number label (e.g. "OCN" for Ontario). */
+  registrationNumberLabel?: string;
+}
+
+export interface JurisdictionInfo extends JurisdictionDefaults {
+  code: string;
+  label: string;
+  flag: string;
+  /** Suggested interface language (ISO 639-1). Does NOT auto-change the app locale. */
+  suggestedLanguage: string;
+  suggestedLanguageLabel: string;
+  /** Primary tax / business identifier label. */
+  taxIdLabel: string;
+  /** Placeholder / format hint for the tax identifier. */
+  taxIdPlaceholder: string;
+  /** Official registration authority name. */
+  registrationAuthority: string;
+  /** Address format hint shown to the user. */
+  addressFormat: string;
+  /** Optional secondary identifier (e.g. GST/HST for CA). */
+  secondaryIdLabel?: string;
+  secondaryIdPlaceholder?: string;
+  /** Sub-jurisdictions (provinces, states) — only for countries where it matters. */
+  subJurisdictions?: SubJurisdiction[];
+}
+
+/** The 7 countries surfaced in the Primary country dropdown. */
+export const SUPPORTED_COUNTRIES: JurisdictionInfo[] = [
+  {
+    code: "BR",
+    label: "Brasil",
+    flag: "🇧🇷",
+    suggestedLanguage: "pt",
+    suggestedLanguageLabel: "Português",
+    taxIdLabel: "CNPJ",
+    taxIdPlaceholder: "00.000.000/0001-00",
+    registrationAuthority: "Junta Comercial / DREI",
+    addressFormat: "Logradouro, número, bairro, cidade, UF, CEP",
+    registrationSystem: "CNPJ",
+    activitySystem: "CNAE",
+    activityVersion: "2.3",
+  },
+  {
+    code: "PT",
+    label: "Portugal",
+    flag: "🇵🇹",
+    suggestedLanguage: "pt",
+    suggestedLanguageLabel: "Português",
+    taxIdLabel: "NIPC / NIF",
+    taxIdPlaceholder: "500 000 000",
+    registrationAuthority: "Conservatória do Registo Comercial",
+    addressFormat: "Rua, número, código postal, localidade",
+    registrationSystem: "NIPC/NIF",
+    activitySystem: "CAE",
+    activityVersion: "Rev.3",
+  },
+  {
+    code: "GB",
+    label: "United Kingdom",
+    flag: "🇬🇧",
+    suggestedLanguage: "en",
+    suggestedLanguageLabel: "English",
+    taxIdLabel: "Company number",
+    taxIdPlaceholder: "12345678",
+    registrationAuthority: "Companies House",
+    addressFormat: "Street, town, county, postcode",
+    registrationSystem: "Companies House",
+    activitySystem: "UK SIC",
+    activityVersion: "2007",
+  },
+  {
+    code: "US",
+    label: "United States",
+    flag: "🇺🇸",
+    suggestedLanguage: "en",
+    suggestedLanguageLabel: "English",
+    taxIdLabel: "EIN",
+    taxIdPlaceholder: "00-0000000",
+    registrationAuthority: "Secretary of State (varies by state)",
+    addressFormat: "Street, city, state, ZIP code",
+    registrationSystem: "EIN",
+    activitySystem: "NAICS",
+    activityVersion: "2022",
+  },
+  {
+    code: "ES",
+    label: "España",
+    flag: "🇪🇸",
+    suggestedLanguage: "es",
+    suggestedLanguageLabel: "Español",
+    taxIdLabel: "NIF / CIF",
+    taxIdPlaceholder: "A00000000",
+    registrationAuthority: "Registro Mercantil",
+    addressFormat: "Calle, número, código postal, municipio, provincia",
+    registrationSystem: "NIF",
+    activitySystem: "CNAE",
+    activityVersion: "2025",
+  },
+  {
+    code: "MX",
+    label: "México",
+    flag: "🇲🇽",
+    suggestedLanguage: "es",
+    suggestedLanguageLabel: "Español",
+    taxIdLabel: "RFC",
+    taxIdPlaceholder: "ABC000000000",
+    registrationAuthority: "Registro Público de Comercio",
+    addressFormat: "Calle, número, colonia, municipio, estado, C.P.",
+    registrationSystem: "RFC",
+    activitySystem: "SCIAN",
+    activityVersion: "2023",
+  },
+  {
+    code: "CA",
+    label: "Canada",
+    flag: "🇨🇦",
+    suggestedLanguage: "en",
+    suggestedLanguageLabel: "English / Français",
+    taxIdLabel: "Business Number (BN)",
+    taxIdPlaceholder: "000000000",
+    registrationAuthority: "Canada Revenue Agency (CRA)",
+    addressFormat: "Street, city, province/territory, postal code",
+    secondaryIdLabel: "GST/HST Account",
+    secondaryIdPlaceholder: "000000000 RT 0001",
+    registrationSystem: "Corporation Number",
+    activitySystem: "NAICS",
+    activityVersion: "2022",
+    subJurisdictions: [
+      { code: "CA-FED", label: "Federal", registrationSystem: "Corporation Number", registrationNumberLabel: "Corporation Number" },
+      { code: "CA-ON",  label: "Ontario", registrationSystem: "Ontario Business Registry", registrationNumberLabel: "OCN" },
+      { code: "CA-QC",  label: "Québec",  registrationSystem: "Registraire des entreprises", registrationNumberLabel: "NEQ" },
+      { code: "CA-BC",  label: "British Columbia", registrationSystem: "BC Registry", registrationNumberLabel: "Incorporation Number" },
+      { code: "CA-AB",  label: "Alberta", registrationSystem: "CORES", registrationNumberLabel: "Registry Number" },
+      { code: "CA-MB",  label: "Manitoba", registrationSystem: "Companies Office", registrationNumberLabel: "Corporation Number" },
+      { code: "CA-SK",  label: "Saskatchewan", registrationSystem: "ISC", registrationNumberLabel: "Corporation Number" },
+      { code: "CA-NS",  label: "Nova Scotia", registrationSystem: "Registry of Joint Stock Companies", registrationNumberLabel: "Registry Number" },
+      { code: "CA-NB",  label: "New Brunswick", registrationSystem: "Corporate Registry", registrationNumberLabel: "Corporation Number" },
+      { code: "CA-NL",  label: "Newfoundland & Labrador", registrationSystem: "Registry of Companies", registrationNumberLabel: "Corporation Number" },
+      { code: "CA-PE",  label: "Prince Edward Island", registrationSystem: "Corporate Registry", registrationNumberLabel: "Corporation Number" },
+      { code: "CA-NT",  label: "Northwest Territories", registrationSystem: "Corporate Registry", registrationNumberLabel: "Corporation Number" },
+      { code: "CA-YT",  label: "Yukon", registrationSystem: "Corporate Affairs", registrationNumberLabel: "Corporation Number" },
+      { code: "CA-NU",  label: "Nunavut", registrationSystem: "Corporate Registry", registrationNumberLabel: "Corporation Number" },
+    ],
+  },
+];
+
+export const JURISDICTION_DEFAULTS: Record<string, JurisdictionDefaults> = Object.fromEntries(
+  SUPPORTED_COUNTRIES.map((j) => [j.code, { registrationSystem: j.registrationSystem, activitySystem: j.activitySystem, activityVersion: j.activityVersion }])
+) as Record<string, JurisdictionDefaults>;
+
+// Keep legacy entries for countries not in the dropdown but previously supported
+const LEGACY_DEFAULTS: Record<string, JurisdictionDefaults> = {
   DE: { registrationSystem: "Handelsregisternummer", activitySystem: "NACE", activityVersion: "Rev.2" },
   FR: { registrationSystem: "SIREN/SIRET", activitySystem: "NAF", activityVersion: "Rev.2" },
   IT: { registrationSystem: "Codice Fiscale", activitySystem: "ATECO", activityVersion: "2007" },
@@ -143,13 +295,19 @@ export const JURISDICTION_DEFAULTS: Record<string, JurisdictionDefaults> = {
 };
 
 export function getJurisdictionDefaults(country: string): JurisdictionDefaults {
+  const key = country.toUpperCase();
   return (
-    JURISDICTION_DEFAULTS[country.toUpperCase()] ?? {
+    JURISDICTION_DEFAULTS[key] ??
+    LEGACY_DEFAULTS[key] ?? {
       registrationSystem: "",
       activitySystem: "NACE",
       activityVersion: "Rev.2",
     }
   );
+}
+
+export function getJurisdictionInfo(country: string): JurisdictionInfo | undefined {
+  return SUPPORTED_COUNTRIES.find((j) => j.code === country.toUpperCase());
 }
 
 // ─── Defaults ─────────────────────────────────────────────────────────────────
