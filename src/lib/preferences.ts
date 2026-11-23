@@ -9,6 +9,7 @@ export interface PocketMindPreferences {
   tourNarrationEnabled: boolean;
   voiceInputEnabled: boolean;
   answerSpeechEnabled: boolean;
+  sectionSoundEnabled: boolean;
 }
 
 export const PREFERENCES_STORAGE_KEY = "pocketmind.preferences";
@@ -25,6 +26,7 @@ export function defaultPreferences(
     tourNarrationEnabled: true,
     voiceInputEnabled: true,
     answerSpeechEnabled: true,
+    sectionSoundEnabled: true,
   };
 }
 
@@ -71,6 +73,10 @@ export function parsePreferences(
       typeof candidate.answerSpeechEnabled === "boolean"
         ? candidate.answerSpeechEnabled
         : defaults.answerSpeechEnabled,
+    sectionSoundEnabled:
+      typeof candidate.sectionSoundEnabled === "boolean"
+        ? candidate.sectionSoundEnabled
+        : defaults.sectionSoundEnabled,
   };
 }
 

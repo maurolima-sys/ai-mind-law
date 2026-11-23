@@ -40,6 +40,13 @@
   monitor_opening_results: "Opening your results shortly.",
   monitor_view_results: "View analysis results",
   monitor_close: "Close monitor",
+  monitor_section_sound_label: "Section completion sound",
+  monitor_section_sound_detail: "Play a subtle sound when each analysis section validates successfully.",
+  monitor_next_steps_title: "What to do next",
+  monitor_next_steps_findings: "Review findings and verify source excerpts in Analysis",
+  monitor_next_steps_compliance: "Open Compliance matrix to assess requirements",
+  monitor_next_steps_risks: "Open Risks to review identified risks",
+  monitor_next_steps_export: "Use Export JSON to download the full analysis",
   monitor_cancel: "Cancel analysis",
   monitor_cancel_title: "Cancel analysis?",
   monitor_cancel_body:
@@ -859,6 +866,8 @@
     "Show microphone controls when the browser supports speech recognition.",
   settings_answer_speech_label: "Read Q&A answers aloud",
   settings_answer_speech_detail: "Show browser text-to-speech controls for assistant answers.",
+  settings_section_sound_label: "Section completion sound",
+  settings_section_sound_detail: "Play a subtle sound each time an analysis section validates successfully.",
   settings_local_data_title: "Local data governance",
   settings_local_data_detail:
     "Documents, extracted text, evidence, analyses, and reviews are stored only in this browser.",

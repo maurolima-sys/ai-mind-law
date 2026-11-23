@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ProcessingMonitor } from "@/components/pocketmind/ProcessingMonitor";
 import { useAnalysisRun } from "@/lib/analysisRunContext";
 import { useT } from "@/lib/i18n";
+import { loadPreferences } from "@/lib/preferences";
 
 export const Route = createFileRoute("/processing/run")({
   head: () => ({
@@ -18,6 +19,7 @@ function ProcessingRunPage() {
   const { run, abortController, setRunStatus, clearRun } = useAnalysisRun();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const cancelTriggerRef = useRef<HTMLButtonElement>(null);
+  const sectionSoundEnabled = loadPreferences().sectionSoundEnabled;
 
   // Redirect to / if there is no run
   useEffect(() => {
@@ -76,6 +78,7 @@ function ProcessingRunPage() {
             ...(run.result ? { result: run.result } : {}),
           }}
           onOpenResults={handleOpenResults}
+          sectionSoundEnabled={sectionSoundEnabled}
           {...(run.status === "running" || run.status === "waiting"
             ? { onCancel: handleCancelRequest }
             : {})}

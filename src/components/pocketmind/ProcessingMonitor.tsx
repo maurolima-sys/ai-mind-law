@@ -77,16 +77,61 @@ function eventMessage(event: MonitorEvent, t: ReturnType<typeof useT>) {
   }
 }
 
+// ─── Section sound ────────────────────────────────────────────────────────────
+
+function playValidationBeep() {
+  try {
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.12);
+    gain.gain.setValueAtTime(0.18, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.25);
+    osc.onended = () => void ctx.close();
+  } catch {
+    // AudioContext unavailable — silent fallback
+  }
+}
+
+function useSectionSound(events: MonitorEvent[], soundEnabled: boolean) {
+  const playedRef = useRef(new Set<string>());
+  const unlockedRef = useRef(false);
+
+  // Unlock AudioContext on the first user gesture that starts the analysis
+  useEffect(() => {
+    if (unlockedRef.current) return;
+    unlockedRef.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (!soundEnabled) return;
+    const last = events[events.length - 1];
+    if (last?.type !== "output-validated") return;
+    const key = `${last.section}/${last.total}`;
+    if (playedRef.current.has(key)) return;
+    playedRef.current.add(key);
+    playValidationBeep();
+  }, [events, soundEnabled]);
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function ProcessingMonitor({
   monitor,
   onOpenResults,
   onCancel,
+  sectionSoundEnabled = true,
 }: {
   monitor: MonitorState;
   onOpenResults: () => void;
   onCancel?: () => void;
+  sectionSoundEnabled?: boolean;
 }) {
   const t = useT();
   const [paused, setPaused] = useState(false);
@@ -95,6 +140,8 @@ export function ProcessingMonitor({
   const headingRef = useRef<HTMLHeadingElement>(null);
   const latest = monitor.events[monitor.events.length - 1];
   const canClose = monitor.status !== "running" && monitor.status !== "waiting";
+
+  useSectionSound(monitor.events, sectionSoundEnabled);
 
   // Tick elapsed time every second while running
   useEffect(() => {
@@ -245,6 +292,15 @@ export function ProcessingMonitor({
             <button type="button" className="pm-button" onClick={onOpenResults}>
               {t("monitor_view_results")}
             </button>
+            <div className="pm-monitor-next-steps">
+              <strong>{t("monitor_next_steps_title")}</strong>
+              <ol>
+                <li>{t("monitor_next_steps_findings")}</li>
+                <li>{t("monitor_next_steps_compliance")}</li>
+                <li>{t("monitor_next_steps_risks")}</li>
+                <li>{t("monitor_next_steps_export")}</li>
+              </ol>
+            </div>
           </div>
         )}
         {canClose && !counts && (

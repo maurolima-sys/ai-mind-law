@@ -712,6 +712,8 @@ export function PocketMindApp() {
       return;
     }
     setErrorMessage("");
+    // Use a unique upload ID so findings from real analyses never carry the demo prefix
+    const resolvedId = `upload-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     let blob: Blob;
     try {
       const response = await fetch(url);
@@ -724,7 +726,7 @@ export function PocketMindApp() {
     }
     const file = new File([blob], fileName, { type: "application/pdf" });
     const newDocument: DocumentRecord = {
-      id: docId,
+      id: resolvedId,
       name: fileName,
       size: blob.size,
       source: "upload",
@@ -740,9 +742,9 @@ export function PocketMindApp() {
       setErrorMessage(`The sample document could not be saved locally. ${detail}`);
       return;
     }
-    setDocuments((current) => [newDocument, ...current.filter((d) => d.id !== docId)]);
-    setSelectedDocumentId(docId);
-    setFilesByDocumentId((current) => ({ ...current, [docId]: file }));
+    setDocuments((current) => [newDocument, ...current.filter((d) => d.id !== resolvedId)]);
+    setSelectedDocumentId(resolvedId);
+    setFilesByDocumentId((current) => ({ ...current, [resolvedId]: file }));
     setSelectedRequirementId(null);
     setSelectedEvidenceId("");
     setEvidenceCloudConsent(false);
@@ -754,7 +756,7 @@ export function PocketMindApp() {
     setScannedDocumentId(null);
     setExternalOcrAvailability("checking");
     setScreen("processing");
-    recordActivity("document-added", docId);
+    recordActivity("document-added", resolvedId);
   }
 
   function handleDrop(event: DragEvent<HTMLDivElement>) {

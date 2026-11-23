@@ -43,6 +43,13 @@ export const es: Translations = {
   monitor_opening_results: "Abriendo sus resultados en breve.",
   monitor_view_results: "Ver resultados del análisis",
   monitor_close: "Cerrar monitor",
+  monitor_section_sound_label: "Sonido de sección completada",
+  monitor_section_sound_detail: "Reproducir un sonido discreto cuando cada sección del análisis se valida correctamente.",
+  monitor_next_steps_title: "Qué hacer a continuación",
+  monitor_next_steps_findings: "Revisar hallazgos y verificar fragmentos de origen en Análisis",
+  monitor_next_steps_compliance: "Abrir la Matriz de cumplimiento para evaluar requisitos",
+  monitor_next_steps_risks: "Abrir Riesgos para revisar los riesgos identificados",
+  monitor_next_steps_export: "Usar Exportar JSON para descargar el análisis completo",
   monitor_cancel: "Cancelar análisis",
   monitor_cancel_title: "¿Cancelar análisis?",
   monitor_cancel_body:
@@ -845,6 +852,8 @@ export const es: Translations = {
   settings_answer_speech_label: "Leer respuestas de Q&A en voz alta",
   settings_answer_speech_detail:
     "Mostrar los controles de síntesis de voz del navegador para las respuestas.",
+  settings_section_sound_label: "Sonido de sección completada",
+  settings_section_sound_detail: "Reproducir un sonido discreto cada vez que una sección del análisis se valida correctamente.",
   settings_local_data_title: "Gobernanza de datos locales",
   settings_local_data_detail:
     "Documentos, texto extraído, evidencias, análisis y revisiones permanecen solo en este navegador.",

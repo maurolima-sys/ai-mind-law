@@ -203,6 +203,21 @@ export function SettingsScreen({
               }
             />
           </label>
+          <label className="pm-settings-toggle-row">
+            <span>
+              <strong>{t("settings_section_sound_label")}</strong>
+              <small>{t("settings_section_sound_detail")}</small>
+            </span>
+            <input
+              type="checkbox"
+              role="switch"
+              name="section-sound"
+              checked={draft.sectionSoundEnabled}
+              onChange={(event) =>
+                updateDraft({ sectionSoundEnabled: event.currentTarget.checked })
+              }
+            />
+          </label>
         </div>
       </section>
 

@@ -335,3 +335,29 @@
   margin: 0.25rem 0 0;
   line-height: 1;
 }
+
+/* ── Next steps panel ────────────────────────────────────────────────────────── */
+.pm-monitor-next-steps {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  background: #0d1e33;
+  border: 1px solid #2a4d6a;
+  border-radius: 8px;
+  color: #c2d9ec;
+  font-size: 0.88rem;
+}
+.pm-monitor-next-steps strong {
+  display: block;
+  color: #fff;
+  margin-bottom: 0.6rem;
+  font-size: 0.9rem;
+}
+.pm-monitor-next-steps ol {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.45rem;
+}
+.pm-monitor-next-steps li {
+  line-height: 1.4;
+}
