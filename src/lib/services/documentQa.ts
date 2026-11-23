@@ -326,6 +326,7 @@ export async function answerDocumentQuestion(
     format?: DocumentFormat;
     sourceLocations?: string[];
     onInference?: (source: "ON_DEVICE" | "IN_CLOUD") => void;
+    aiProvider?: import("@/lib/preferences").AiProvider;
   } = {},
 ): Promise<DocumentQuestionAnswer> {
   if (!question.trim()) throw new Error("Enter a question about this document.");
@@ -353,7 +354,7 @@ export async function answerDocumentQuestion(
     compact,
   );
   const { result, modelName } = await generateWithModelFallback(preference, (candidate, signal) =>
-    createTenderModel(preference, candidate).model.generateContent(
+    createTenderModel(preference, candidate, undefined, options.aiProvider).model.generateContent(
       prompt,
       signal ? { signal } : undefined,
     ),

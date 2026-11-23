@@ -362,6 +362,7 @@ export async function analyzeTender(
     paginationVerified?: boolean;
     documentId?: string;
     onEvent?: (event: AnalysisProgressEvent) => void;
+    aiProvider?: import("@/lib/preferences").AiProvider;
   } = {},
 ): Promise<Analysis> {
   const format = options.format ?? "pdf";
@@ -385,7 +386,7 @@ export async function analyzeTender(
   // pass so Firebase's PREFER_ON_DEVICE cloud fallback cannot duplicate the
   // application-managed cloud fallback below.
   const initialPreference = preference === "hybrid" ? "local" : preference;
-  const { model } = createTenderModel(initialPreference);
+  const { model } = createTenderModel(initialPreference, undefined, undefined, options.aiProvider);
   let deviceModelReady = preference === "local";
   let deviceModelError = "On-device model initialization failed.";
 
@@ -482,6 +483,8 @@ export async function analyzeTender(
         currentModel = createTenderModel(
           forcedCloudFallback ? "cloud" : preference,
           candidate,
+          undefined,
+          options.aiProvider,
         ).model;
         cache.set(candidate, currentModel);
       }

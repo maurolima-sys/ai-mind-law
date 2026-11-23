@@ -1125,6 +1125,9 @@ export const pt: Translations = {
   settings_byok_incomplete: "Preencha os cinco campos para ligar o seu projeto.",
   settings_byok_privacy_note:
     "São valores públicos do lado do cliente, não credenciais de faturação. São guardados apenas neste browser e nunca enviados para os servidores do PocketMind.",
+  settings_byok_show_field: "Mostrar valor",
+  settings_byok_hide_field: "Ocultar valor",
+  settings_byok_where_to_find: "Onde encontro estes valores?",
 
   // ── Document delete ───────────────────────────────────────────────────────────
   doc_delete_action: "Eliminar documento",

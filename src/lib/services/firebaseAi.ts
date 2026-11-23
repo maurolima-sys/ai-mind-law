@@ -12,6 +12,7 @@ import {
 import type { InferencePreference } from "@/lib/types";
 import { TENDER_ANALYSIS_RESPONSE_SCHEMA } from "@/lib/services/tenderAnalysisSchema";
 import { loadByokConfig, hashByokConfig, type ByokFirebaseConfig } from "@/lib/byokConfig";
+import type { AiProvider } from "@/lib/preferences";
 
 export const PRIMARY_GEMINI_MODEL = "gemini-3.5-flash";
 export const SECONDARY_GEMINI_MODEL = "gemini-3.8-flash";
@@ -395,17 +396,17 @@ type RuntimeHost = Window & {
 /**
  * Returns the active Firebase runtime.
  *
- * Priority:
- *   1. If a complete BYOK config is saved in localStorage, use (or create) the
- *      BYOK runtime. If the saved config changed since the last call, the old
- *      singleton is discarded and a new one is created — preventing stale
- *      runtimes from being reused across provider switches.
- *   2. Otherwise, fall back to the default PocketMind runtime.
+ * @param aiProvider - The provider selected in Settings. When `"pocketmind"`,
+ *   the BYOK config in localStorage is ignored even if present, so the user's
+ *   provider selection is always respected. When `"byok-firebase"` (or omitted
+ *   for backwards-compatibility), the BYOK config is used if complete.
  *
  * Operations already in flight hold a reference to the runtime object they
  * started with, so switching providers mid-analysis does not affect them.
+ * The BYOK config is preserved in localStorage when the user switches back to
+ * PocketMind — it is only removed when the user clicks "Disconnect".
  */
-function getFirebaseRuntime(): FirebaseRuntime {
+function getFirebaseRuntime(aiProvider?: AiProvider): FirebaseRuntime {
   if (typeof window === "undefined") {
     throw new Error("Firebase AI can only be initialized in the browser.");
   }
@@ -413,7 +414,9 @@ function getFirebaseRuntime(): FirebaseRuntime {
   const host = window as RuntimeHost;
 
   // ── BYOK path ────────────────────────────────────────────────────────────────
-  const byokConfig = loadByokConfig();
+  // Only enter the BYOK path when the user has explicitly selected "byok-firebase".
+  // If aiProvider is "pocketmind", skip BYOK even if a config is saved.
+  const byokConfig = aiProvider !== "pocketmind" ? loadByokConfig() : null;
   if (byokConfig) {
     const newHash = hashByokConfig(byokConfig);
     const existing = host[byokRuntimeWindowKey];
@@ -478,11 +481,12 @@ export function createTenderModel(
   preference: InferencePreference,
   modelName: GeminiModelName = PRIMARY_GEMINI_MODEL,
   responseSchema: Schema = TENDER_ANALYSIS_RESPONSE_SCHEMA,
+  aiProvider?: AiProvider,
 ): {
   model: GenerativeModel;
   appCheck: AppCheck;
 } {
-  const { ai, appCheck } = getFirebaseRuntime();
+  const { ai, appCheck } = getFirebaseRuntime(aiProvider);
   const mode =
     preference === "local"
       ? InferenceMode.ONLY_ON_DEVICE

@@ -165,6 +165,7 @@ export function DocumentQaPanel({
   onModelResponse,
   voiceInputEnabled = true,
   answerSpeechEnabled = true,
+  aiProvider,
 }: {
   documentName: string;
   pages: string[];
@@ -180,6 +181,7 @@ export function DocumentQaPanel({
   onModelResponse: (source: InferenceSource) => void;
   voiceInputEnabled?: boolean;
   answerSpeechEnabled?: boolean;
+  aiProvider?: import("@/lib/preferences").AiProvider;
 }) {
   const { locale, t } = useLocale();
   const [messages, setMessages] = useState<QaMessage[]>([]);
@@ -360,6 +362,7 @@ export function DocumentQaPanel({
         sourceLocations,
         paginationVerified,
         onInference: onModelResponse,
+        ...(aiProvider !== undefined ? { aiProvider } : {}),
       });
       setMessages((current) => [
         ...current,

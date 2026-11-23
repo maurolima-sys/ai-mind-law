@@ -3480,19 +3480,90 @@
   color: var(--pm-text-secondary);
 }
 
-.pm-settings-byok-field input {
+.pm-settings-byok-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.pm-settings-byok-input-row input {
+  flex: 1;
   padding: 7px 10px;
   border: 1px solid #d0d7e3;
-  border-radius: 7px;
+  border-right: none;
+  border-radius: 7px 0 0 7px;
   font-size: 12.5px;
   font-family: ui-monospace, monospace;
   background: #fff;
   color: var(--pm-text);
 }
 
-.pm-settings-byok-field input:focus {
+.pm-settings-byok-input-row input:focus {
   outline: 2px solid var(--pm-blue);
   outline-offset: 1px;
+  position: relative;
+  z-index: 1;
+}
+
+.pm-settings-byok-eye {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 9px;
+  height: 100%;
+  min-height: 34px;
+  border: 1px solid #d0d7e3;
+  border-left: none;
+  border-radius: 0 7px 7px 0;
+  background: #f4f6fa;
+  color: var(--pm-text-secondary);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.pm-settings-byok-eye:hover {
+  background: #e8edf5;
+  color: var(--pm-text);
+}
+
+.pm-settings-byok-label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.pm-settings-byok-label-row label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--pm-text);
+  flex-shrink: 0;
+}
+
+.pm-settings-byok-field-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  font-size: 10px;
+  color: var(--pm-muted);
+}
+
+.pm-settings-byok-field-hint a {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--pm-blue);
+  text-decoration: none;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pm-settings-byok-field-hint a:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .pm-settings-byok-privacy {

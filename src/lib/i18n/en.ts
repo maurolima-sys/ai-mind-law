@@ -1141,6 +1141,9 @@
   settings_byok_incomplete: "Fill in all five fields to connect your project.",
   settings_byok_privacy_note:
     "These are public client-side values, not billing credentials. They are stored only in this browser and never sent to PocketMind servers.",
+  settings_byok_show_field: "Show value",
+  settings_byok_hide_field: "Hide value",
+  settings_byok_where_to_find: "Where can I find these values?",
 
   // ── Document delete ───────────────────────────────────────────────────────────
   doc_delete_action: "Delete document",

@@ -1217,6 +1217,7 @@ export function PocketMindApp() {
           paginationVerified: paginated,
           documentId,
           onEvent: (event) => appendMonitor(documentId, event),
+          aiProvider: preferences.aiProvider,
         },
       );
     } catch (error) {
@@ -1911,6 +1912,7 @@ export function PocketMindApp() {
               voiceInputEnabled={preferences.voiceInputEnabled}
               answerSpeechEnabled={preferences.answerSpeechEnabled}
               onExport={exportAnalysis}
+              aiProvider={preferences.aiProvider}
             />
           )}
           {screen === "risks" && (
@@ -2499,6 +2501,7 @@ function AnalysisScreen({
   voiceInputEnabled,
   answerSpeechEnabled,
   onExport,
+  aiProvider,
 }: {
   document: DocumentRecord;
   file: File | null;
@@ -2542,6 +2545,7 @@ function AnalysisScreen({
   voiceInputEnabled: boolean;
   answerSpeechEnabled: boolean;
   onExport: () => void;
+  aiProvider?: import("@/lib/preferences").AiProvider;
 }) {
   const t = useT();
   const [activeTab, setActiveTab] = useState<"analysis" | "summary" | "qa" | "compare">("analysis");
@@ -2664,6 +2668,7 @@ function AnalysisScreen({
                 onModelResponse={onModelResponse}
                 voiceInputEnabled={voiceInputEnabled}
                 answerSpeechEnabled={answerSpeechEnabled}
+                {...(aiProvider !== undefined ? { aiProvider } : {})}
               />
             </div>
           </div>
@@ -3035,6 +3040,7 @@ function AnalysisScreen({
               onModelResponse={onModelResponse}
               voiceInputEnabled={voiceInputEnabled}
               answerSpeechEnabled={answerSpeechEnabled}
+              {...(aiProvider !== undefined ? { aiProvider } : {})}
             />
           )}
 
