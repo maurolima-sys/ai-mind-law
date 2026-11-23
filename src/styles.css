@@ -4589,6 +4589,27 @@
   .pm-settings-actions .pm-button {
     width: 100%;
   }
+  .pm-cp-registration-row,
+  .pm-cp-code-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .pm-cp-registration-row input,
+  .pm-cp-registration-row select,
+  .pm-cp-code-row input,
+  .pm-cp-code-row select {
+    width: 100%;
+  }
+  .pm-cp-input--short,
+  .pm-cp-input--medium {
+    width: 100%;
+  }
+  .pm-cp-remove-btn {
+    align-self: flex-end;
+  }
+  .pm-cp-field-row--half {
+    flex-direction: column;
+  }
   .pm-projects-toolbar,
   .pm-project-detail-toolbar,
   .pm-project-detail-summary,
@@ -7315,7 +7336,7 @@
   align-items: center;
   gap: 0.5rem;
   width: 100%;
-  padding: 0.75rem 0;
+  padding: 0.75rem 18px;
   background: none;
   border: none;
   cursor: pointer;
@@ -7344,8 +7365,8 @@
 
 .pm-cp-field-row label {
   font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--pm-text-muted, #6b7280);
+  font-weight: 600;
+  color: var(--pm-ink);
 }
 
 .pm-cp-field-row input,
@@ -7378,7 +7399,7 @@
 
 .pm-cp-hint {
   font-size: 0.75rem;
-  color: var(--pm-text-muted, #9ca3af);
+  color: var(--pm-muted);
   margin: 0;
 }
 

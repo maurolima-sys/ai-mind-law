@@ -507,7 +507,7 @@ export function CompanyProfileSection({ profile, onProfileChange }: CompanyProfi
             {t("cp_save_error")}
           </p>
         )}
-        <button type="button" className="pm-button pm-button--primary" onClick={handleSave}>
+        <button type="button" className="pm-button pm-button--outline" onClick={handleSave}>
           {t("cp_save")}
         </button>
       </div>
