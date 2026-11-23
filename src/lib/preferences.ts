@@ -1,6 +1,7 @@
 import type { InferencePreference } from "@/lib/types";
 
 export type PreferenceLocale = "en" | "pt" | "es";
+export type AiProvider = "pocketmind" | "byok-firebase";
 
 export interface PocketMindPreferences {
   version: 1;
@@ -10,6 +11,7 @@ export interface PocketMindPreferences {
   voiceInputEnabled: boolean;
   answerSpeechEnabled: boolean;
   sectionSoundEnabled: boolean;
+  aiProvider: AiProvider;
 }
 
 export const PREFERENCES_STORAGE_KEY = "pocketmind.preferences";
@@ -27,6 +29,7 @@ export function defaultPreferences(
     voiceInputEnabled: true,
     answerSpeechEnabled: true,
     sectionSoundEnabled: true,
+    aiProvider: "pocketmind",
   };
 }
 
@@ -36,6 +39,10 @@ function isLocale(value: unknown): value is PreferenceLocale {
 
 function isProcessingMode(value: unknown): value is InferencePreference {
   return value === "local" || value === "cloud" || value === "hybrid";
+}
+
+function isAiProvider(value: unknown): value is AiProvider {
+  return value === "pocketmind" || value === "byok-firebase";
 }
 
 export function parsePreferences(
@@ -77,6 +84,7 @@ export function parsePreferences(
       typeof candidate.sectionSoundEnabled === "boolean"
         ? candidate.sectionSoundEnabled
         : defaults.sectionSoundEnabled,
+    aiProvider: isAiProvider(candidate.aiProvider) ? candidate.aiProvider : defaults.aiProvider,
   };
 }
 

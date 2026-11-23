@@ -1120,6 +1120,28 @@
   cp_saved: "Profile saved.",
   cp_save_error: "Profile could not be saved.",
 
+  // ── AI Providers / BYOK ───────────────────────────────────────────────────────
+  settings_providers_title: "AI Providers",
+  settings_providers_detail:
+    "Choose which Firebase project handles AI inference. PocketMind is the default. Your own project uses your billing and quota.",
+  settings_provider_pocketmind_label: "PocketMind AI — Default",
+  settings_provider_pocketmind_detail:
+    "Uses PocketMind's Firebase project. No additional setup required.",
+  settings_provider_byok_label: "My own Firebase project",
+  settings_provider_byok_detail:
+    "Connect your own Firebase project. Billing and quota are yours. App Check is required.",
+  settings_byok_api_key: "API Key",
+  settings_byok_auth_domain: "Auth Domain",
+  settings_byok_project_id: "Project ID",
+  settings_byok_app_id: "App ID",
+  settings_byok_appcheck_site_key: "App Check reCAPTCHA Site Key",
+  settings_byok_save: "Connect my Firebase project",
+  settings_byok_clear: "Disconnect and use PocketMind default",
+  settings_byok_active: "Your Firebase project is active",
+  settings_byok_incomplete: "Fill in all five fields to connect your project.",
+  settings_byok_privacy_note:
+    "These are public client-side values, not billing credentials. They are stored only in this browser and never sent to PocketMind servers.",
+
   // ── Document delete ───────────────────────────────────────────────────────────
   doc_delete_action: "Delete document",
   doc_delete_menu_aria: "Document options for {{name}}",

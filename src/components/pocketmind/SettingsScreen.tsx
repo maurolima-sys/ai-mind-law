@@ -1,4 +1,4 @@
-import { AlertCircle, Database, Laptop, Save, ShieldCheck, Trash2, Volume2 } from "lucide-react";
+import { AlertCircle, Database, Laptop, Save, ShieldCheck, Trash2, Volume2, Cpu } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 
 import { LOCALES, useT, type Locale } from "@/lib/i18n";
@@ -7,6 +7,13 @@ import type { PocketMindPreferences } from "@/lib/preferences";
 import type { InferencePreference } from "@/lib/types";
 import { loadCompanyProfile, type CompanyProfile } from "@/lib/companyProfile";
 import { CompanyProfileSection } from "@/components/pocketmind/CompanyProfileSection";
+import {
+  loadByokConfig,
+  saveByokConfig,
+  clearByokConfig,
+  isByokConfigComplete,
+  type ByokFirebaseConfig,
+} from "@/lib/byokConfig";
 
 type SettingsScreenProps = {
   preferences: PocketMindPreferences;
@@ -43,6 +50,31 @@ export function SettingsScreen({
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [companyProfile, setCompanyProfile] = useState<CompanyProfile>(() => loadCompanyProfile());
+
+  // ── BYOK state ────────────────────────────────────────────────────────────────
+  const [byokDraft, setByokDraft] = useState<Partial<ByokFirebaseConfig>>(
+    () => loadByokConfig() ?? {},
+  );
+  const [byokSaved, setByokSaved] = useState(() => isByokConfigComplete(loadByokConfig() ?? {}));
+
+  function updateByokField(field: keyof ByokFirebaseConfig, value: string) {
+    setByokDraft((prev) => ({ ...prev, [field]: value }));
+    setByokSaved(false);
+  }
+
+  function connectByok() {
+    if (!isByokConfigComplete(byokDraft)) return;
+    saveByokConfig(byokDraft);
+    updateDraft({ aiProvider: "byok-firebase" });
+    setByokSaved(true);
+  }
+
+  function disconnectByok() {
+    clearByokConfig();
+    setByokDraft({});
+    setByokSaved(false);
+    updateDraft({ aiProvider: "pocketmind" });
+  }
 
   useEffect(() => {
     setDraft(preferences);
@@ -281,6 +313,108 @@ export function SettingsScreen({
       </section>
 
       <CompanyProfileSection profile={companyProfile} onProfileChange={setCompanyProfile} />
+
+      {/* ── AI Providers ─────────────────────────────────────────────────────────────── */}
+      <section className="pm-panel pm-settings-card" aria-labelledby="settings-providers-title">
+        <div className="pm-settings-heading">
+          <span className="pm-settings-icon">
+            <Cpu size={19} aria-hidden="true" />
+          </span>
+          <div>
+            <h2 id="settings-providers-title">{t("settings_providers_title")}</h2>
+            <p>{t("settings_providers_detail")}</p>
+          </div>
+        </div>
+
+        {/* Provider selector */}
+        <div className="pm-settings-toggles">
+          <label className="pm-settings-toggle-row">
+            <span>
+              <strong>{t("settings_provider_pocketmind_label")}</strong>
+              <small>{t("settings_provider_pocketmind_detail")}</small>
+            </span>
+            <input
+              type="radio"
+              name="ai-provider"
+              value="pocketmind"
+              checked={draft.aiProvider === "pocketmind"}
+              onChange={() => {
+                disconnectByok();
+              }}
+            />
+          </label>
+          <label className="pm-settings-toggle-row">
+            <span>
+              <strong>{t("settings_provider_byok_label")}</strong>
+              <small>{t("settings_provider_byok_detail")}</small>
+            </span>
+            <input
+              type="radio"
+              name="ai-provider"
+              value="byok-firebase"
+              checked={draft.aiProvider === "byok-firebase"}
+              onChange={() => updateDraft({ aiProvider: "byok-firebase" })}
+            />
+          </label>
+        </div>
+
+        {/* BYOK form — shown when byok-firebase is selected */}
+        {draft.aiProvider === "byok-firebase" && (
+          <div className="pm-settings-byok">
+            {byokSaved && (
+              <p className="pm-settings-byok-active" role="status">
+                <ShieldCheck size={14} aria-hidden="true" />
+                {t("settings_byok_active")}
+              </p>
+            )}
+            {([
+              ["apiKey", t("settings_byok_api_key")],
+              ["authDomain", t("settings_byok_auth_domain")],
+              ["projectId", t("settings_byok_project_id")],
+              ["appId", t("settings_byok_app_id")],
+              ["appCheckSiteKey", t("settings_byok_appcheck_site_key")],
+            ] as const).map(([field, label]) => (
+              <div key={field} className="pm-settings-byok-field">
+                <label htmlFor={`byok-${field}`}>{label}</label>
+                <input
+                  id={`byok-${field}`}
+                  type="text"
+                  autoComplete="off"
+                  spellCheck={false}
+                  value={byokDraft[field] ?? ""}
+                  onChange={(e) => updateByokField(field, e.currentTarget.value)}
+                />
+              </div>
+            ))}
+            <p className="pm-settings-byok-privacy">
+              <AlertCircle size={13} aria-hidden="true" />
+              {t("settings_byok_privacy_note")}
+            </p>
+            {!byokSaved && !isByokConfigComplete(byokDraft) && (
+              <p className="pm-settings-byok-hint">{t("settings_byok_incomplete")}</p>
+            )}
+            <div className="pm-settings-byok-actions">
+              <button
+                type="button"
+                className="pm-button pm-button--primary"
+                disabled={!isByokConfigComplete(byokDraft)}
+                onClick={connectByok}
+              >
+                {t("settings_byok_save")}
+              </button>
+              {byokSaved && (
+                <button
+                  type="button"
+                  className="pm-button pm-button--danger"
+                  onClick={disconnectByok}
+                >
+                  {t("settings_byok_clear")}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </section>
 
       <div className="pm-settings-actions">
         {saveStatus === "saved" && (

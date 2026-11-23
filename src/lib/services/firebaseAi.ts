@@ -11,6 +11,7 @@ import {
 } from "firebase/ai";
 import type { InferencePreference } from "@/lib/types";
 import { TENDER_ANALYSIS_RESPONSE_SCHEMA } from "@/lib/services/tenderAnalysisSchema";
+import { loadByokConfig, hashByokConfig, type ByokFirebaseConfig } from "@/lib/byokConfig";
 
 export const PRIMARY_GEMINI_MODEL = "gemini-3.5-flash";
 export const SECONDARY_GEMINI_MODEL = "gemini-3.8-flash";
@@ -285,6 +286,8 @@ type FirebaseRuntime = {
   app: FirebaseApp;
   appCheck: AppCheck;
   ai: AI;
+  /** Hash of the config used to create this runtime — used to detect stale singletons. */
+  configHash: string;
 };
 
 declare global {
@@ -296,6 +299,10 @@ declare global {
 }
 
 const runtimeWindowKey = "__pocketMindFirebaseRuntime";
+const byokRuntimeWindowKey = "__pocketMindByokFirebaseRuntime";
+
+/** Sentinel hash used for the default (PocketMind) runtime. */
+const DEFAULT_CONFIG_HASH = "__pocketmind_default__";
 
 function firebaseConfiguration() {
   const {
@@ -329,6 +336,40 @@ function firebaseConfiguration() {
   return config;
 }
 
+// ─── BYOK runtime initializer ─────────────────────────────────────────────────
+
+function initByokRuntime(config: ByokFirebaseConfig): FirebaseRuntime {
+  const configHash = hashByokConfig(config);
+  // Use a named Firebase app to avoid colliding with the default PocketMind app.
+  const appName = `byok-${configHash.slice(0, 8)}`;
+  const app = getApps().some((a) => a.name === appName)
+    ? getApp(appName)
+    : initializeApp(
+        {
+          apiKey: config.apiKey,
+          authDomain: config.authDomain,
+          projectId: config.projectId,
+          appId: config.appId,
+        },
+        appName,
+      );
+
+  const appCheck = initializeAppCheck(app, {
+    provider: new ReCaptchaEnterpriseProvider(config.appCheckSiteKey),
+    isTokenAutoRefreshEnabled: true,
+  });
+
+  return {
+    app,
+    appCheck,
+    ai: getAI(app, {
+      backend: new GoogleAIBackend(),
+      useLimitedUseAppCheckTokens: true,
+    }),
+    configHash,
+  };
+}
+
 export function isFirebaseConfigured() {
   const {
     VITE_FIREBASE_API_KEY,
@@ -346,14 +387,49 @@ export function isFirebaseConfigured() {
   );
 }
 
+type RuntimeHost = Window & {
+  [runtimeWindowKey]?: FirebaseRuntime;
+  [byokRuntimeWindowKey]?: FirebaseRuntime;
+};
+
+/**
+ * Returns the active Firebase runtime.
+ *
+ * Priority:
+ *   1. If a complete BYOK config is saved in localStorage, use (or create) the
+ *      BYOK runtime. If the saved config changed since the last call, the old
+ *      singleton is discarded and a new one is created — preventing stale
+ *      runtimes from being reused across provider switches.
+ *   2. Otherwise, fall back to the default PocketMind runtime.
+ *
+ * Operations already in flight hold a reference to the runtime object they
+ * started with, so switching providers mid-analysis does not affect them.
+ */
 function getFirebaseRuntime(): FirebaseRuntime {
   if (typeof window === "undefined") {
     throw new Error("Firebase AI can only be initialized in the browser.");
   }
 
-  const runtimeHost = window as Window & { [runtimeWindowKey]?: FirebaseRuntime };
-  if (runtimeHost[runtimeWindowKey]) {
-    return runtimeHost[runtimeWindowKey];
+  const host = window as RuntimeHost;
+
+  // ── BYOK path ────────────────────────────────────────────────────────────────
+  const byokConfig = loadByokConfig();
+  if (byokConfig) {
+    const newHash = hashByokConfig(byokConfig);
+    const existing = host[byokRuntimeWindowKey];
+    if (existing && existing.configHash === newHash) {
+      return existing;
+    }
+    // Config changed or first use — create a fresh runtime.
+    const runtime = initByokRuntime(byokConfig);
+    host[byokRuntimeWindowKey] = runtime;
+    return runtime;
+  }
+
+  // ── Default PocketMind path ───────────────────────────────────────────────────
+  const existing = host[runtimeWindowKey];
+  if (existing && existing.configHash === DEFAULT_CONFIG_HASH) {
+    return existing;
   }
 
   const app = getApps().some((candidate) => candidate.name === "[DEFAULT]")
@@ -385,15 +461,16 @@ function getFirebaseRuntime(): FirebaseRuntime {
     isTokenAutoRefreshEnabled: true,
   });
 
-  const runtime = {
+  const runtime: FirebaseRuntime = {
     app,
     appCheck,
     ai: getAI(app, {
       backend: new GoogleAIBackend(),
       useLimitedUseAppCheckTokens: true,
     }),
+    configHash: DEFAULT_CONFIG_HASH,
   };
-  runtimeHost[runtimeWindowKey] = runtime;
+  host[runtimeWindowKey] = runtime;
   return runtime;
 }
 

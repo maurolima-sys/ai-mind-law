@@ -1107,6 +1107,28 @@ export const es: Translations = {
   cp_saved: "Perfil guardado.",
   cp_save_error: "No se pudo guardar el perfil.",
 
+  // ── AI Providers / BYOK ───────────────────────────────────────────────────────
+  settings_providers_title: "Proveedores de IA",
+  settings_providers_detail:
+    "Elige qué proyecto Firebase gestiona la inferencia de IA. PocketMind es el predeterminado. Tu proyecto usa tu facturación y cuota.",
+  settings_provider_pocketmind_label: "PocketMind AI — Predeterminado",
+  settings_provider_pocketmind_detail:
+    "Usa el proyecto Firebase de PocketMind. No requiere configuración adicional.",
+  settings_provider_byok_label: "Mi propio proyecto Firebase",
+  settings_provider_byok_detail:
+    "Conecta tu propio proyecto Firebase. La facturación y la cuota son tuyas. App Check es obligatorio.",
+  settings_byok_api_key: "API Key",
+  settings_byok_auth_domain: "Auth Domain",
+  settings_byok_project_id: "Project ID",
+  settings_byok_app_id: "App ID",
+  settings_byok_appcheck_site_key: "Clave de sitio reCAPTCHA de App Check",
+  settings_byok_save: "Conectar mi proyecto Firebase",
+  settings_byok_clear: "Desconectar y usar el predeterminado de PocketMind",
+  settings_byok_active: "Tu proyecto Firebase está activo",
+  settings_byok_incomplete: "Completa los cinco campos para conectar tu proyecto.",
+  settings_byok_privacy_note:
+    "Son valores públicos del lado del cliente, no credenciales de facturación. Se guardan solo en este navegador y nunca se envían a los servidores de PocketMind.",
+
   // ── Document delete ───────────────────────────────────────────────────────────
   doc_delete_action: "Eliminar documento",
   doc_delete_menu_aria: "Opciones del documento {{name}}",

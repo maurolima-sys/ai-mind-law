@@ -73,6 +73,8 @@ describe("PocketMind preferences", () => {
       tourNarrationEnabled: true,
       voiceInputEnabled: false,
       answerSpeechEnabled: true,
+      sectionSoundEnabled: true,
+      aiProvider: "pocketmind",
     });
   });
 });
