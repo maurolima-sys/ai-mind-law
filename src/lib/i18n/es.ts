@@ -1036,6 +1036,66 @@ export const es: Translations = {
   discovery_disclaimer:
     "Los candidatos se validan solo por formato y número de páginas. Verifica la autoridad del emisor y la autenticidad del documento antes de usar cualquier hallazgo.",
 
+  // ── Company Profile ────────────────────────────────────────────────────────────
+  cp_title: "Perfil de la Empresa",
+  cp_subtitle:
+    "Identidad y actividades registradas usadas para hacer coincidir requisitos de licitaciones. Se guarda solo en este navegador.",
+  cp_identity_title: "Identidad de la Empresa",
+  cp_name_label: "Nombre de la empresa",
+  cp_name_placeholder: "Acme Infraestructura S.A.",
+  cp_country_label: "País principal (código ISO)",
+  cp_legal_form_label: "Forma jurídica",
+  cp_legal_form_placeholder: "S.A., S.L., GmbH, LLC…",
+  cp_address_label: "Domicilio social",
+  cp_address_placeholder: "Calle, ciudad, código postal — texto libre",
+  cp_registrations_title: "Registros empresariales",
+  cp_registrations_hint:
+    "Añade una entrada por jurisdicción. El sistema se sugiere por el código de país pero puede editarse.",
+  cp_registrations_empty: "Aún no se han añadido registros.",
+  cp_registration_add: "Añadir registro",
+  cp_registration_remove: "Eliminar este registro",
+  cp_reg_country_label: "Código de país",
+  cp_reg_system_label: "Sistema de registro",
+  cp_reg_number_label: "Número de registro",
+  cp_reg_number_placeholder: "A-12345678",
+  cp_reg_status_label: "Estado de verificación",
+  cp_reg_status_unverified: "No verificado",
+  cp_reg_status_self_declared: "Autodeclarado",
+  cp_reg_status_extracted: "Extraído de documento",
+  cp_activities_title: "Actividades Registradas",
+  cp_business_desc_label: "Descripción de la actividad (objeto social)",
+  cp_business_desc_hint:
+    "Copia el objeto social del documento de registro. Preserva el idioma original.",
+  cp_business_desc_placeholder:
+    "Desarrollo y comercialización de software a medida…",
+  cp_registered_codes_title: "Códigos de actividad oficiales",
+  cp_registered_codes_hint:
+    "Códigos de los documentos de registro oficiales. Preserva el sistema, la versión y el código exactamente como aparecen.",
+  cp_capabilities_title: "Capacidades Declaradas",
+  cp_capabilities_hint:
+    "Lo que la empresa puede realmente suministrar — separado de las actividades registradas. Redactado por el usuario; no se extrae automáticamente.",
+  cp_capabilities_label: "Descripción de capacidades",
+  cp_capabilities_placeholder:
+    "Describe lo que la empresa puede suministrar o entregar, con tus propias palabras.",
+  cp_capability_codes_title: "Códigos de capacidad",
+  cp_capability_codes_hint:
+    "Opcional: códigos de clasificación que describen capacidades reales, no solo actividades registradas.",
+  cp_codes_empty: "Aún no se han añadido códigos.",
+  cp_code_add: "Añadir código",
+  cp_code_add_registered: "Añadir código de actividad registrada",
+  cp_code_add_capability: "Añadir código de capacidad",
+  cp_code_remove: "Eliminar este código",
+  cp_code_system_label: "Sistema (ej. CNAE)",
+  cp_code_version_label: "Versión",
+  cp_code_code_label: "Código",
+  cp_code_label_label: "Descripción",
+  cp_code_label_placeholder: "Descripción de la actividad",
+  cp_privacy_note:
+    "Los datos del perfil se guardan solo en este navegador. No están cifrados ni sincronizados. No incluyas datos personales de individuos.",
+  cp_save: "Guardar perfil",
+  cp_saved: "Perfil guardado.",
+  cp_save_error: "No se pudo guardar el perfil.",
+
   // ── Document delete ───────────────────────────────────────────────────────────
   doc_delete_action: "Eliminar documento",
   doc_delete_menu_aria: "Opciones del documento {{name}}",

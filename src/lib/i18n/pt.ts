@@ -1033,6 +1033,66 @@ export const pt: Translations = {
   discovery_disclaimer:
     "Os candidatos são validados apenas quanto ao formato e número de páginas. Verifique a autoridade do emissor e a autenticidade do documento antes de utilizar qualquer conclusão.",
 
+  // ── Company Profile ────────────────────────────────────────────────────────────
+  cp_title: "Perfil da Empresa",
+  cp_subtitle:
+    "Identidade e atividades registadas usadas para corresponder a requisitos de concursos. Guardado apenas neste browser.",
+  cp_identity_title: "Identidade da Empresa",
+  cp_name_label: "Nome da empresa",
+  cp_name_placeholder: "Acme Infraestrutura Ltda",
+  cp_country_label: "País principal (código ISO)",
+  cp_legal_form_label: "Forma jurídica",
+  cp_legal_form_placeholder: "Ltda, S.A., EIRELI, GmbH…",
+  cp_address_label: "Endereço registado",
+  cp_address_placeholder: "Rua, cidade, CEP — texto livre",
+  cp_registrations_title: "Registos empresariais",
+  cp_registrations_hint:
+    "Adicione uma entrada por jurisdição. O sistema é sugerido pelo código do país mas pode ser editado.",
+  cp_registrations_empty: "Ainda não foram adicionados registos.",
+  cp_registration_add: "Adicionar registo",
+  cp_registration_remove: "Remover este registo",
+  cp_reg_country_label: "Código do país",
+  cp_reg_system_label: "Sistema de registo",
+  cp_reg_number_label: "Número de registo",
+  cp_reg_number_placeholder: "00.000.000/0001-00",
+  cp_reg_status_label: "Estado de verificação",
+  cp_reg_status_unverified: "Não verificado",
+  cp_reg_status_self_declared: "Autodeclarado",
+  cp_reg_status_extracted: "Extraído de documento",
+  cp_activities_title: "Atividades Registadas",
+  cp_business_desc_label: "Descrição da atividade (objeto social)",
+  cp_business_desc_hint:
+    "Copie o objeto social do documento de registo. Preserve o idioma original.",
+  cp_business_desc_placeholder:
+    "Desenvolvimento e comercialização de software sob encomenda…",
+  cp_registered_codes_title: "Códigos de atividade oficiais",
+  cp_registered_codes_hint:
+    "Códigos dos documentos de registo oficiais. Preserve o sistema, a versão e o código exatamente como aparecem.",
+  cp_capabilities_title: "Capacidades Declaradas",
+  cp_capabilities_hint:
+    "O que a empresa consegue efetivamente fornecer — separado das atividades registadas. Preenchido pelo utilizador; não extraído automaticamente.",
+  cp_capabilities_label: "Descrição das capacidades",
+  cp_capabilities_placeholder:
+    "Descreva o que a empresa consegue fornecer ou entregar, com as suas próprias palavras.",
+  cp_capability_codes_title: "Códigos de capacidade",
+  cp_capability_codes_hint:
+    "Opcional: códigos de classificação que descrevem capacidades reais, não apenas atividades registadas.",
+  cp_codes_empty: "Ainda não foram adicionados códigos.",
+  cp_code_add: "Adicionar código",
+  cp_code_add_registered: "Adicionar código de atividade registada",
+  cp_code_add_capability: "Adicionar código de capacidade",
+  cp_code_remove: "Remover este código",
+  cp_code_system_label: "Sistema (ex. CNAE)",
+  cp_code_version_label: "Versão",
+  cp_code_code_label: "Código",
+  cp_code_label_label: "Descrição",
+  cp_code_label_placeholder: "Descrição da atividade",
+  cp_privacy_note:
+    "Os dados do perfil são guardados apenas neste browser. Não são encriptados nem sincronizados. Não inclua dados pessoais de indivíduos.",
+  cp_save: "Guardar perfil",
+  cp_saved: "Perfil guardado.",
+  cp_save_error: "Não foi possível guardar o perfil.",
+
   // ── Document delete ───────────────────────────────────────────────────────────
   doc_delete_action: "Eliminar documento",
   doc_delete_menu_aria: "Opções do documento {{name}}",

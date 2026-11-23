@@ -5,6 +5,8 @@ import { LOCALES, useT, type Locale } from "@/lib/i18n";
 import { formatBytes } from "@/lib/services/documentProcessing";
 import type { PocketMindPreferences } from "@/lib/preferences";
 import type { InferencePreference } from "@/lib/types";
+import { loadCompanyProfile, type CompanyProfile } from "@/lib/companyProfile";
+import { CompanyProfileSection } from "@/components/pocketmind/CompanyProfileSection";
 
 type SettingsScreenProps = {
   preferences: PocketMindPreferences;
@@ -40,6 +42,7 @@ export function SettingsScreen({
   const [deleteConfirmed, setDeleteConfirmed] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  const [companyProfile, setCompanyProfile] = useState<CompanyProfile>(() => loadCompanyProfile());
 
   useEffect(() => {
     setDraft(preferences);
@@ -261,6 +264,8 @@ export function SettingsScreen({
           )}
         </div>
       </section>
+
+      <CompanyProfileSection profile={companyProfile} onProfileChange={setCompanyProfile} />
 
       <div className="pm-settings-actions">
         {saveStatus === "saved" && (

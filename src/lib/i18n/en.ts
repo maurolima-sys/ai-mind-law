@@ -1049,6 +1049,66 @@
   discovery_disclaimer:
     "Candidates are validated for format and page count only. Verify issuer authority and document authenticity before relying on any finding.",
 
+  // ── Company Profile ────────────────────────────────────────────────────────────
+  cp_title: "Company Profile",
+  cp_subtitle:
+    "Identity and registered activities used to match tender requirements. Stored only in this browser.",
+  cp_identity_title: "Company Identity",
+  cp_name_label: "Company name",
+  cp_name_placeholder: "Acme Infrastructure Ltd",
+  cp_country_label: "Primary country (ISO code)",
+  cp_legal_form_label: "Legal form",
+  cp_legal_form_placeholder: "Ltd, Ltda, LLC, S.A., GmbH…",
+  cp_address_label: "Registered address",
+  cp_address_placeholder: "Street, city, postcode — free text",
+  cp_registrations_title: "Company registrations",
+  cp_registrations_hint:
+    "Add one entry per jurisdiction. The system name is suggested from the country code but can be edited.",
+  cp_registrations_empty: "No registrations added yet.",
+  cp_registration_add: "Add registration",
+  cp_registration_remove: "Remove this registration",
+  cp_reg_country_label: "Country code",
+  cp_reg_system_label: "Registration system",
+  cp_reg_number_label: "Registration number",
+  cp_reg_number_placeholder: "00.000.000/0001-00",
+  cp_reg_status_label: "Verification status",
+  cp_reg_status_unverified: "Unverified",
+  cp_reg_status_self_declared: "Self-declared",
+  cp_reg_status_extracted: "Extracted from document",
+  cp_activities_title: "Registered Activities",
+  cp_business_desc_label: "Business description (objects clause)",
+  cp_business_desc_hint:
+    "Copy the objects clause from the registration document. Preserve the original language.",
+  cp_business_desc_placeholder:
+    "Desenvolvimento e comercialização de software sob encomenda…",
+  cp_registered_codes_title: "Official activity codes",
+  cp_registered_codes_hint:
+    "Codes from official registration documents. Preserve the system, version, and code exactly as they appear.",
+  cp_capabilities_title: "Declared Capabilities",
+  cp_capabilities_hint:
+    "What the company can actually provide — separate from registered activities. User-authored; not extracted automatically.",
+  cp_capabilities_label: "Capability description",
+  cp_capabilities_placeholder:
+    "Describe what the company can supply or deliver, in your own words.",
+  cp_capability_codes_title: "Capability codes",
+  cp_capability_codes_hint:
+    "Optional: classification codes that describe actual capabilities, not just registered activities.",
+  cp_codes_empty: "No codes added yet.",
+  cp_code_add: "Add code",
+  cp_code_add_registered: "Add registered activity code",
+  cp_code_add_capability: "Add capability code",
+  cp_code_remove: "Remove this code",
+  cp_code_system_label: "System (e.g. CNAE)",
+  cp_code_version_label: "Version",
+  cp_code_code_label: "Code",
+  cp_code_label_label: "Label",
+  cp_code_label_placeholder: "Activity description",
+  cp_privacy_note:
+    "Profile data is stored only in this browser. It is not encrypted or synced. Do not include personal data of individuals.",
+  cp_save: "Save profile",
+  cp_saved: "Profile saved.",
+  cp_save_error: "Profile could not be saved.",
+
   // ── Document delete ───────────────────────────────────────────────────────────
   doc_delete_action: "Delete document",
   doc_delete_menu_aria: "Document options for {{name}}",
