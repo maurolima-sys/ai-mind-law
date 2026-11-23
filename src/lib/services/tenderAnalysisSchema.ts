@@ -3,30 +3,56 @@ import { z } from "zod";
 
 const findingSchema = z.object({
   description: z.string().min(1),
-  category: z.enum([
-    "Technical",
-    "Administrative",
-    "Legal",
-    "Financial",
-    "Eligibility",
-    "Documentation",
-    "Delivery",
-  ]),
-  mandatory: z.boolean(),
+  category: z
+    .string()
+    .transform((v) => {
+      const normalized = v.trim();
+      const valid = [
+        "Technical",
+        "Administrative",
+        "Legal",
+        "Financial",
+        "Eligibility",
+        "Documentation",
+        "Delivery",
+      ];
+      const match = valid.find((c) => c.toLowerCase() === normalized.toLowerCase());
+      return match ?? "Technical";
+    })
+    .pipe(
+      z.enum([
+        "Technical",
+        "Administrative",
+        "Legal",
+        "Financial",
+        "Eligibility",
+        "Documentation",
+        "Delivery",
+      ]),
+    ),
+  mandatory: z
+    .union([z.boolean(), z.string()])
+    .transform((v) => (typeof v === "string" ? v.toLowerCase() !== "false" && v !== "0" : v)),
   confidence: z
     .union([z.number(), z.string()])
     .transform((v) => (typeof v === "string" ? parseFloat(v) : v))
     .pipe(z.number().min(0).max(1)),
-  sourceIndex: z.number().int().positive(),
-  excerpt: z.string().min(1),
+  sourceIndex: z
+    .union([z.number(), z.string()])
+    .transform((v) => (typeof v === "string" ? parseInt(v, 10) : v))
+    .pipe(z.number().int().positive()),
+  excerpt: z.string().default(""),
 });
 
 const deadlineSchema = z.object({
   description: z.string().min(1),
-  date: z.string().nullable(),
-  relatedRequirement: z.string().nullable(),
-  sourceIndex: z.number().int().positive(),
-  excerpt: z.string().min(1),
+  date: z.string().nullable().default(null),
+  relatedRequirement: z.string().nullable().default(null),
+  sourceIndex: z
+    .union([z.number(), z.string()])
+    .transform((v) => (typeof v === "string" ? parseInt(v, 10) : v))
+    .pipe(z.number().int().positive()),
+  excerpt: z.string().default(""),
 });
 
 const specificationSchema = z.object({
@@ -34,27 +60,50 @@ const specificationSchema = z.object({
   quantity: z
     .union([z.string(), z.number()])
     .nullable()
+    .default(null)
     .transform((v) => (v === null ? null : String(v))),
   unit: z
     .union([z.string(), z.number()])
     .nullable()
+    .default(null)
     .transform((v) => (v === null ? null : String(v))),
   details: z.string().min(1),
   notes: z
     .string()
     .nullable()
+    .default(null)
     .transform((v) => v ?? ""),
-  sourceIndex: z.number().int().positive(),
-  excerpt: z.string().min(1),
+  sourceIndex: z
+    .union([z.number(), z.string()])
+    .transform((v) => (typeof v === "string" ? parseInt(v, 10) : v))
+    .pipe(z.number().int().positive()),
+  excerpt: z.string().default(""),
 });
 
 const riskSchema = z.object({
   title: z.string().min(1),
-  severity: z.enum(["Critical", "High", "Medium", "Low"]),
-  kind: z.enum(["detected", "suggestion"]),
+  severity: z
+    .string()
+    .transform((v) => {
+      const normalized = v.trim();
+      const valid = ["Critical", "High", "Medium", "Low"];
+      const match = valid.find((s) => s.toLowerCase() === normalized.toLowerCase());
+      return match ?? "Medium";
+    })
+    .pipe(z.enum(["Critical", "High", "Medium", "Low"])),
+  kind: z
+    .string()
+    .transform((v) => {
+      const normalized = v.trim().toLowerCase();
+      return normalized === "suggestion" ? "suggestion" : "detected";
+    })
+    .pipe(z.enum(["detected", "suggestion"])),
   explanation: z.string().min(1),
-  sourceIndex: z.number().int().positive(),
-  excerpt: z.string().min(1),
+  sourceIndex: z
+    .union([z.number(), z.string()])
+    .transform((v) => (typeof v === "string" ? parseInt(v, 10) : v))
+    .pipe(z.number().int().positive()),
+  excerpt: z.string().default(""),
 });
 
 // Array bounds guard against GHSA-mrhx-c7xc-m3w5 (Zod DoS via oversized constrained
