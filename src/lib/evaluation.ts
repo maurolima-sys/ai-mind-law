@@ -95,7 +95,7 @@ export const EVALUATION_CRITERIA: EvaluationCriterion[] = [
     section: "Inference",
     title: "On-device inference",
     description:
-      "A 2026-11-20 production test initialized the on-device model but the fictional sample failed as too large; no Firebase AI generation request was observed. A successful analysis on supported Chrome remains unverified.",
+      "Verified 2026-11-23, build eeb6c9c: SEDA-Vinyl-Siding-Facia-RFP.pdf (4 pages) completed 3/3 sections with ON_DEVICE inference — zero cloud fallback. 18 findings returned. Full pipeline confirmed end-to-end on a real uploaded PDF. A complete on-device analysis of a larger document (10+ pages) and production deployment remain unverified.",
     critical: true,
   },
   {
@@ -238,7 +238,7 @@ export const EVALUATION_CRITERIA: EvaluationCriterion[] = [
     section: "Documentation",
     title: "Evaluator walkthrough accuracy",
     description:
-      "Walkthrough includes the 2026-11-20 production test, current fallback order, and unverified on-device and OCR limitations. Documentation changes must be deployed before appearing in production.",
+      "Walkthrough updated through commit 61c5e07: on-device verification 2026-11-23 recorded in sections 4 and 10, cloud test 2026-11-20 recorded, fallback chain corrected, test count updated to 149 tests (31 files). Documentation changes must be deployed before appearing in production.",
   },
   {
     id: "matrix-doc",
@@ -253,7 +253,7 @@ export const EVALUATION_CRITERIA: EvaluationCriterion[] = [
     section: "Documentation",
     title: "Reconcile test counts",
     description:
-      "Verified: 107 tests across 29 test files (npm test). Walkthrough updated from '11 tests' to '107 tests (29 files)'. Evidence: commit 1e3c477.",
+      "Verified: 149 tests across 31 test files (npm test, commit 61c5e07). Zoom test timeout increased to 25 s to prevent load-dependent failures.",
   },
   {
     id: "ci-triggers",
