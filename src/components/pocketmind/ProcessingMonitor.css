@@ -1,12 +1,28 @@
+/* ── Modal overlay ─────────────────────────────────────────────────────────── */
+.pm-monitor-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(5, 15, 30, 0.72);
+  backdrop-filter: blur(4px);
+}
+
 .pm-monitor {
   display: grid;
-  grid-template-columns: minmax(190px, 30%) minmax(0, 1fr);
+  grid-template-columns: minmax(190px, 28%) minmax(0, 1fr);
   gap: 2rem;
-  margin: 1.5rem 0;
+  width: min(900px, 100%);
+  max-height: min(680px, 90dvh);
+  overflow: hidden;
   padding: clamp(1.25rem, 3vw, 2rem);
   color: #e8f3ff;
   background: #101f35;
   border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
 }
 
 .pm-monitor-visual {
@@ -83,6 +99,31 @@
   gap: 0.75rem;
   align-items: start;
 }
+.pm-monitor-heading-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+.pm-monitor-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid #6596b3;
+  border-radius: 6px;
+  color: #c2e9ff;
+  cursor: pointer;
+}
+.pm-monitor-close:hover {
+  background: #1e3a55;
+}
+.pm-monitor-close:focus-visible {
+  outline: 2px solid #a4e7ff;
+  outline-offset: 3px;
+}
 .pm-monitor h2 {
   color: #fff;
   margin: 0;
@@ -120,6 +161,9 @@
   padding: 0;
   margin: 0;
   list-style: none;
+  max-height: 260px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
 }
 .pm-monitor-events li {
   display: flex;
@@ -173,10 +217,22 @@
 .pm-monitor-results strong {
   color: #fff;
 }
+.pm-monitor-content {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 @media (max-width: 700px) {
+  .pm-monitor-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
   .pm-monitor {
     grid-template-columns: 1fr;
     gap: 1.5rem;
+    width: 100%;
+    max-height: 85dvh;
+    border-radius: 16px 16px 0 0;
   }
   .pm-monitor-radar {
     width: 150px;
@@ -185,5 +241,47 @@
 @media (prefers-reduced-motion: reduce) {
   .pm-monitor-motion {
     display: none;
+  }
+}
+
+/* ── Minimised pill ─────────────────────────────────────────────────────────── */
+.pm-monitor-pill {
+  position: fixed;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #101f35;
+  color: #c2e9ff;
+  border: 1px solid #5ea7d7;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+.pm-monitor-pill:hover {
+  background: #1e3a55;
+}
+.pm-monitor-pill:focus-visible {
+  outline: 2px solid #a4e7ff;
+  outline-offset: 3px;
+}
+.pm-monitor-pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #77c9f0;
+  animation: pm-monitor-pulse 1.4s ease-in-out infinite;
+}
+@keyframes pm-monitor-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pm-monitor-pill-dot {
+    animation: none;
   }
 }

@@ -39,6 +39,9 @@
   monitor_inconsistencies: "inconsistencies",
   monitor_opening_results: "Opening your results shortly.",
   monitor_view_results: "View analysis results",
+  monitor_close: "Close monitor",
+  monitor_minimise: "Minimise monitor",
+  monitor_reopen: "Analysis running — click to reopen monitor",
   // ── Navigation ───────────────────────────────────────────────────────────────
   nav_dashboard: "Dashboard",
   nav_library: "Documents",

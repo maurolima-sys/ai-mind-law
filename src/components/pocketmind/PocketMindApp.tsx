@@ -416,6 +416,7 @@ export function PocketMindApp() {
   const [tourActive, setTourActive] = useState(false);
   const [tourRequestedByUser, setTourRequestedByUser] = useState(false);
   const tourButtonRef = useRef<HTMLButtonElement | null>(null);
+  const confirmButtonRef = useRef<HTMLButtonElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -519,21 +520,6 @@ export function PocketMindApp() {
   const selectedDocument =
     documents.find((document) => document.id === selectedDocumentId) ?? documents[0];
   const file = filesByDocumentId[selectedDocumentId] ?? null;
-
-  useEffect(() => {
-    if (
-      screen !== "processing" ||
-      monitor?.status !== "completed" ||
-      !monitor.autoOpen ||
-      monitor.documentId !== selectedDocumentId
-    )
-      return;
-    const timer = window.setTimeout(() => {
-      setMonitor(null);
-      setScreen("analysis");
-    }, 2500);
-    return () => window.clearTimeout(timer);
-  }, [screen, monitor?.status, monitor?.autoOpen, monitor?.documentId, selectedDocumentId]);
 
   useEffect(() => {
     if (screen === "processing") return;
@@ -1947,6 +1933,7 @@ export function PocketMindApp() {
                   errorMessage === t("on_device_generation_timeout_error"))
               }
               inputRef={fileInputRef}
+              confirmButtonRef={confirmButtonRef}
               onFileChange={handleFileChange}
               onDrop={handleDrop}
               onSelectChoice={(choice) => {
@@ -1998,6 +1985,17 @@ export function PocketMindApp() {
           )}
         </main>
       </div>
+      {monitor && (
+        <ProcessingMonitor
+          monitor={monitor}
+          onOpenResults={() => {
+            setMonitor(null);
+            setScreen("analysis");
+          }}
+          onClose={() => setMonitor(null)}
+          returnFocusRef={confirmButtonRef}
+        />
+      )}
       <GuidedTour
         active={tourActive}
         screen={
@@ -3561,6 +3559,7 @@ export function ProcessingScreen({
   errorMessage,
   onDeviceTimeout,
   inputRef,
+  confirmButtonRef,
   onFileChange,
   onDrop,
   onSelectChoice,
@@ -3592,6 +3591,7 @@ export function ProcessingScreen({
   errorMessage: string;
   onDeviceTimeout: boolean;
   inputRef: RefObject<HTMLInputElement | null>;
+  confirmButtonRef?: RefObject<HTMLButtonElement | null>;
   onFileChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onDrop: (event: DragEvent<HTMLDivElement>) => void;
   onSelectChoice: (choice: ProcessingChoice) => void;
@@ -3616,8 +3616,6 @@ export function ProcessingScreen({
         <h1>{t("processing_setup_title")}</h1>
         <p>{t("processing_setup_desc")}</p>
       </div>
-
-      {monitor && <ProcessingMonitor monitor={monitor} onOpenResults={onOpenResults} />}
 
       {errorMessage && (
         <div className="pm-error-banner" role="alert">
@@ -3961,6 +3959,7 @@ export function ProcessingScreen({
 
         <div className="pm-confirm-cta-col">
           <button
+            ref={confirmButtonRef}
             type="button"
             className="pm-confirm-cta-btn"
             onClick={() => {

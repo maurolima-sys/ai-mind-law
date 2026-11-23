@@ -82,4 +82,46 @@ describe("processing monitor", () => {
     expect(screen.getByText("Action needed")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "View analysis results" })).not.toBeInTheDocument();
   });
+
+  it("has dialog role and aria-modal", () => {
+    show(initial);
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+    expect(dialog).toHaveAttribute("aria-labelledby", "pm-monitor-title");
+  });
+
+  it("ignores Esc while running", () => {
+    const close = vi.fn();
+    render(
+      <LocaleProvider>
+        <ProcessingMonitor monitor={initial} onOpenResults={vi.fn()} onClose={close} />
+      </LocaleProvider>,
+    );
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(close).not.toHaveBeenCalled();
+  });
+
+  it("closes on Esc when completed", () => {
+    const result = buildDemoDocument().analysis;
+    if (!result) throw new Error("Sample analysis missing");
+    const close = vi.fn();
+    render(
+      <LocaleProvider>
+        <ProcessingMonitor
+          monitor={{ ...initial, status: "completed", result }}
+          onOpenResults={vi.fn()}
+          onClose={close}
+        />
+      </LocaleProvider>,
+    );
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(close).toHaveBeenCalledOnce();
+  });
+
+  it("minimise hides overlay but keeps analysis running", () => {
+    show(initial);
+    fireEvent.click(screen.getByRole("button", { name: "Minimise monitor" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /reopen monitor/i })).toBeInTheDocument();
+  });
 });

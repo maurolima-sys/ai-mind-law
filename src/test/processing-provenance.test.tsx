@@ -178,18 +178,12 @@ describe("processing provenance", () => {
     renderApp();
     fireEvent.click(await screen.findByRole("button", { name: /add a document/i }));
     fireEvent.click(screen.getByRole("button", { name: /confirm and continue/i }));
+    // Monitor shows completion with a View results button — no auto-navigation
+    const viewBtn = await screen.findByRole("button", { name: "View analysis results" });
+    expect(viewBtn).toBeInTheDocument();
+    fireEvent.click(viewBtn);
     expect(
-      await screen.findByRole("button", { name: "View analysis results" }),
-    ).toBeInTheDocument();
-    await waitFor(
-      () =>
-        expect(
-          screen.queryByRole("region", { name: "Processing intelligence monitor" }),
-        ).not.toBeInTheDocument(),
-      { timeout: 6000 },
-    );
-    expect(
-      screen.getByRole("heading", { name: "Document analysis", level: 1 }),
+      await screen.findByRole("heading", { name: "Document analysis", level: 1 }),
     ).toBeInTheDocument();
   }, 15_000);
 
@@ -209,7 +203,7 @@ describe("processing provenance", () => {
     renderApp();
     fireEvent.click(await screen.findByRole("button", { name: /add a document/i }));
     fireEvent.click(screen.getByRole("button", { name: /confirm and continue/i }));
-    await screen.findByRole("region", { name: "Processing intelligence monitor" });
+    await screen.findByRole("dialog", { name: "Processing intelligence monitor" });
     fireEvent.click(screen.getByRole("button", { name: "Dashboard" }));
     await act(async () => finish(result));
     fireEvent.click(screen.getByRole("button", { name: "Processing" }));

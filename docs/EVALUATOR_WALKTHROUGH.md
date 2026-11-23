@@ -21,9 +21,9 @@
 1. Open **https://ai-mind-law.vercel.app/** in **desktop Chrome** (required for on-device inference).
 2. The dashboard loads with a fictional sample tender already selected — no upload needed.
 3. Open **Settings**, select **Cloud AI**, and click **Save changes**.
-4. Open **Processing**, read and accept the cloud consent checkbox.
-5. Click **Confirm and continue →** to analyze the selected fictional sample.
-6. Watch the progress status. On success, the analysis shows the inference source and the status reports **Cloud response received this session · connection not guaranteed**. A configured badge alone does not prove a successful live analysis.
+4. Open **Processing**, read and accept the cloud consent checkbox. If you click **Confirm and continue →** without accepting, a warning toast appears and the page scrolls to the checkbox.
+5. Click **Confirm and continue →** to analyze the selected fictional sample. A full-screen modal overlay opens showing live progress. You can minimise it with the − button; a pill in the bottom-right corner confirms the analysis is still running. Esc is ignored while the analysis runs.
+6. When the analysis completes, click **View results** in the modal to navigate to the Analysis screen. The modal reports the inference source; the status bar shows **Cloud response received this session · connection not guaranteed**. A configured badge alone does not prove a successful live analysis.
 7. Inspect the findings in **Analysis**, then open **Compliance matrix** to see the review workflow.
 
 > **Production test, 2026-11-20:** the hosted page identified build `v0.4.0 · ed19ed4` (2026-11-19 23:54 UTC), matching remote `main` at the time. For the fictional sample in Cloud AI mode, `exchangeRecaptchaEnterpriseToken` returned HTTP 200; `gemini-3.8-flash` returned HTTP 500 and the `gemini-3.5-flash` fallback returned HTTP 200. The analysis completed and the UI reported `Cloud (IN_CLOUD)`, its normalized SDK source; the raw SDK value was not captured. This single run does not guarantee future availability.
