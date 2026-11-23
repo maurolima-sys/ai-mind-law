@@ -1016,6 +1016,13 @@
   projects_delete_confirm:
     "Delete this project organization now? Local documents will not be deleted.",
 
+  // ── Hero CTA ──────────────────────────────────────────────────────────────────
+  hero_rfp_title: "Try a live document analysis",
+  hero_rfp_subtitle:
+    "Analyse a real 3-page procurement RFP and see how PocketMind AI identifies requirements, deadlines, specifications and risks.",
+  hero_rfp_cta: "Analyse the sample document",
+  hero_upload_cta: "Upload your own document",
+
   // ── Document delete ───────────────────────────────────────────────────────────
   doc_delete_action: "Delete document",
   doc_delete_menu_aria: "Document options for {{name}}",

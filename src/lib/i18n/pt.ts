@@ -998,6 +998,13 @@ export const pt: Translations = {
   projects_delete_confirm:
     "Eliminar agora a organização deste projeto? Os documentos locais não serão apagados.",
 
+  // ── Hero CTA ──────────────────────────────────────────────────────────────────
+  hero_rfp_title: "Experimente uma análise de documento em tempo real",
+  hero_rfp_subtitle:
+    "Analise um RFP real de 3 páginas e veja como o PocketMind AI identifica requisitos, prazos, especificações e riscos.",
+  hero_rfp_cta: "Analisar o documento de exemplo",
+  hero_upload_cta: "Carregar o seu próprio documento",
+
   // ── Document delete ───────────────────────────────────────────────────────────
   doc_delete_action: "Eliminar documento",
   doc_delete_menu_aria: "Opções do documento {{name}}",

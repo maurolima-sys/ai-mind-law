@@ -71,6 +71,8 @@ import {
   DEFAULT_COMPLIANCE_ITEMS,
   DEMO_DOC_ID,
   DEMO_LABEL,
+  DEMO_RFP_DOC_ID,
+  DEMO_RFP_URL,
   type ComplianceMatrixItem,
 } from "@/data/sampleTender";
 import { buildLabel } from "@/lib/buildInfo";
@@ -690,6 +692,68 @@ export function PocketMindApp() {
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     void addDocument(event.currentTarget.files?.[0]);
     event.currentTarget.value = "";
+  }
+
+  async function addDocumentFromUrl(url: string, docId: string, fileName: string) {
+    if (documents.some((d) => d.id === docId)) {
+      // Already loaded — just navigate to it
+      setSelectedDocumentId(docId);
+      setCloudConsent(false);
+      setEvidenceCloudConsent(false);
+      setSelectedRequirementId(null);
+      setActiveExcerpt(null);
+      setActivePage(1);
+      setScreen("processing");
+      return;
+    }
+    if (!workspaceReady || workspaceError) {
+      setErrorMessage(workspaceError || "Local workspace storage is still loading. Try again shortly.");
+      return;
+    }
+    setErrorMessage("");
+    let blob: Blob;
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      blob = await response.blob();
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : "Network error.";
+      setErrorMessage(`The sample document could not be loaded. ${detail}`);
+      return;
+    }
+    const file = new File([blob], fileName, { type: "application/pdf" });
+    const newDocument: DocumentRecord = {
+      id: docId,
+      name: fileName,
+      size: blob.size,
+      source: "upload",
+      format: "pdf",
+      pages: [],
+      sourceLocations: [],
+      addedAt: new Date().toISOString(),
+    };
+    try {
+      await saveDocumentBundle(newDocument, file);
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : "Storage error.";
+      setErrorMessage(`The sample document could not be saved locally. ${detail}`);
+      return;
+    }
+    setDocuments((current) => [newDocument, ...current.filter((d) => d.id !== docId)]);
+    setSelectedDocumentId(docId);
+    setFilesByDocumentId((current) => ({ ...current, [docId]: file }));
+    setSelectedRequirementId(null);
+    setSelectedEvidenceId("");
+    setEvidenceCloudConsent(false);
+    setActivePage(1);
+    setActiveExcerpt(null);
+    setProcessingChoice(preferences.defaultProcessingMode);
+    setCloudConsent(false);
+    setExternalOcrConsentDocumentId(null);
+    setScannedDocumentId(null);
+    setExternalOcrAvailability("checking");
+    setScreen("processing");
+    recordActivity("document-added", docId);
   }
 
   function handleDrop(event: DragEvent<HTMLDivElement>) {
@@ -1698,6 +1762,13 @@ export function PocketMindApp() {
               search={search}
               onOpenAnalysis={() => setScreen("analysis")}
               onOpenProcessing={() => setScreen("processing")}
+              onLoadSampleRfp={() =>
+                void addDocumentFromUrl(
+                  DEMO_RFP_URL,
+                  DEMO_RFP_DOC_ID,
+                  "request_for_proposal.pdf",
+                )
+              }
               onSelectDocument={(id) => {
                 setSelectedDocumentId(id);
                 setCloudConsent(false);
@@ -1996,6 +2067,7 @@ function OverviewScreen({
   search,
   onOpenAnalysis,
   onOpenProcessing,
+  onLoadSampleRfp,
   onSelectDocument,
   onDeleteDocument,
 }: {
@@ -2005,6 +2077,7 @@ function OverviewScreen({
   search: string;
   onOpenAnalysis: () => void;
   onOpenProcessing: () => void;
+  onLoadSampleRfp: () => void;
   onSelectDocument: (id: string) => void;
   onDeleteDocument: (document: DocumentRecord) => void;
 }) {
@@ -2058,6 +2131,33 @@ function OverviewScreen({
           <span>{t("overview_good_to_see")}</span>
         </div>
       </div>
+
+      <section className="pm-hero-cta" aria-label="Quick start">
+        <div className="pm-hero-cta-copy">
+          <h2>{t("hero_rfp_title")}</h2>
+          <p>{t("hero_rfp_subtitle")}</p>
+          <div className="pm-hero-cta-meta">
+            <span className="pm-filetype-badge pm-filetype-badge--pdf">PDF</span>
+            <span>Request for Proposal · 3 pages · 245 KB</span>
+          </div>
+        </div>
+        <div className="pm-hero-cta-actions">
+          <button
+            type="button"
+            className="pm-button pm-button--primary pm-hero-primary-btn"
+            onClick={onLoadSampleRfp}
+          >
+            <Sparkles size={16} /> {t("hero_rfp_cta")}
+          </button>
+          <button
+            type="button"
+            className="pm-button pm-button--outline"
+            onClick={onOpenProcessing}
+          >
+            <Upload size={16} /> {t("hero_upload_cta")}
+          </button>
+        </div>
+      </section>
 
       <section className="pm-kpi-grid" aria-label="Workspace summary">
         <div className="pm-kpi-card">
