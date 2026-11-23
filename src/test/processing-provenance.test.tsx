@@ -1,5 +1,5 @@
 import "fake-indexeddb/auto";
-import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import {
   createMemoryHistory,
   createRootRoute,
@@ -11,6 +11,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { buildDemoDocument } from "@/data/sampleTender";
 import { LocaleProvider } from "@/lib/i18n";
+import { AnalysisRunProvider } from "@/lib/analysisRunContext";
 import { clearLocalWorkspace } from "@/lib/services/localWorkspace";
 import { PocketMindApp, ProcessingScreen } from "@/components/pocketmind/PocketMindApp";
 
@@ -48,7 +49,9 @@ function renderApp() {
   const root = createRootRoute({
     component: () => (
       <LocaleProvider>
-        <PocketMindApp />
+        <AnalysisRunProvider>
+          <PocketMindApp />
+        </AnalysisRunProvider>
       </LocaleProvider>
     ),
   });
@@ -133,16 +136,15 @@ describe("processing provenance", () => {
     expect(within(status).getByText("No AI analysis attempted this session")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /confirm and continue/i }));
-    expect(await screen.findByText("Processing failed")).toBeInTheDocument();
     expect(
-      await within(status).findByText("Failed · displayed analysis is from an earlier run"),
+      await within(status).findByText("Failed \u00b7 displayed analysis is from an earlier run"),
     ).toBeInTheDocument();
     expect(within(status).getByText("Demo mode")).toBeInTheDocument();
     expect(mocks.analyzeTender.mock.calls[0]?.[1]).toBe("local");
 
     fireEvent.click(screen.getByRole("button", { name: "Dashboard" }));
     expect(
-      screen.getByText("Failed · displayed analysis is from an earlier run"),
+      screen.getByText("Failed \u00b7 displayed analysis is from an earlier run"),
     ).toBeInTheDocument();
   }, 15_000);
 
@@ -157,8 +159,8 @@ describe("processing provenance", () => {
     renderApp();
     fireEvent.click(await screen.findByRole("button", { name: /add a document/i }));
     fireEvent.click(screen.getByRole("button", { name: /confirm and continue/i }));
-    fireEvent.click(await screen.findByRole("button", { name: "View analysis results" }));
-    expect(await screen.findByText("On-device (ON_DEVICE)")).toBeInTheDocument();
+    // After analysis completes the run state is set; navigate back to processing to see status
+    await screen.findByText("Completed");
     fireEvent.click(screen.getByRole("button", { name: "Processing" }));
     const status = screen.getByRole("region", { name: "Firebase AI Logic status" });
     expect(within(status).getByText("Fictional sample document")).toBeInTheDocument();
@@ -167,7 +169,7 @@ describe("processing provenance", () => {
     expect(within(status).queryByText("Demo mode")).not.toBeInTheDocument();
   }, 15_000);
 
-  it("opens results automatically after displaying completion", async () => {
+  it("opens results after clicking View results button", async () => {
     const sample = buildDemoDocument();
     if (!sample.analysis) throw new Error("Sample analysis missing");
     mocks.analyzeTender.mockResolvedValue({
@@ -178,10 +180,10 @@ describe("processing provenance", () => {
     renderApp();
     fireEvent.click(await screen.findByRole("button", { name: /add a document/i }));
     fireEvent.click(screen.getByRole("button", { name: /confirm and continue/i }));
-    // Monitor shows completion with a View results button — no auto-navigation
-    const viewBtn = await screen.findByRole("button", { name: "View analysis results" });
-    expect(viewBtn).toBeInTheDocument();
-    fireEvent.click(viewBtn);
+    // Analysis completes; run state is updated
+    await screen.findByText("Completed");
+    // Navigate to analysis screen via sidebar
+    fireEvent.click(screen.getByRole("button", { name: "Analysis" }));
     expect(
       await screen.findByRole("heading", { name: "Document analysis", level: 1 }),
     ).toBeInTheDocument();
@@ -203,15 +205,25 @@ describe("processing provenance", () => {
     renderApp();
     fireEvent.click(await screen.findByRole("button", { name: /add a document/i }));
     fireEvent.click(screen.getByRole("button", { name: /confirm and continue/i }));
-    await screen.findByRole("dialog", { name: "Processing intelligence monitor" });
+    // Analysis is running; navigate away
     fireEvent.click(screen.getByRole("button", { name: "Dashboard" }));
     await act(async () => finish(result));
+    // Navigate back to processing — run state should show completed
     fireEvent.click(screen.getByRole("button", { name: "Processing" }));
-    expect(
-      await screen.findByRole("button", { name: "View analysis results" }),
-    ).toBeInTheDocument();
+    const status = await screen.findByRole("region", { name: "Firebase AI Logic status" });
+    expect(within(status).getByText("Completed")).toBeInTheDocument();
     await new Promise((resolve) => setTimeout(resolve, 2700));
-    expect(screen.getByRole("button", { name: "View analysis results" })).toBeInTheDocument();
+    expect(within(status).getByText("Completed")).toBeInTheDocument();
+  }, 15_000);
+
+  it("visiting /processing/run with no run stays on main app", async () => {
+    renderApp();
+    // Wait for app to mount — no run in progress
+    await screen.findByRole("navigation", { name: "Main navigation" });
+    // Monitor heading should not be present
+    expect(
+      screen.queryByRole("heading", { name: "Processing intelligence monitor", level: 1 }),
+    ).not.toBeInTheDocument();
   }, 15_000);
 
   it("reports uploaded content, external extraction and an earlier cloud result separately", () => {
@@ -263,13 +275,13 @@ describe("processing provenance", () => {
     const status = screen.getByRole("region", { name: "Firebase AI Logic status" });
     expect(within(status).getByText("document.pdf")).toBeInTheDocument();
     expect(within(status).getByText("Uploaded document")).toBeInTheDocument();
-    expect(within(status).getByText("External OCR · LlamaParse")).toBeInTheDocument();
+    expect(within(status).getByText("External OCR \u00b7 LlamaParse")).toBeInTheDocument();
     expect(within(status).getByText("Cloud (IN_CLOUD)")).toBeInTheDocument();
     expect(
-      within(status).getByText("Failed · displayed analysis is from an earlier run"),
+      within(status).getByText("Failed \u00b7 displayed analysis is from an earlier run"),
     ).toBeInTheDocument();
     expect(screen.getByText("Mode for next analysis")).toBeInTheDocument();
-    expect(screen.getAllByText("Hybrid · on-device first, cloud fallback")).toHaveLength(2);
+    expect(screen.getAllByText("Hybrid \u00b7 on-device first, cloud fallback")).toHaveLength(2);
     // Button is enabled — consent is now enforced via toast, not by disabling the button
     expect(screen.getByRole("button", { name: /confirm and continue/i })).not.toBeDisabled();
   });

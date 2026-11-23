@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 
-import { Minus, X } from "lucide-react";
 import { useT } from "@/lib/i18n";
 import type { AnalysisProgressEvent } from "@/lib/services/tenderAnalysis";
 import type { Analysis } from "@/lib/types";
 import "./ProcessingMonitor.css";
+
+// ─── Types (re-exported so PocketMindApp can import from here) ────────────────
 
 export type MonitorEvent =
   | AnalysisProgressEvent
@@ -19,6 +19,7 @@ export type MonitorEvent =
   | { type: "ocr-completed" }
   | { type: "ocr-waiting" };
 
+/** @deprecated Use AnalysisRun from analysisRunContext instead. Kept for PocketMindApp compat. */
 export type MonitorState = {
   documentId: string;
   documentName: string;
@@ -27,6 +28,8 @@ export type MonitorState = {
   result?: Analysis;
   autoOpen?: boolean;
 };
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function eventMessage(event: MonitorEvent, t: ReturnType<typeof useT>) {
   switch (event.type) {
@@ -73,78 +76,34 @@ function eventMessage(event: MonitorEvent, t: ReturnType<typeof useT>) {
   }
 }
 
+// ─── Component ────────────────────────────────────────────────────────────────
+
 export function ProcessingMonitor({
   monitor,
   onOpenResults,
-  onClose,
-  returnFocusRef,
+  onCancel,
 }: {
   monitor: MonitorState;
   onOpenResults: () => void;
-  onClose?: () => void;
-  returnFocusRef?: React.RefObject<HTMLElement | null>;
+  onCancel?: () => void;
 }) {
   const t = useT();
   const [paused, setPaused] = useState(false);
-  const [minimised, setMinimised] = useState(false);
   const listRef = useRef<HTMLOListElement>(null);
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const firstFocusableRef = useRef<HTMLButtonElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
   const latest = monitor.events[monitor.events.length - 1];
   const canClose = monitor.status !== "running" && monitor.status !== "waiting";
+
+  // Move focus to heading on mount
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, []);
 
   // Auto-scroll event list to bottom as new events arrive
   useEffect(() => {
     const el = listRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [monitor.events.length]);
-
-  // Focus first focusable element when dialog opens or un-minimises
-  useEffect(() => {
-    if (!minimised) {
-      firstFocusableRef.current?.focus();
-    }
-  }, [minimised]);
-
-  // Focus trap + Esc handler
-  useEffect(() => {
-    if (minimised) return;
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        if (canClose) {
-          onClose?.();
-          returnFocusRef?.current?.focus();
-        }
-        return;
-      }
-      if (event.key !== "Tab") return;
-      const focusable = Array.from(
-        dialog!.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-        ),
-      );
-      if (focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey) {
-        if (document.activeElement === first) {
-          event.preventDefault();
-          last?.focus();
-        }
-      } else {
-        if (document.activeElement === last) {
-          event.preventDefault();
-          first?.focus();
-        }
-      }
-    }
-
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [minimised, canClose, onClose, returnFocusRef]);
 
   const progress =
     latest?.type === "text-page" && latest.total > 0
@@ -154,6 +113,7 @@ export function ProcessingMonitor({
         : latest?.type === "output-validated" && latest.total > 0
           ? { value: latest.section, max: latest.total }
           : null;
+
   const statusLabel = t(
     monitor.status === "running"
       ? "monitor_running"
@@ -163,6 +123,7 @@ export function ProcessingMonitor({
           ? "monitor_failed"
           : "monitor_completed",
   );
+
   const result = monitor.result;
   const counts = result && [
     { label: t("monitor_requirements"), count: result.requirements.length },
@@ -173,127 +134,102 @@ export function ProcessingMonitor({
     { label: t("monitor_inconsistencies"), count: result.inconsistencies.length },
   ];
 
-  if (minimised) {
-    return createPortal(
-      <button
-        type="button"
-        className="pm-monitor-pill"
-        onClick={() => setMinimised(false)}
-        aria-label={t("monitor_reopen")}
-      >
-        <span className="pm-monitor-pill-dot" aria-hidden="true" />
-        {t("monitor_reopen")}
-      </button>,
-      window.document.body,
-    );
-  }
-
-  const panel = (
-    <div
-      ref={dialogRef}
-      className="pm-monitor-overlay"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="pm-monitor-title"
-    >
-      <section className="pm-monitor" aria-label={t("monitor_title")}>
-        <div className="pm-monitor-visual">
-          <div
-            className={`pm-monitor-radar${paused || monitor.status !== "running" ? " is-paused" : ""}`}
-            aria-hidden="true"
-          >
-            <div className="pm-monitor-sweep" />
-            <div className="pm-monitor-center" />
+  return (
+    <section className="pm-monitor" aria-label={t("monitor_title")}>
+      <div className="pm-monitor-visual">
+        <div
+          className={`pm-monitor-radar${paused || monitor.status !== "running" ? " is-paused" : ""}`}
+          aria-hidden="true"
+        >
+          <div className="pm-monitor-sweep" />
+          <div className="pm-monitor-center" />
+        </div>
+        {monitor.status === "running" && (
+          <button type="button" className="pm-monitor-motion" onClick={() => setPaused(!paused)}>
+            {t(paused ? "monitor_resume_motion" : "monitor_pause_motion")}
+          </button>
+        )}
+      </div>
+      <div className="pm-monitor-content">
+        <div className="pm-monitor-heading">
+          <div>
+            <h1
+              id="pm-monitor-title"
+              ref={headingRef}
+              tabIndex={-1}
+              style={{ outline: "none" }}
+            >
+              {t("monitor_title")}
+            </h1>
+            <p className="pm-monitor-document">{monitor.documentName}</p>
           </div>
-          {monitor.status === "running" && (
-            <button type="button" className="pm-monitor-motion" onClick={() => setPaused(!paused)}>
-              {t(paused ? "monitor_resume_motion" : "monitor_pause_motion")}
+          <span className={`pm-monitor-state is-${monitor.status}`}>{statusLabel}</span>
+        </div>
+        <h2>{t("monitor_activity")}</h2>
+        <ol
+          ref={listRef}
+          className="pm-monitor-events"
+          aria-label={t("monitor_activity")}
+          aria-live="polite"
+          aria-atomic="false"
+        >
+          {monitor.events.map((event, index) => (
+            <li key={index} className={index === monitor.events.length - 1 ? "is-latest" : ""}>
+              <span className="pm-monitor-dot" aria-hidden="true" />
+              <span>{eventMessage(event, t)}</span>
+            </li>
+          ))}
+        </ol>
+        <p className="pm-monitor-announcement" role="status">
+          {statusLabel}
+          {latest ? ` · ${eventMessage(latest, t)}` : ""}
+        </p>
+        {monitor.status === "running" && (
+          <div className="pm-monitor-progress">
+            {progress && latest ? (
+              <>
+                <label htmlFor="pm-monitor-progress">{eventMessage(latest, t)}</label>
+                <progress id="pm-monitor-progress" max={progress.max} value={progress.value} />
+              </>
+            ) : (
+              <span>{t("monitor_indeterminate")}</span>
+            )}
+          </div>
+        )}
+        {monitor.status === "running" && onCancel && (
+          <div className="pm-monitor-actions">
+            <button type="button" className="pm-button pm-button--outline" onClick={onCancel}>
+              {t("monitor_cancel")}
             </button>
-          )}
-        </div>
-        <div className="pm-monitor-content">
-          <div className="pm-monitor-heading">
-            <div>
-              <h2 id="pm-monitor-title">{t("monitor_title")}</h2>
-              <p className="pm-monitor-document">{monitor.documentName}</p>
-            </div>
-            <div className="pm-monitor-heading-right">
-              <span className={`pm-monitor-state is-${monitor.status}`}>{statusLabel}</span>
-              {monitor.status === "running" && (
-                <button
-                  ref={firstFocusableRef}
-                  type="button"
-                  className="pm-monitor-close"
-                  aria-label={t("monitor_minimise")}
-                  onClick={() => setMinimised(true)}
-                >
-                  <Minus size={16} />
-                </button>
-              )}
-              {canClose && onClose && (
-                <button
-                  ref={monitor.status !== "running" ? firstFocusableRef : undefined}
-                  type="button"
-                  className="pm-monitor-close"
-                  aria-label={t("monitor_close")}
-                  onClick={() => {
-                    onClose();
-                    returnFocusRef?.current?.focus();
-                  }}
-                >
-                  <X size={16} />
-                </button>
-              )}
-            </div>
           </div>
-          <h3>{t("monitor_activity")}</h3>
-          <ol ref={listRef} className="pm-monitor-events" aria-label={t("monitor_activity")}>
-            {monitor.events.map((event, index) => (
-              <li key={index} className={index === monitor.events.length - 1 ? "is-latest" : ""}>
-                <span className="pm-monitor-dot" aria-hidden="true" />
-                <span>{eventMessage(event, t)}</span>
-              </li>
-            ))}
-          </ol>
-          <p className="pm-monitor-announcement" role="status">
-            {statusLabel}
-            {latest ? ` · ${eventMessage(latest, t)}` : ""}
-          </p>
-          {monitor.status === "running" && (
-            <div className="pm-monitor-progress">
-              {progress && latest ? (
-                <>
-                  <label htmlFor="pm-monitor-progress">{eventMessage(latest, t)}</label>
-                  <progress id="pm-monitor-progress" max={progress.max} value={progress.value} />
-                </>
-              ) : (
-                <span>{t("monitor_indeterminate")}</span>
-              )}
-            </div>
-          )}
-          {counts && (
-            <div className="pm-monitor-results">
-              <p>
-                {t("monitor_findings", {
-                  count: counts.reduce((total, item) => total + item.count, 0),
-                })}
-              </p>
-              <ul>
-                {counts.map((item) => (
-                  <li key={item.label}>
-                    <strong>{item.count}</strong> {item.label}
-                  </li>
-                ))}
-              </ul>
-              <button type="button" className="pm-button" onClick={onOpenResults}>
-                {t("monitor_view_results")}
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
-    </div>
+        )}
+        {counts && (
+          <div className="pm-monitor-results">
+            <p>
+              {t("monitor_findings", {
+                count: counts.reduce((total, item) => total + item.count, 0),
+              })}
+            </p>
+            <ul>
+              {counts.map((item) => (
+                <li key={item.label}>
+                  <strong>{item.count}</strong> {item.label}
+                </li>
+              ))}
+            </ul>
+            <button type="button" className="pm-button" onClick={onOpenResults}>
+              {t("monitor_view_results")}
+            </button>
+          </div>
+        )}
+        {canClose && !counts && (
+          <div className="pm-monitor-actions">
+            <button type="button" className="pm-button pm-button--outline" onClick={onOpenResults}>
+              {t("monitor_back_to_processing")}
+            </button>
+          </div>
+        )}
+      </div>
+    </section>
   );
-
-  return createPortal(panel, window.document.body);
 }

@@ -40,8 +40,15 @@
   monitor_opening_results: "Opening your results shortly.",
   monitor_view_results: "View analysis results",
   monitor_close: "Close monitor",
-  monitor_minimise: "Minimise monitor",
-  monitor_reopen: "Analysis running — click to reopen monitor",
+  monitor_cancel: "Cancel analysis",
+  monitor_cancel_title: "Cancel analysis?",
+  monitor_cancel_body:
+    "This will stop the analysis. Extracted text is kept; you can run a new analysis from Processing.",
+  monitor_cancel_confirm: "Cancel analysis",
+  monitor_cancel_dismiss: "Keep running",
+  monitor_cancelled_message: "Analysis was cancelled.",
+  monitor_back_to_processing: "Back to Processing",
+  monitor_running_banner: "Analysis running — open monitor",
   // ── Navigation ───────────────────────────────────────────────────────────────
   nav_dashboard: "Dashboard",
   nav_library: "Documents",

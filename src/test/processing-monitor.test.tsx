@@ -14,16 +14,25 @@ const initial: MonitorState = {
 
 afterEach(cleanup);
 
-function show(monitor: MonitorState, open = vi.fn()) {
+function show(monitor: MonitorState, open = vi.fn(), cancel?: () => void) {
   render(
     <LocaleProvider>
-      <ProcessingMonitor monitor={monitor} onOpenResults={open} />
+      <ProcessingMonitor
+        monitor={monitor}
+        onOpenResults={open}
+        {...(cancel ? { onCancel: cancel } : {})}
+      />
     </LocaleProvider>,
   );
   return open;
 }
 
 describe("processing monitor", () => {
+  it("renders h1 with monitor title", () => {
+    show(initial);
+    expect(screen.getByRole("heading", { level: 1, name: "Processing intelligence monitor" })).toBeInTheDocument();
+  });
+
   it("shows measured page progress, and pauses only the animation", () => {
     show(initial);
     const progress = screen.getByRole("progressbar");
@@ -60,7 +69,7 @@ describe("processing monitor", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("shows real counts and opens results only after completion", () => {
+  it("shows real counts and View results only after completion", () => {
     const result = buildDemoDocument().analysis;
     if (!result) throw new Error("Sample analysis missing");
     const open = show({ ...initial, status: "completed", result });
@@ -77,51 +86,28 @@ describe("processing monitor", () => {
     expect(open).toHaveBeenCalledOnce();
   });
 
+  it("View results button is absent while running", () => {
+    show(initial);
+    expect(screen.queryByRole("button", { name: "View analysis results" })).not.toBeInTheDocument();
+  });
+
   it("shows an OCR decision as waiting, not a successful analysis", () => {
     show({ ...initial, status: "waiting", events: [{ type: "ocr-waiting" }] });
     expect(screen.getByText("Action needed")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "View analysis results" })).not.toBeInTheDocument();
   });
 
-  it("has dialog role and aria-modal", () => {
-    show(initial);
-    const dialog = screen.getByRole("dialog");
-    expect(dialog).toHaveAttribute("aria-modal", "true");
-    expect(dialog).toHaveAttribute("aria-labelledby", "pm-monitor-title");
+  it("Cancel analysis button calls onCancel while running", () => {
+    const cancel = vi.fn();
+    show(initial, vi.fn(), cancel);
+    fireEvent.click(screen.getByRole("button", { name: "Cancel analysis" }));
+    expect(cancel).toHaveBeenCalledOnce();
   });
 
-  it("ignores Esc while running", () => {
-    const close = vi.fn();
-    render(
-      <LocaleProvider>
-        <ProcessingMonitor monitor={initial} onOpenResults={vi.fn()} onClose={close} />
-      </LocaleProvider>,
-    );
-    fireEvent.keyDown(document, { key: "Escape" });
-    expect(close).not.toHaveBeenCalled();
-  });
-
-  it("closes on Esc when completed", () => {
+  it("Cancel analysis button is absent when completed", () => {
     const result = buildDemoDocument().analysis;
     if (!result) throw new Error("Sample analysis missing");
-    const close = vi.fn();
-    render(
-      <LocaleProvider>
-        <ProcessingMonitor
-          monitor={{ ...initial, status: "completed", result }}
-          onOpenResults={vi.fn()}
-          onClose={close}
-        />
-      </LocaleProvider>,
-    );
-    fireEvent.keyDown(document, { key: "Escape" });
-    expect(close).toHaveBeenCalledOnce();
-  });
-
-  it("minimise hides overlay but keeps analysis running", () => {
-    show(initial);
-    fireEvent.click(screen.getByRole("button", { name: "Minimise monitor" }));
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /reopen monitor/i })).toBeInTheDocument();
+    show({ ...initial, status: "completed", result }, vi.fn(), vi.fn());
+    expect(screen.queryByRole("button", { name: "Cancel analysis" })).not.toBeInTheDocument();
   });
 });

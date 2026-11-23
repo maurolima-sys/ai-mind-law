@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as EvaluationRouteImport } from './routes/evaluation'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ProcessingRunRouteImport } from './routes/processing/run'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,18 +35,25 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProcessingRunRoute = ProcessingRunRouteImport.update({
+  id: '/processing/run',
+  path: '/processing/run',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/changelog': typeof ChangelogRoute
   '/evaluation': typeof EvaluationRoute
   '/login': typeof LoginRoute
+  '/processing/run': typeof ProcessingRunRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/changelog': typeof ChangelogRoute
   '/evaluation': typeof EvaluationRoute
   '/login': typeof LoginRoute
+  '/processing/run': typeof ProcessingRunRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,20 @@ export interface FileRoutesById {
   '/changelog': typeof ChangelogRoute
   '/evaluation': typeof EvaluationRoute
   '/login': typeof LoginRoute
+  '/processing/run': typeof ProcessingRunRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/changelog' | '/evaluation' | '/login'
+  fullPaths: '/' | '/changelog' | '/evaluation' | '/login' | '/processing/run'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/changelog' | '/evaluation' | '/login'
-  id: '__root__' | '/' | '/changelog' | '/evaluation' | '/login'
+  to: '/' | '/changelog' | '/evaluation' | '/login' | '/processing/run'
+  id:
+    | '__root__'
+    | '/'
+    | '/changelog'
+    | '/evaluation'
+    | '/login'
+    | '/processing/run'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +82,7 @@ export interface RootRouteChildren {
   ChangelogRoute: typeof ChangelogRoute
   EvaluationRoute: typeof EvaluationRoute
   LoginRoute: typeof LoginRoute
+  ProcessingRunRoute: typeof ProcessingRunRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +115,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/processing/run': {
+      id: '/processing/run'
+      path: '/processing/run'
+      fullPath: '/processing/run'
+      preLoaderRoute: typeof ProcessingRunRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,6 +130,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChangelogRoute: ChangelogRoute,
   EvaluationRoute: EvaluationRoute,
   LoginRoute: LoginRoute,
+  ProcessingRunRoute: ProcessingRunRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

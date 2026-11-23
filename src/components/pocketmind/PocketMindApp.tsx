@@ -81,11 +81,8 @@ import { IntegrationsScreen } from "@/components/pocketmind/IntegrationsScreen";
 import { LanguageSelector } from "@/components/pocketmind/LanguageSelector";
 import { LocalWorkspaceLibrary } from "@/components/pocketmind/LocalWorkspaceLibrary";
 import { ProjectsScreen } from "@/components/pocketmind/ProjectsScreen";
-import {
-  ProcessingMonitor,
-  type MonitorEvent,
-  type MonitorState,
-} from "@/components/pocketmind/ProcessingMonitor";
+import { ProcessingMonitor, type MonitorEvent, type MonitorState } from "@/components/pocketmind/ProcessingMonitor";
+import { useAnalysisRun } from "@/lib/analysisRunContext";
 import { RiskScreen } from "@/components/pocketmind/RiskScreen";
 import { SettingsScreen } from "@/components/pocketmind/SettingsScreen";
 import { SourceDocumentViewer } from "@/components/pocketmind/SourceDocumentViewer";
@@ -160,7 +157,7 @@ import {
   saveSidebarExpanded,
 } from "@/lib/layoutPreferences";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
   CATEGORIES,
@@ -352,6 +349,8 @@ function EvidenceStatus({ evidence }: { evidence: Evidence }) {
 export function PocketMindApp() {
   const t = useT();
   const { locale, setLocale } = useLocale();
+  const navigate = useNavigate();
+  const { run: analysisRun, startRun: startAnalysisRun, appendEvent: appendRunEvent, setRunStatus: setAnalysisRunStatus } = useAnalysisRun();
   const configuredDefaultMode = isFirebaseConfigured() ? "hybrid" : "local";
   const [preferences, setPreferences] = useState<PocketMindPreferences>(() =>
     defaultPreferences(configuredDefaultMode),
@@ -403,11 +402,23 @@ export function PocketMindApp() {
   >({});
   const [cloudResponseReceived, setCloudResponseReceived] = useState(false);
   const [progressDetail, setProgressDetail] = useState("");
-  const [monitor, setMonitor] = useState<MonitorState | null>(null);
   const screenRef = useRef(screen);
   const selectedDocumentIdRef = useRef(selectedDocumentId);
   screenRef.current = screen;
   selectedDocumentIdRef.current = selectedDocumentId;
+  // Legacy monitor state kept for ProcessingScreen prop compatibility
+  const monitor: MonitorState | null = analysisRun
+    ? {
+        documentId: analysisRun.documentId,
+        documentName: analysisRun.documentName,
+        status:
+          analysisRun.status === "cancelled"
+            ? ("failed" as const)
+            : (analysisRun.status as "running" | "waiting" | "failed" | "completed"),
+        events: analysisRun.events,
+        ...(analysisRun.result ? { result: analysisRun.result } : {}),
+      }
+    : null;
   const [errorMessage, setErrorMessage] = useState("");
   const [activePage, setActivePage] = useState(1);
   const [activeExcerpt, setActiveExcerpt] = useState<string | null>(null);
@@ -416,7 +427,6 @@ export function PocketMindApp() {
   const [tourActive, setTourActive] = useState(false);
   const [tourRequestedByUser, setTourRequestedByUser] = useState(false);
   const tourButtonRef = useRef<HTMLButtonElement | null>(null);
-  const confirmButtonRef = useRef<HTMLButtonElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -521,50 +531,16 @@ export function PocketMindApp() {
     documents.find((document) => document.id === selectedDocumentId) ?? documents[0];
   const file = filesByDocumentId[selectedDocumentId] ?? null;
 
-  useEffect(() => {
-    if (screen === "processing") return;
-    setMonitor((current) => (current?.autoOpen ? { ...current, autoOpen: false } : current));
-  }, [screen]);
-
   function startMonitor(document: DocumentRecord) {
-    setMonitor({
-      documentId: document.id,
-      documentName: document.name,
-      status: "running",
-      events: [{ type: "document-selected" }],
-    });
+    startAnalysisRun(document.id, document.name);
   }
 
   function appendMonitor(documentId: string, event: MonitorEvent) {
-    setMonitor((current) => {
-      if (!current || current.documentId !== documentId) return current;
-      const events = [...current.events];
-      if (
-        (event.type === "text-page" || event.type === "model-download") &&
-        events[events.length - 1]?.type === event.type
-      ) {
-        events[events.length - 1] = event;
-      } else {
-        events.push(event);
-      }
-      return { ...current, events: events.slice(-30) };
-    });
+    appendRunEvent(documentId, event);
   }
 
   function setMonitorStatus(documentId: string, status: MonitorState["status"], result?: Analysis) {
-    setMonitor((current) =>
-      current?.documentId === documentId
-        ? {
-            ...current,
-            status,
-            ...(result ? { result } : {}),
-            autoOpen:
-              status === "completed" &&
-              screenRef.current === "processing" &&
-              selectedDocumentIdRef.current === documentId,
-          }
-        : current,
-    );
+    setAnalysisRunStatus(documentId, status, result);
   }
   const analysis = selectedDocument?.analysis;
   const firebaseConfigured = isFirebaseConfigured();
@@ -822,7 +798,6 @@ export function PocketMindApp() {
         return;
       }
 
-      setMonitor(null);
       setScreen("analysis");
     } catch (error) {
       setMonitorStatus(selectedDocument.id, "failed");
@@ -1243,6 +1218,7 @@ export function PocketMindApp() {
     setIsAnalyzing(true);
     setErrorMessage("");
     startMonitor(selectedDocument);
+    void navigate({ to: "/processing/run" });
     try {
       let pages: string[];
       let locations: string[];
@@ -1923,7 +1899,6 @@ export function PocketMindApp() {
               progressDetail={progressDetail}
               monitor={monitor?.documentId === selectedDocument.id ? monitor : null}
               onOpenResults={() => {
-                setMonitor(null);
                 setScreen("analysis");
               }}
               errorMessage={errorMessage}
@@ -1933,11 +1908,9 @@ export function PocketMindApp() {
                   errorMessage === t("on_device_generation_timeout_error"))
               }
               inputRef={fileInputRef}
-              confirmButtonRef={confirmButtonRef}
               onFileChange={handleFileChange}
               onDrop={handleDrop}
               onSelectChoice={(choice) => {
-                if (monitor?.status === "completed") setMonitor(null);
                 setProcessingChoice(choice);
                 if (choice === "demo" || choice === "local") setCloudConsent(false);
                 setEvidenceCloudConsent(false);
@@ -1985,17 +1958,6 @@ export function PocketMindApp() {
           )}
         </main>
       </div>
-      {monitor && (
-        <ProcessingMonitor
-          monitor={monitor}
-          onOpenResults={() => {
-            setMonitor(null);
-            setScreen("analysis");
-          }}
-          onClose={() => setMonitor(null)}
-          returnFocusRef={confirmButtonRef}
-        />
-      )}
       <GuidedTour
         active={tourActive}
         screen={
