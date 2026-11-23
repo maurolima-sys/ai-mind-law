@@ -79,3 +79,6 @@ ai-mind-law/
 watchdog.py
 .env.watchdog-backup
 dependencies-*.json
+
+# Local analysis and investigation scripts — not part of the repo
+scripts/budget-analysis.mjs
