@@ -25,7 +25,7 @@ function renderRoute() {
   const evaluation = createRoute({
     getParentRoute: () => root,
     path: "/evaluation",
-    component: Route.options.component,
+    ...(Route.options.component !== undefined ? { component: Route.options.component } : {}),
   });
   const home = createRoute({
     getParentRoute: () => root,
@@ -72,7 +72,7 @@ describe("evaluation logout", () => {
     expect(router.state.location.pathname).toBe("/evaluation");
     expect(router.state.location.hash).toBe("overview");
 
-    act(() => onAuthStateChange.mock.calls[0][0]("SIGNED_OUT", null));
+    act(() => onAuthStateChange.mock.calls[0]![0]("SIGNED_OUT", null));
     await act(async () => finishSignOut({ error: null }));
     expect(await screen.findByRole("heading", { name: "Home page" })).toBeInTheDocument();
     expect(router.state.location.pathname).toBe("/");

@@ -41,7 +41,8 @@
   monitor_view_results: "View analysis results",
   monitor_close: "Close monitor",
   monitor_section_sound_label: "Section completion sound",
-  monitor_section_sound_detail: "Play a subtle sound when each analysis section validates successfully.",
+  monitor_section_sound_detail:
+    "Play a subtle sound when each analysis section validates successfully.",
   monitor_next_steps_title: "What to do next",
   monitor_next_steps_findings: "Review findings and verify source excerpts in Analysis",
   monitor_next_steps_compliance: "Open Compliance matrix to assess requirements",
@@ -867,7 +868,8 @@
   settings_answer_speech_label: "Read Q&A answers aloud",
   settings_answer_speech_detail: "Show browser text-to-speech controls for assistant answers.",
   settings_section_sound_label: "Section completion sound",
-  settings_section_sound_detail: "Play a subtle sound each time an analysis section validates successfully.",
+  settings_section_sound_detail:
+    "Play a subtle sound each time an analysis section validates successfully.",
   settings_local_data_title: "Local data governance",
   settings_local_data_detail:
     "Documents, extracted text, evidence, analyses, and reviews are stored only in this browser.",
@@ -1049,8 +1051,10 @@
   discovery_search_btn: "Search for documents",
   discovery_searching: "Searching…",
   discovery_results_aria: "Discovered document candidates",
-  discovery_no_results: "No validated PDF documents were found. Try a broader description or different jurisdiction.",
-  discovery_error_generic: "Document discovery failed. Check that Firecrawl is configured and try again.",
+  discovery_no_results:
+    "No validated PDF documents were found. Try a broader description or different jurisdiction.",
+  discovery_error_generic:
+    "Document discovery failed. Check that Firecrawl is configured and try again.",
   discovery_source_link: "Source",
   discovery_source_link_aria: "Open source page in a new tab",
   discovery_analyze_btn: "Analyze",
@@ -1090,8 +1094,7 @@
   cp_business_desc_label: "Business description (objects clause)",
   cp_business_desc_hint:
     "Copy the objects clause from the registration document. Preserve the original language.",
-  cp_business_desc_placeholder:
-    "Desenvolvimento e comercialização de software sob encomenda…",
+  cp_business_desc_placeholder: "Desenvolvimento e comercialização de software sob encomenda…",
   cp_registered_codes_title: "Official activity codes",
   cp_registered_codes_hint:
     "Codes from official registration documents. Preserve the system, version, and code exactly as they appear.",
@@ -1157,6 +1160,9 @@
   doc_delete_cancel: "Keep document",
   doc_delete_success: "{{name}} was deleted.",
   doc_delete_error: "The document could not be deleted. Your data has not been changed.",
+
+  // ── Evidence panel close ──────────────────────────────────────────────────────
+  evidence_panel_close: "Close evidence panel",
 } as const;
 
 export type TranslationKey = keyof typeof en;

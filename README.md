@@ -20,7 +20,7 @@ The core problem: tender documents run to dozens of pages of dense prose. The ob
 
 ## What makes this a non-obvious use of hybrid inference
 
-Most hybrid AI demos run a single prompt against a fixed input. PocketMind AI is designed to apply hybrid inference to a *document review workflow* where the inference source matters to the user: sensitive procurement documents may not leave the device; the app requires explicit consent before any cloud path is used and is designed to surface the reported inference source. A mixed local/cloud analysis completed in a local Chrome test; a complete on-device-only analysis is still unverified.
+Most hybrid AI demos run a single prompt against a fixed input. PocketMind AI is designed to apply hybrid inference to a _document review workflow_ where the inference source matters to the user: sensitive procurement documents may not leave the device; the app requires explicit consent before any cloud path is used and is designed to surface the reported inference source. A mixed local/cloud analysis completed in a local Chrome test; a complete on-device-only analysis is still unverified.
 
 ## Who it's for
 

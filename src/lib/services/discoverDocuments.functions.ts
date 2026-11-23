@@ -8,7 +8,8 @@ const MAX_PAGES = 5;
 const MAX_RESPONSE_BYTES = 1_000_000;
 
 // Private/loopback CIDR ranges blocked to prevent SSRF
-const BLOCKED_HOSTNAMES = /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|::1|0\.0\.0\.0)/i;
+const BLOCKED_HOSTNAMES =
+  /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|::1|0\.0\.0\.0)/i;
 
 // ─── Input schema ─────────────────────────────────────────────────────────────
 
@@ -103,7 +104,8 @@ async function fetchAndValidatePdf(
   const arrayBuffer = await response.arrayBuffer();
   const buffer = new Uint8Array(arrayBuffer);
 
-  if (buffer.byteLength > MAX_PDF_BYTES) return { pages: 0, valid: false, reason: "File too large" };
+  if (buffer.byteLength > MAX_PDF_BYTES)
+    return { pages: 0, valid: false, reason: "File too large" };
 
   // Verify PDF magic bytes
   const magic = new TextDecoder("latin1").decode(buffer.slice(0, 5));
@@ -153,7 +155,8 @@ export const discoverDocuments = createServerFn({ method: "POST" })
   .validator((data: unknown) => inputSchema.parse(data))
   .handler(async ({ data }): Promise<DiscoveryCandidate[]> => {
     const apiKey = process.env["FIRECRAWL_API_KEY"];
-    if (!apiKey) throw new Error("Smart Document Discovery requires FIRECRAWL_API_KEY on the server.");
+    if (!apiKey)
+      throw new Error("Smart Document Discovery requires FIRECRAWL_API_KEY on the server.");
 
     // Build a query that targets official sources and PDF files
     const langTerms =
@@ -168,7 +171,10 @@ export const discoverDocuments = createServerFn({ method: "POST" })
         ? data.activityCodes.map((a) => a.description).join(" ")
         : "";
 
-    const query = `${data.jurisdiction} ${data.description} ${activityContext} ${langTerms} site:.gov OR site:.gov.br OR site:.europa.eu`.replace(/\s+/g, " ").trim();
+    const query =
+      `${data.jurisdiction} ${data.description} ${activityContext} ${langTerms} site:.gov OR site:.gov.br OR site:.europa.eu`
+        .replace(/\s+/g, " ")
+        .trim();
 
     const response = await fetch("https://api.firecrawl.dev/v2/search", {
       method: "POST",
@@ -231,8 +237,7 @@ export const discoverDocuments = createServerFn({ method: "POST" })
         const validation = await fetchAndValidatePdf(safeUrl.toString());
         if (!validation.valid) return null;
 
-        const publishedDate =
-          result.publishedDate ?? result.metadata?.publishedDate ?? null;
+        const publishedDate = result.publishedDate ?? result.metadata?.publishedDate ?? null;
 
         const issuer =
           result.metadata?.siteName?.trim() ||
@@ -247,7 +252,10 @@ export const discoverDocuments = createServerFn({ method: "POST" })
 
         const candidate: DiscoveryCandidate = {
           id: `disc-${Date.now()}-${index}`,
-          title: (result.title?.trim() || pdfUrl.split("/").pop() || "Untitled document").slice(0, 200),
+          title: (result.title?.trim() || pdfUrl.split("/").pop() || "Untitled document").slice(
+            0,
+            200,
+          ),
           issuer: issuer.slice(0, 150),
           sourceUrl: pdfUrl.slice(0, 2048),
           pdfUrl: pdfUrl.slice(0, 2048),

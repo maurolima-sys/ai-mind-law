@@ -156,7 +156,9 @@ export function ProcessingMonitor({
   }, [monitor.status, monitor.startedAt]);
 
   const elapsedLabel = (() => {
-    const m = Math.floor(elapsed / 60).toString().padStart(2, "0");
+    const m = Math.floor(elapsed / 60)
+      .toString()
+      .padStart(2, "0");
     const s = (elapsed % 60).toString().padStart(2, "0");
     return `${m}:${s}`;
   })();
@@ -220,21 +222,20 @@ export function ProcessingMonitor({
       <div className="pm-monitor-content">
         <div className="pm-monitor-heading">
           <div>
-            <h1
-              id="pm-monitor-title"
-              ref={headingRef}
-              tabIndex={-1}
-              style={{ outline: "none" }}
-            >
+            <h1 id="pm-monitor-title" ref={headingRef} tabIndex={-1} style={{ outline: "none" }}>
               {t("monitor_title")}
             </h1>
             <p className="pm-monitor-document">{monitor.documentName}</p>
           </div>
           <div style={{ textAlign: "right" }}>
             <span className={`pm-monitor-state is-${monitor.status}`}>{statusLabel}</span>
-            {monitor.startedAt && (
-              <p className="pm-monitor-elapsed" aria-live="off">{elapsedLabel}</p>
-            )}
+            {monitor.startedAt ? (
+              <p className="pm-monitor-elapsed" aria-live="off">
+                {elapsedLabel}
+              </p>
+            ) : monitor.status === "running" ? (
+              <p className="pm-monitor-elapsed">{t("monitor_indeterminate")}</p>
+            ) : null}
           </div>
         </div>
         <h2>{t("monitor_activity")}</h2>
@@ -263,9 +264,12 @@ export function ProcessingMonitor({
                 <label htmlFor="pm-monitor-progress">{eventMessage(latest, t)}</label>
                 <progress id="pm-monitor-progress" max={progress.max} value={progress.value} />
               </>
-            ) : (
+            ) : latest?.type === "request-started" ||
+              latest?.type === "model-download" ||
+              latest?.type === "text-page" ||
+              latest?.type === "output-validated" ? (
               <progress aria-label={t("monitor_running")} />
-            )}
+            ) : null}
           </div>
         )}
         {monitor.status === "running" && onCancel && (

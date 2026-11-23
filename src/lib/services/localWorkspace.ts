@@ -396,12 +396,7 @@ export async function deleteProjectRecord(projectId: string): Promise<void> {
 export async function deleteDocumentRecord(documentId: string): Promise<void> {
   const database = await openDatabase();
   try {
-    const stores = [
-      DOCUMENTS,
-      DOCUMENT_FILES,
-      WORKSPACE_STATE,
-      PROJECT_DOCUMENT_LINKS,
-    ];
+    const stores = [DOCUMENTS, DOCUMENT_FILES, WORKSPACE_STATE, PROJECT_DOCUMENT_LINKS];
     const transaction = database.transaction(stores, "readwrite");
     const done = transactionDone(transaction);
 
@@ -440,9 +435,7 @@ export async function deleteDocumentRecord(documentId: string): Promise<void> {
           evidenceMatches: state.evidenceMatches.filter(
             (item) => item.tenderDocumentId !== documentId,
           ),
-          evidenceLinks: state.evidenceLinks.filter(
-            (item) => item.tenderDocumentId !== documentId,
-          ),
+          evidenceLinks: state.evidenceLinks.filter((item) => item.tenderDocumentId !== documentId),
           activities: state.activities.filter(
             (item) => item.documentId !== documentId && item.relatedDocumentId !== documentId,
           ),

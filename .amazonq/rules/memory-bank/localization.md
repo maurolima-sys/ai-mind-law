@@ -2,19 +2,19 @@
 
 ## Política linguística (confirmada)
 
-| Configuração | Decisão |
-|---|---|
-| Idioma padrão da interface | **Inglês** |
+| Configuração               | Decisão                                     |
+| -------------------------- | ------------------------------------------- |
+| Idioma padrão da interface | **Inglês**                                  |
 | Idioma das respostas da IA | **Automático — segue o idioma da pergunta** |
-| Idiomas da v1 | **EN + PT + ES simultaneamente** |
+| Idiomas da v1              | **EN + PT + ES simultaneamente**            |
 
 ## Três camadas linguísticas
 
-| Camada | Escopo |
-|---|---|
-| Interface language | Menus, botões, labels, erros, estados, exportações |
+| Camada                      | Escopo                                              |
+| --------------------------- | --------------------------------------------------- |
+| Interface language          | Menus, botões, labels, erros, estados, exportações  |
 | Preferred response language | Idioma das respostas da IA (automático por defeito) |
-| Document language | Idioma original do documento — nunca traduzido |
+| Document language           | Idioma original do documento — nunca traduzido      |
 
 **Regra fundamental:** traduzir a explicação, nunca modificar a evidência original.
 
@@ -38,32 +38,40 @@
 ### PocketMindApp.tsx
 
 **Navegação (navigation array)**
+
 - "Dashboard", "Document analysis", "Compliance matrix", "Processing & privacy"
 
 **screenCopy (títulos e subtítulos por ecrã)**
+
 - overview: "Your document intelligence workspace" / "Turn complex tenders into reviewable findings, with source evidence attached."
 - analysis: "Document analysis" / "Review extracted findings beside their source pages."
 - compliance: "Compliance matrix" / "Track each requirement against evidence and your team's review status."
 - processing: "Choose how your document is processed" / "Text is extracted in this browser. You control whether AI may process it in the cloud."
 
 **modeLabel (etiquetas de fonte de processamento)**
+
 - "On-device", "Cloud", "Cloud fallback", "Hybrid", "Demo mode", "Not analyzed"
 
 **Sidebar**
+
 - "Workspace", "Privacy by choice", "Cloud use is always explicit.", "Procurement workspace", "Local browser session"
 
 **Topbar**
+
 - Search placeholder: "Search documents, requirements, risks..."
 - aria-label: "Search current workspace", "Clear search"
 - Firebase status labels: "Firebase setup required", "Firebase AI Logic: Connected", "Firebase configured · not yet verified"
 
 **Botão global**
+
 - "Add a document"
 
 **Demo banner**
+
 - "Illustrative sample" + DEMO_LABEL
 
 **OverviewScreen**
+
 - Metric labels: "Documents in workspace", "Files in this browser session", "Sample requirements", "Requirements extracted", "Illustrative prepared findings", "AI findings from fictional text", "with source-verified excerpts", "Critical risks", "Flagged for human review", "Pending reviews", "Requirements awaiting a decision"
 - Table headers: "Document", "Pages", "Processing", "Status"
 - Status badges: "Prepared sample", "AI-analysed sample", "Analyzed", "Not analyzed"
@@ -73,6 +81,7 @@
 - Review queue: "Review queue", "Findings that need human attention.", "Source verified · page X", "Evidence needs verification", "All requirements are reviewed.", "Analyze a document to create a review queue."
 
 **AnalysisScreen**
+
 - Filter chips: "All findings", "Requirements", "Deadlines", "Specifications", "Risks", "Missing & inconsistencies"
 - Source panel: "Extracted source text", "Text extracted by LlamaParse.", "LlamaParse text; original page boundaries are unavailable.", "Text extracted locally in this browser.", "Previous page", "Next page", "Page X of Y", "Page numbers unavailable", "Pagination unavailable", "No text is available for this page.", "Extracted text may need manual verification against the original PDF."
 - Pre-analysis heading: "Ask about this document", "Review the text extracted in your browser and ask a question before running a full analysis.", "Run full analysis"
@@ -86,6 +95,7 @@
 - EmptyAnalysis: "No analysis for this document yet", "Choose an on-device or hybrid processing mode to extract findings from a PDF.", "Open processing options"
 
 **ComplianceScreen**
+
 - Toolbar: "Search from the workspace bar...", "All categories", "All statuses", "Pending", "Reviewed", "Satisfied", "Unclear", "Export CSV"
 - Matrix summary: "X requirements", "with verified evidence", "shown"
 - Table headers: "Requirement", "Category", "Mandatory", "Evidence", "Page", "Review status"
@@ -96,6 +106,7 @@
 - Empty state: "No requirements match these filters", "Adjust the filters or search terms."
 
 **ProcessingScreen**
+
 - Topline: "Processing options", "01 / 03"
 - Mode cards:
   - "On-device only" / "PRIVATE" / "Keep inference on this device" / description + 3 bullet points
@@ -173,14 +184,14 @@
 
 ## Matriz de testes
 
-| Interface | Pergunta | Documento | Resposta esperada |
-|---|---|---|---|
-| EN | EN | EN | EN |
-| PT | PT | EN | PT |
-| EN | PT | PT | PT |
-| ES | ES | EN | ES |
-| PT | EN | ES | PT (idioma preferido) |
-| EN | ES | PT | EN (idioma preferido) |
+| Interface | Pergunta | Documento | Resposta esperada     |
+| --------- | -------- | --------- | --------------------- |
+| EN        | EN       | EN        | EN                    |
+| PT        | PT       | EN        | PT                    |
+| EN        | PT       | PT        | PT                    |
+| ES        | ES       | EN        | ES                    |
+| PT        | EN       | ES        | PT (idioma preferido) |
+| EN        | ES       | PT        | EN (idioma preferido) |
 
 ## Regras de implementação
 

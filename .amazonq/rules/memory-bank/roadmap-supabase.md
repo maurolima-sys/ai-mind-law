@@ -6,24 +6,24 @@
 
 Não substituir IndexedDB pelo Supabase. Usar os dois com responsabilidades distintas:
 
-| Camada | Tecnologia | Responsabilidade |
-|---|---|---|
-| Browser | IndexedDB | Documentos originais, textos extraídos, análises privadas — soberania local |
-| Backend opcional | Supabase (PostgreSQL + Auth + RLS) | Projetos, membros, atribuições, auditoria, sincronização autorizada |
-| IA | Firebase AI Logic | Gemini, on-device, App Check — não muda |
+| Camada           | Tecnologia                         | Responsabilidade                                                            |
+| ---------------- | ---------------------------------- | --------------------------------------------------------------------------- |
+| Browser          | IndexedDB                          | Documentos originais, textos extraídos, análises privadas — soberania local |
+| Backend opcional | Supabase (PostgreSQL + Auth + RLS) | Projetos, membros, atribuições, auditoria, sincronização autorizada         |
+| IA               | Firebase AI Logic                  | Gemini, on-device, App Check — não muda                                     |
 
 Sincronização com Supabase é sempre uma escolha explícita do utilizador, nunca automática.
 
 ## Casos de uso por fase
 
-| Fase | Funcionalidade | Supabase |
-|---|---|---|
-| Agora | Settings e Integrations locais | ❌ não usar |
-| Próxima | Auditoria do projeto Supabase existente | leitura apenas |
-| Projects | Dossiês: número do edital, órgão, prazo, categoria, histórico | PostgreSQL |
-| Team | Autenticação de especialistas, atribuição de requisitos, permissões, RLS | Auth + RLS |
-| Auditoria | Quem alterou um requisito, quando uma evidência foi validada | PostgreSQL |
-| Sync | Acesso autorizado em múltiplos dispositivos | PostgreSQL + Auth |
+| Fase      | Funcionalidade                                                           | Supabase          |
+| --------- | ------------------------------------------------------------------------ | ----------------- |
+| Agora     | Settings e Integrations locais                                           | ❌ não usar       |
+| Próxima   | Auditoria do projeto Supabase existente                                  | leitura apenas    |
+| Projects  | Dossiês: número do edital, órgão, prazo, categoria, histórico            | PostgreSQL        |
+| Team      | Autenticação de especialistas, atribuição de requisitos, permissões, RLS | Auth + RLS        |
+| Auditoria | Quem alterou um requisito, quando uma evidência foi validada             | PostgreSQL        |
+| Sync      | Acesso autorizado em múltiplos dispositivos                              | PostgreSQL + Auth |
 
 ## Integração Firebase ↔ Supabase
 

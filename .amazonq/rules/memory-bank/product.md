@@ -13,12 +13,14 @@ Live deployment: **https://ai-mind-law.vercel.app/**
 ## Key Features
 
 ### Document Processing
+
 - Upload PDFs up to 20 MB; text extracted locally in the browser with PDF.js
 - Optional LlamaParse OCR for scanned/sparse PDFs (separate per-document consent required)
 - Three AI processing modes: on-device only, cloud only, hybrid (on-device-first with cloud fallback)
 - Demo mode with fictional sample tender (no Firebase required)
 
 ### Firebase AI Logic Integration
+
 - Hybrid inference via `getGenerativeModel` with `InferenceMode.PREFER_ON_DEVICE`
 - Actual inference source (`on-device`, `cloud`, `cloud-fallback`, `mixed`) surfaced to user after every analysis
 - App Check enforced for all Firebase AI Logic calls
@@ -26,17 +28,20 @@ Live deployment: **https://ai-mind-law.vercel.app/**
 - Exponential backoff retry for HTTP 429/500/502/503
 
 ### Analysis Findings
+
 - Five finding types: Requirements, Deadlines, Specifications, Risks, Missing/Inconsistencies
 - Every finding links to a source page and excerpt, verified against extracted text
 - Confidence scoring per requirement
 - Severity levels: Critical, High, Medium, Low
 
 ### Compliance Matrix
+
 - Per-requirement review tracking (pending / reviewed / satisfied / unclear)
 - Review notes (browser session only — no persistent cloud storage)
 - Export as CSV
 
 ### Document Q&A
+
 - Follow-up questions about extracted PDF text using same hybrid inference path
 - Answers separate: stated facts, working hypotheses, unresolved questions
 - Exact-text-checked page citations
@@ -44,17 +49,20 @@ Live deployment: **https://ai-mind-law.vercel.app/**
 - Optional Firecrawl external legal research (server-side only, separate consent)
 
 ### Privacy & Consent
+
 - Text extracted locally; cloud processing requires explicit consent
 - Processing mode is a product feature, not an implementation detail
 - Sensitive procurement documents may not leave the device
 - `FIRECRAWL_API_KEY` server-side only — never in `VITE_*` variables
 
 ### Internationalization
+
 - Interface languages: EN, PT, ES
 - AI responses follow the question's language automatically
 - Document evidence preserved in original language (never translated)
 
 ### Export & Sharing
+
 - Export analysis as JSON
 - Export compliance matrix as CSV
 - No accounts, shared workspaces, or persistent cloud document storage (v1 scope)

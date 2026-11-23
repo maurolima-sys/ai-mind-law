@@ -84,7 +84,11 @@ import { IntegrationsScreen } from "@/components/pocketmind/IntegrationsScreen";
 import { LanguageSelector } from "@/components/pocketmind/LanguageSelector";
 import { LocalWorkspaceLibrary } from "@/components/pocketmind/LocalWorkspaceLibrary";
 import { ProjectsScreen } from "@/components/pocketmind/ProjectsScreen";
-import { ProcessingMonitor, type MonitorEvent, type MonitorState } from "@/components/pocketmind/ProcessingMonitor";
+import {
+  ProcessingMonitor,
+  type MonitorEvent,
+  type MonitorState,
+} from "@/components/pocketmind/ProcessingMonitor";
 import { useAnalysisRun } from "@/lib/analysisRunContext";
 import { RiskScreen } from "@/components/pocketmind/RiskScreen";
 import { SettingsScreen } from "@/components/pocketmind/SettingsScreen";
@@ -353,7 +357,12 @@ export function PocketMindApp() {
   const t = useT();
   const { locale, setLocale } = useLocale();
   const navigate = useNavigate();
-  const { run: analysisRun, startRun: startAnalysisRun, appendEvent: appendRunEvent, setRunStatus: setAnalysisRunStatus } = useAnalysisRun();
+  const {
+    run: analysisRun,
+    startRun: startAnalysisRun,
+    appendEvent: appendRunEvent,
+    setRunStatus: setAnalysisRunStatus,
+  } = useAnalysisRun();
   const configuredDefaultMode = isFirebaseConfigured() ? "hybrid" : "local";
   const [preferences, setPreferences] = useState<PocketMindPreferences>(() =>
     defaultPreferences(configuredDefaultMode),
@@ -708,7 +717,9 @@ export function PocketMindApp() {
       return;
     }
     if (!workspaceReady || workspaceError) {
-      setErrorMessage(workspaceError || "Local workspace storage is still loading. Try again shortly.");
+      setErrorMessage(
+        workspaceError || "Local workspace storage is still loading. Try again shortly.",
+      );
       return;
     }
     setErrorMessage("");
@@ -1096,20 +1107,14 @@ export function PocketMindApp() {
       delete next[documentId];
       return next;
     });
-    setEvidenceLinks((current) =>
-      current.filter((link) => link.tenderDocumentId !== documentId),
-    );
-    setEvidenceMatches((current) =>
-      current.filter((item) => item.tenderDocumentId !== documentId),
-    );
+    setEvidenceLinks((current) => current.filter((link) => link.tenderDocumentId !== documentId));
+    setEvidenceMatches((current) => current.filter((item) => item.tenderDocumentId !== documentId));
     setActivities((current) =>
       current.filter(
         (item) => item.documentId !== documentId && item.relatedDocumentId !== documentId,
       ),
     );
-    setProjectDocumentLinks((current) =>
-      current.filter((link) => link.documentId !== documentId),
-    );
+    setProjectDocumentLinks((current) => current.filter((link) => link.documentId !== documentId));
     setReviews((current) => {
       const next: Record<string, Review> = {};
       for (const [key, value] of Object.entries(current)) {
@@ -1570,19 +1575,12 @@ export function PocketMindApp() {
             <strong className="pm-collapse-label">{t("sidebar_upgrade_title")}</strong>
           </div>
           <p className="pm-collapse-label">{t("sidebar_upgrade_desc")}</p>
-          <button
-            type="button"
-            className="pm-pro-btn"
-            data-tooltip={t("sidebar_view_plans")}
-          >
+          <button type="button" className="pm-pro-btn" data-tooltip={t("sidebar_view_plans")}>
             <span className="pm-collapse-label">{t("sidebar_view_plans")}</span>
           </button>
         </div>
 
-        <div
-          className="pm-workspace-switcher"
-          data-tooltip={t("sidebar_workspace_name")}
-        >
+        <div className="pm-workspace-switcher" data-tooltip={t("sidebar_workspace_name")}>
           <div className="pm-avatar-ss" aria-hidden="true">
             SS
           </div>
@@ -1601,11 +1599,7 @@ export function PocketMindApp() {
             <span>{t("sidebar_privacy_note")}</span>
           </div>
         </div>
-        <Link
-          to="/changelog"
-          className="pm-changelog-link"
-          data-tooltip={t("sidebar_whats_new")}
-        >
+        <Link to="/changelog" className="pm-changelog-link" data-tooltip={t("sidebar_whats_new")}>
           <ScrollText size={15} aria-hidden="true" />
           <span className="pm-collapse-label">{t("sidebar_whats_new")}</span>
         </Link>
@@ -1709,14 +1703,12 @@ export function PocketMindApp() {
 
         <main className="pm-content">
           {screen !== "processing" && (
-          <div className="pm-page-heading">
-            <div>
-              <h1>{currentScreenCopy.title}</h1>
-              <p>{currentScreenCopy.subtitle}</p>
-            </div>
-            {screen !== "settings" &&
-              screen !== "integrations" &&
-              screen !== "projects" && (
+            <div className="pm-page-heading">
+              <div>
+                <h1>{currentScreenCopy.title}</h1>
+                <p>{currentScreenCopy.subtitle}</p>
+              </div>
+              {screen !== "settings" && screen !== "integrations" && screen !== "projects" && (
                 <button
                   className="pm-button pm-button--primary"
                   type="button"
@@ -1725,7 +1717,7 @@ export function PocketMindApp() {
                   <Upload size={16} /> {t("btn_add_document")}
                 </button>
               )}
-          </div>
+            </div>
           )}
 
           {selectedDocument?.source === "demo" &&
@@ -1768,11 +1760,7 @@ export function PocketMindApp() {
               onOpenAnalysis={() => setScreen("analysis")}
               onOpenProcessing={() => setScreen("processing")}
               onLoadSampleRfp={() =>
-                void addDocumentFromUrl(
-                  DEMO_RFP_URL,
-                  DEMO_RFP_DOC_ID,
-                  "request_for_proposal.pdf",
-                )
+                void addDocumentFromUrl(DEMO_RFP_URL, DEMO_RFP_DOC_ID, "request_for_proposal.pdf")
               }
               onSelectDocument={(id) => {
                 setSelectedDocumentId(id);
@@ -2055,9 +2043,8 @@ export function PocketMindApp() {
         <DeleteDocumentDialog
           document={deleteDocumentPending}
           projectLinkCount={
-            projectDocumentLinks.filter(
-              (link) => link.documentId === deleteDocumentPending.id,
-            ).length
+            projectDocumentLinks.filter((link) => link.documentId === deleteDocumentPending.id)
+              .length
           }
           onConfirm={() => void deleteDocument(deleteDocumentPending.id)}
           onCancel={() => setDeleteDocumentPending(null)}
@@ -2158,11 +2145,7 @@ function OverviewScreen({
           >
             <Sparkles size={16} /> {t("hero_rfp_cta")}
           </button>
-          <button
-            type="button"
-            className="pm-button pm-button--outline"
-            onClick={onOpenProcessing}
-          >
+          <button type="button" className="pm-button pm-button--outline" onClick={onOpenProcessing}>
             <Upload size={16} /> {t("hero_upload_cta")}
           </button>
         </div>
@@ -3094,7 +3077,12 @@ function SourceEvidencePanel({
     <aside className="pm-source-drawer" aria-label={t("evidence_panel_title")}>
       <div className="pm-source-drawer-head">
         <h3>{t("evidence_panel_title")}</h3>
-        <button type="button" className="pm-source-drawer-close" aria-label={t("evidence_panel_close")} onClick={onClose}>
+        <button
+          type="button"
+          className="pm-source-drawer-close"
+          aria-label={t("evidence_panel_close")}
+          onClick={onClose}
+        >
           <X size={15} />
         </button>
       </div>
@@ -3102,12 +3090,15 @@ function SourceEvidencePanel({
         <>
           <div className="pm-drawer-doc-badge">
             <span style={{ fontWeight: 700, color: "var(--pm-ink)", fontSize: "0.8rem" }}>
-              {selectedRequirement.description.slice(0, 60)}{selectedRequirement.description.length > 60 ? "..." : ""}
+              {selectedRequirement.description.slice(0, 60)}
+              {selectedRequirement.description.length > 60 ? "..." : ""}
             </span>
             <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
               <Badge tone="purple">{selectedRequirement.category}</Badge>
               {selectedRequirement.evidence.page && (
-                <Badge tone="blue">{t("evidence_page_badge", { page: selectedRequirement.evidence.page })}</Badge>
+                <Badge tone="blue">
+                  {t("evidence_page_badge", { page: selectedRequirement.evidence.page })}
+                </Badge>
               )}
             </div>
           </div>
@@ -3126,7 +3117,9 @@ function SourceEvidencePanel({
             {t("evidence_notes_label")}
             <textarea
               value={reviews[selectedRequirement.id]?.notes ?? ""}
-              onChange={(e) => onUpdateReview(selectedRequirement.id, { notes: e.currentTarget.value })}
+              onChange={(e) =>
+                onUpdateReview(selectedRequirement.id, { notes: e.currentTarget.value })
+              }
               placeholder={t("evidence_notes_placeholder")}
               rows={4}
             />
@@ -3144,7 +3137,9 @@ function SourceEvidencePanel({
         role="dialog"
         aria-modal="true"
         aria-label={t("evidence_panel_title")}
-        onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
       >
         {panel}
       </div>
@@ -3177,7 +3172,12 @@ function DeleteDocumentDialog({
       <aside className="pm-source-drawer" style={{ maxWidth: 420, gap: 16 }}>
         <div className="pm-source-drawer-head">
           <h3 id="pm-delete-doc-title">{t("doc_delete_dialog_title")}</h3>
-          <button type="button" className="pm-source-drawer-close" aria-label={t("doc_delete_cancel")} onClick={onCancel}>
+          <button
+            type="button"
+            className="pm-source-drawer-close"
+            aria-label={t("doc_delete_cancel")}
+            onClick={onCancel}
+          >
             <X size={15} />
           </button>
         </div>
@@ -3276,7 +3276,7 @@ export function ComplianceScreen({
 
   useEffect(() => {
     if (!isMobile || !evidenceOpen) return;
-    const app = document.querySelector(".pm-app");
+    const app = window.document.querySelector(".pm-app");
     if (app instanceof HTMLElement) app.inert = true;
     function onKey(event: globalThis.KeyboardEvent) {
       if (event.key === "Escape") {
@@ -3284,10 +3284,10 @@ export function ComplianceScreen({
         setEvidenceOpen(false);
       }
     }
-    document.addEventListener("keydown", onKey);
+    window.document.addEventListener("keydown", onKey);
     return () => {
       if (app instanceof HTMLElement) app.inert = false;
-      document.removeEventListener("keydown", onKey);
+      window.document.removeEventListener("keydown", onKey);
     };
   }, [evidenceOpen, isMobile]);
 
@@ -3389,9 +3389,7 @@ export function ComplianceScreen({
         </button>
       </div>
 
-      <div
-        className={`pm-compliance-layout${showEvidenceColumn ? "" : " is-evidence-collapsed"}`}
-      >
+      <div className={`pm-compliance-layout${showEvidenceColumn ? "" : " is-evidence-collapsed"}`}>
         {/* Matrix table */}
         <section className="pm-panel pm-matrix-panel">
           <div className="pm-matrix-summary">
@@ -3926,7 +3924,11 @@ export function ProcessingScreen({
         </div>
       </div>
 
-      <div className={`pm-file-drop${choice === "demo" ? " pm-file-drop--dimmed" : ""}`} onDragOver={(event) => event.preventDefault()} onDrop={onDrop}>
+      <div
+        className={`pm-file-drop${choice === "demo" ? " pm-file-drop--dimmed" : ""}`}
+        onDragOver={(event) => event.preventDefault()}
+        onDrop={onDrop}
+      >
         <input
           ref={inputRef}
           className="pm-visually-hidden"
@@ -4054,10 +4056,7 @@ export function ProcessingScreen({
                 inputRef.current?.click();
               }
             }}
-            disabled={
-              isAnalyzing ||
-              (choice !== "demo" && !file && !hasQuestionText)
-            }
+            disabled={isAnalyzing || (choice !== "demo" && !file && !hasQuestionText)}
           >
             {isAnalyzing ? (
               <>

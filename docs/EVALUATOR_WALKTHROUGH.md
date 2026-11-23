@@ -1,4 +1,5 @@
 # Evaluator Walkthrough — PocketMind AI
+
 ### #BuildHybridAI 2026 · Web (Chrome) · Firebase AI Logic
 
 > This guide is written for hackathon judges. It covers what to look at, in what order, and what to expect at each step. The hosted demo opens without an account or installation; live inference depends on Firebase, App Check, and browser/model availability.
@@ -7,12 +8,12 @@
 
 ## 1. What the judges are scoring
 
-| Criterion | Weight | What to look for in PocketMind AI |
-|---|---|---|
-| Technological Implementation | 25 % | Firebase AI Logic hybrid inference called at runtime; App Check configured; model fallback chain; on-device vs cloud source reported |
-| Design | 25 % | Complete document-review workflow, not a demo prompt box; consent-gated cloud; source-linked findings |
-| Potential Impact | 25 % | Concrete professional problem (tender review); compliance matrix; CSV/JSON export |
-| Quality of the Idea | 25 % | Processing mode as a product feature; inference source surfaced to the user; privacy-by-choice architecture |
+| Criterion                    | Weight | What to look for in PocketMind AI                                                                                                    |
+| ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Technological Implementation | 25 %   | Firebase AI Logic hybrid inference called at runtime; App Check configured; model fallback chain; on-device vs cloud source reported |
+| Design                       | 25 %   | Complete document-review workflow, not a demo prompt box; consent-gated cloud; source-linked findings                                |
+| Potential Impact             | 25 %   | Concrete professional problem (tender review); compliance matrix; CSV/JSON export                                                    |
+| Quality of the Idea          | 25 %   | Processing mode as a product feature; inference source surfaced to the user; privacy-by-choice architecture                          |
 
 ---
 
@@ -36,13 +37,13 @@
 
 The requirement is that Firebase AI Logic is **imported and actually called**, not just named in the README.
 
-| Where to look | What you will find |
-|---|---|
-| `src/lib/services/firebaseAi.ts` | `getGenerativeModel` called with `InferenceMode.PREFER_ON_DEVICE` / `ONLY_IN_CLOUD` / `ONLY_ON_DEVICE` |
-| `src/lib/services/tenderAnalysis.ts` | `generateWithModelFallback` orchestrates chunked analysis; calls `model.generateContent` |
-| `src/lib/services/documentQa.ts` | Same hybrid path for follow-up questions |
-| Browser DevTools → Network | App Check token exchange and requests to `firebasevertexai.googleapis.com` during cloud analysis |
-| UI after analysis | Inference source badge: **on-device**, **cloud**, or **cloud-fallback** |
+| Where to look                        | What you will find                                                                                     |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| `src/lib/services/firebaseAi.ts`     | `getGenerativeModel` called with `InferenceMode.PREFER_ON_DEVICE` / `ONLY_IN_CLOUD` / `ONLY_ON_DEVICE` |
+| `src/lib/services/tenderAnalysis.ts` | `generateWithModelFallback` orchestrates chunked analysis; calls `model.generateContent`               |
+| `src/lib/services/documentQa.ts`     | Same hybrid path for follow-up questions                                                               |
+| Browser DevTools → Network           | App Check token exchange and requests to `firebasevertexai.googleapis.com` during cloud analysis       |
+| UI after analysis                    | Inference source badge: **on-device**, **cloud**, or **cloud-fallback**                                |
 
 `initializeAppCheck` runs before model calls, using the debug provider only in local development and `ReCaptchaEnterpriseProvider` in production. The 2026-11-20 production test observed a successful reCAPTCHA Enterprise exchange and completed cloud analysis; Firebase Console settings were not independently inspected.
 
@@ -53,23 +54,27 @@ The requirement is that Firebase AI Logic is **imported and actually called**, n
 Select the default mode in **Settings**, then navigate to **Processing**:
 
 ### Cloud AI
+
 - Sends extracted text to Gemini via Firebase AI Logic.
 - Requires explicit consent checkbox — cloud processing is never silent.
 - Badge after analysis: **cloud** or **cloud-fallback**.
 - Model fallback chain: `gemini-3.8-flash` → `gemini-3.7-flash` → `gemini-3.6-flash` → `gemini-3.5-flash-lite`, after retryable errors or timeouts, with one bounded attempt per model. Cloud attempts are limited to 15 seconds each and a 55-second total budget per section. Local generation has a 180-second per-section timeout; oversized local inputs are split and retried before cloud fallback. The 2026-11-20 production test observed `gemini-3.8-flash` HTTP 500 followed by `gemini-3.5-flash` HTTP 200.
 
 ### On-device only
+
 - Uses Chrome's Prompt API; the exact on-device model depends on Chrome and the device.
 - Requires a supported desktop Chrome version and an available on-device model. First-time setup reports model-download progress when Firebase provides it.
 - The app analyzes shorter text sections locally. If a section times out, it explains that no text was sent to the cloud and offers a separate Cloud AI choice; cloud processing still requires explicit consent.
 - Badge: **on-device**.
 
 ### Hybrid (on-device first)
+
 - Tries on-device first; falls back to cloud if the model is unavailable or times out.
 - The application derives **on-device**, **cloud-fallback**, or **hybrid** from the sources reported for its sections; the label does not capture every attempted or failed request.
 - This is the non-obvious product feature: the inference source is surfaced to the user because it matters for document privacy.
 
 ### Sample data (Demo)
+
 - The **Sample data** card does not call Firebase. It loads the pre-written fictional Northbridge analysis.
 - The badge in the interface is **Demo data** (`inference_demo_label`). The sample record itself carries `DEMO_LABEL`: “DEMO DATA — Illustrative analysis, not extracted from a real procurement document.”
 - **Confirm and continue →** on the Processing screen runs a live analysis of the selected fictional sample in the chosen mode. A live result can still be fictional sample content; the displayed file name is not proof that a real procurement PDF was analysed.
@@ -139,6 +144,7 @@ src/lib/services/
 ```
 
 Key implementation details:
+
 - `generateWithModelFallback()` — retry with exponential backoff; timeout errors advance the model chain.
 - `TENDER_ANALYSIS_RESPONSE_SCHEMA` — Firebase `Schema` object passed as `responseSchema` for cloud calls, constraining the model output before it reaches Zod validation.
 - `parseTenderResponse()` — Zod `.safeParse()` with field-path error reporting (e.g. `requirements[0].excerpt`).
@@ -150,14 +156,14 @@ Key implementation details:
 
 The submission is honest about its current state:
 
-| Item | Status |
-|---|---|
-| Cloud AI analysis with structured-output validation passing end-to-end | Successful fictional-sample analysis on 2026-11-20 in build `ed19ed4`, with `gemini-3.5-flash` and UI source `Cloud (IN_CLOUD)`. Individual citations were not independently reviewed; availability can change. |
-| Hybrid analysis | On 2026-11-21, a local desktop Chrome run on a real 17-page PDF completed and exported `hybrid`: 45 requirements, 17 deadlines, 18 specifications and 13 risks. Of 93 evidence references, 84 were marked verified and 9 unverified. The monitor reported locally validated sections 1 and 4 and Cloud fallback for sections 2, 3 and 5. Raw SDK source values, complete section history, timings and consent state were not captured. This was not an on-device-only run or a production deployment test. |
-| On-device inference (Chrome Prompt API) | On 2026-11-20 an integrated browser initialized the model but the fictional sample failed with “The input is too large”; no cloud generation request was observed. Successful analysis on supported desktop Chrome and hardware remains unverified. On-device-only does not fall back to cloud. |
-| LlamaParse OCR with a real scanned PDF | Not yet tested end-to-end |
-| App Check in production | On 2026-11-20, `exchangeRecaptchaEnterpriseToken` and the successful fallback `generateContent` both returned HTTP 200. Console enforcement and configuration were not independently inspected. |
-| Responsive layout with PT/ES longer strings on small screens | Not yet validated |
+| Item                                                                   | Status                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cloud AI analysis with structured-output validation passing end-to-end | Successful fictional-sample analysis on 2026-11-20 in build `ed19ed4`, with `gemini-3.5-flash` and UI source `Cloud (IN_CLOUD)`. Individual citations were not independently reviewed; availability can change.                                                                                                                                                                                                                                                                                            |
+| Hybrid analysis                                                        | On 2026-11-21, a local desktop Chrome run on a real 17-page PDF completed and exported `hybrid`: 45 requirements, 17 deadlines, 18 specifications and 13 risks. Of 93 evidence references, 84 were marked verified and 9 unverified. The monitor reported locally validated sections 1 and 4 and Cloud fallback for sections 2, 3 and 5. Raw SDK source values, complete section history, timings and consent state were not captured. This was not an on-device-only run or a production deployment test. |
+| On-device inference (Chrome Prompt API)                                | On 2026-11-20 an integrated browser initialized the model but the fictional sample failed with “The input is too large”; no cloud generation request was observed. Successful analysis on supported desktop Chrome and hardware remains unverified. On-device-only does not fall back to cloud.                                                                                                                                                                                                            |
+| LlamaParse OCR with a real scanned PDF                                 | Not yet tested end-to-end                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| App Check in production                                                | On 2026-11-20, `exchangeRecaptchaEnterpriseToken` and the successful fallback `generateContent` both returned HTTP 200. Console enforcement and configuration were not independently inspected.                                                                                                                                                                                                                                                                                                            |
+| Responsive layout with PT/ES longer strings on small screens           | Not yet validated                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
 The **Cloud response received this session · connection not guaranteed** status confirms that a cloud response arrived in that session. A successful structured-output analysis (findings displayed) confirms validation passed. Successful exports created after commit `5cac563` may include an `executionReport`, but it is not a complete audit trail: failed or split attempts can be omitted, and consent is not recorded. The 2026-11-21 hybrid JSON predates that instrumentation.
 
@@ -188,16 +194,16 @@ CI runs automatically on every push via `.github/workflows/ci.yml`.
 
 ## 12. Submission checklist
 
-| Requirement | Status |
-|---|---|
-| Firebase AI Logic imported and called at runtime | ✅ `firebaseAi.ts` |
-| App Check initialized | ✅ `initializeAppCheck` before model calls; production token exchange and fallback generation returned HTTP 200 on 2026-11-20. Console settings were not independently inspected. |
-| Web (Chrome) platform | ✅ |
-| Public GitHub repository | ✅ https://github.com/maurolima-sys/ai-mind-law |
-| Open source license | ✅ Apache 2.0 (`LICENSE`) |
-| Hosted demo | ✅ https://ai-mind-law.vercel.app/ |
-| Demo video (YouTube, ≤ 3 min, English) | ⏳ To be submitted |
-| Built / significantly updated during submission period | ✅ See commit history from `ab25e1a` onward |
-| No production secrets in repository | ✅ `.env` is gitignored; no keys committed |
+| Requirement                                            | Status                                                                                                                                                                            |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Firebase AI Logic imported and called at runtime       | ✅ `firebaseAi.ts`                                                                                                                                                                |
+| App Check initialized                                  | ✅ `initializeAppCheck` before model calls; production token exchange and fallback generation returned HTTP 200 on 2026-11-20. Console settings were not independently inspected. |
+| Web (Chrome) platform                                  | ✅                                                                                                                                                                                |
+| Public GitHub repository                               | ✅ https://github.com/maurolima-sys/ai-mind-law                                                                                                                                   |
+| Open source license                                    | ✅ Apache 2.0 (`LICENSE`)                                                                                                                                                         |
+| Hosted demo                                            | ✅ https://ai-mind-law.vercel.app/                                                                                                                                                |
+| Demo video (YouTube, ≤ 3 min, English)                 | ⏳ To be submitted                                                                                                                                                                |
+| Built / significantly updated during submission period | ✅ See commit history from `ab25e1a` onward                                                                                                                                       |
+| No production secrets in repository                    | ✅ `.env` is gitignored; no keys committed                                                                                                                                        |
 
 ---

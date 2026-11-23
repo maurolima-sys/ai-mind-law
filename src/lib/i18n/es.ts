@@ -44,7 +44,8 @@ export const es: Translations = {
   monitor_view_results: "Ver resultados del análisis",
   monitor_close: "Cerrar monitor",
   monitor_section_sound_label: "Sonido de sección completada",
-  monitor_section_sound_detail: "Reproducir un sonido discreto cuando cada sección del análisis se valida correctamente.",
+  monitor_section_sound_detail:
+    "Reproducir un sonido discreto cuando cada sección del análisis se valida correctamente.",
   monitor_next_steps_title: "Qué hacer a continuación",
   monitor_next_steps_findings: "Revisar hallazgos y verificar fragmentos de origen en Análisis",
   monitor_next_steps_compliance: "Abrir la Matriz de cumplimiento para evaluar requisitos",
@@ -853,7 +854,8 @@ export const es: Translations = {
   settings_answer_speech_detail:
     "Mostrar los controles de síntesis de voz del navegador para las respuestas.",
   settings_section_sound_label: "Sonido de sección completada",
-  settings_section_sound_detail: "Reproducir un sonido discreto cada vez que una sección del análisis se valida correctamente.",
+  settings_section_sound_detail:
+    "Reproducir un sonido discreto cada vez que una sección del análisis se valida correctamente.",
   settings_local_data_title: "Gobernanza de datos locales",
   settings_local_data_detail:
     "Documentos, texto extraído, evidencias, análisis y revisiones permanecen solo en este navegador.",
@@ -1077,8 +1079,7 @@ export const es: Translations = {
   cp_business_desc_label: "Descripción de la actividad (objeto social)",
   cp_business_desc_hint:
     "Copia el objeto social del documento de registro. Preserva el idioma original.",
-  cp_business_desc_placeholder:
-    "Desarrollo y comercialización de software a medida…",
+  cp_business_desc_placeholder: "Desarrollo y comercialización de software a medida…",
   cp_registered_codes_title: "Códigos de actividad oficiales",
   cp_registered_codes_hint:
     "Códigos de los documentos de registro oficiales. Preserva el sistema, la versión y el código exactamente como aparecen.",
@@ -1144,4 +1145,6 @@ export const es: Translations = {
   doc_delete_cancel: "Conservar documento",
   doc_delete_success: "{{name}} fue eliminado.",
   doc_delete_error: "No se pudo eliminar el documento. Sus datos no han sido modificados.",
+
+  evidence_panel_close: "Cerrar panel de evidencia",
 };

@@ -14,7 +14,7 @@ Hackathon: **#BuildHybridAI 2026** — Web (Chrome) · Firebase AI Logic hybrid 
 - Bid consultants who need to track compliance across dozens of requirements
 - Anyone who reads dense legal/commercial documents and needs to surface obligations fast
 
-**Mental model of the user**: a careful professional who distrusts AI output by default. They want to see the source. They want to know *where* the AI found something, not just *what* it found. Privacy matters — they may be reviewing sensitive commercial documents.
+**Mental model of the user**: a careful professional who distrusts AI output by default. They want to see the source. They want to know _where_ the AI found something, not just _what_ it found. Privacy matters — they may be reviewing sensitive commercial documents.
 
 ## Voice
 

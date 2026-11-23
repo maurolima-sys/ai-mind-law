@@ -132,9 +132,9 @@ describe("RiskScreen", () => {
     );
 
     const summary = screen.getByLabelText("Risk summary");
-    expect(summary.children[0].textContent).toBe("2Risks");
-    expect(summary.children[1].textContent).toBe("1Uploaded");
-    expect(summary.children[2].textContent).toBe("1Demo");
+    expect(summary.children[0]!.textContent).toBe("2Risks");
+    expect(summary.children[1]!.textContent).toBe("1Uploaded");
+    expect(summary.children[2]!.textContent).toBe("1Demo");
 
     fireEvent.change(screen.getByLabelText("Origin"), {
       target: { value: "demo" },

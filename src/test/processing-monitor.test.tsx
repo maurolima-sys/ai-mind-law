@@ -30,7 +30,9 @@ function show(monitor: MonitorState, open = vi.fn(), cancel?: () => void) {
 describe("processing monitor", () => {
   it("renders h1 with monitor title", () => {
     show(initial);
-    expect(screen.getByRole("heading", { level: 1, name: "Processing intelligence monitor" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Processing intelligence monitor" }),
+    ).toBeInTheDocument();
   });
 
   it("shows measured page progress, and pauses only the animation", () => {

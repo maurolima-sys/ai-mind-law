@@ -120,8 +120,14 @@ const RELEASES: Release[] = [
       { kind: "fixed", text: "Settings: improved label/hint contrast ratios for WCAG AA." },
       { kind: "fixed", text: "Accordion touch area enlarged to 44 px minimum." },
       { kind: "fixed", text: "Profile fields responsive on small screens." },
-      { kind: "fixed", text: "Save profile button uses outline variant to distinguish from primary actions." },
-      { kind: "added", text: "CI: tsc --noEmit gate added to GitHub Actions workflow. Discovery files added to targeted ESLint step." },
+      {
+        kind: "fixed",
+        text: "Save profile button uses outline variant to distinguish from primary actions.",
+      },
+      {
+        kind: "added",
+        text: "CI: tsc --noEmit gate added to GitHub Actions workflow. Discovery files added to targeted ESLint step.",
+      },
     ],
   },
   {
@@ -472,7 +478,10 @@ const RELEASES: Release[] = [
     iconColor: "var(--pm-muted)",
     changes: [
       { kind: "added", text: "TanStack Start TypeScript project scaffold." },
-      { kind: "added", text: "Amazon Q memory bank: guidelines, structure, tech, product, issues-log, localization." },
+      {
+        kind: "added",
+        text: "Amazon Q memory bank: guidelines, structure, tech, product, issues-log, localization.",
+      },
     ],
   },
 ];

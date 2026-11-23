@@ -25,7 +25,7 @@ const commitHash = (() => {
 // loadEnv with prefix="" reads all variables from .env.local, including VITE_*.
 const devEnv = loadEnv("development", process.cwd(), "");
 const appCheckDebugToken = (() => {
-  if (process.env.NODE_ENV === "production") return undefined;
+  if (process.env["NODE_ENV"] === "production") return undefined;
   return (
     devEnv["VITE_FIREBASE_APPCHECK_DEBUG_TOKEN"] ??
     devEnv["FIREBASE_APPCHECK_DEBUG_TOKEN"] ??

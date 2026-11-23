@@ -54,7 +54,7 @@ export type AnalysisProgressEvent =
   | { type: "checking-evidence" };
 
 export const MAX_CHUNK_CHARACTERS = 16_000;
-export const ON_DEVICE_CHUNK_CHARACTERS = 4_000;
+export const ON_DEVICE_CHUNK_CHARACTERS = 2_000;
 const MIN_ON_DEVICE_SPLIT_CHARACTERS = 128;
 
 export function chunkTenderText(

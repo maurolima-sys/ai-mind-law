@@ -18,7 +18,9 @@ export interface ByokFirebaseConfig {
   appCheckSiteKey: string;
 }
 
-export function isByokConfigComplete(config: Partial<ByokFirebaseConfig>): config is ByokFirebaseConfig {
+export function isByokConfigComplete(
+  config: Partial<ByokFirebaseConfig>,
+): config is ByokFirebaseConfig {
   return Boolean(
     config.apiKey?.trim() &&
     config.authDomain?.trim() &&

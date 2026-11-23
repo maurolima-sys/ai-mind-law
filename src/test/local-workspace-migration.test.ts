@@ -115,7 +115,7 @@ describe("local workspace IndexedDB migration", () => {
     });
     expect(workspace.filesByDocumentId["upload-v1"]?.name).toBe("legacy.pdf");
     expect(workspace.filesByDocumentId["upload-v1"]).toBeDefined();
-    expect(workspace.reviews.legacy).toEqual({ status: "reviewed", notes: "kept" });
+    expect(workspace.reviews["legacy"]).toEqual({ status: "reviewed", notes: "kept" });
     expect(workspace.projects).toEqual([]);
     expect(workspace.projectDocumentLinks).toEqual([]);
 

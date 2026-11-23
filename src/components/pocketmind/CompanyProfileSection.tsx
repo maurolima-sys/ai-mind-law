@@ -22,7 +22,10 @@ interface CompanyProfileSectionProps {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function newId(): string {
-  return globalThis.crypto?.randomUUID?.() ?? `id-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  return (
+    globalThis.crypto?.randomUUID?.() ??
+    `id-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+  );
 }
 
 function now(): string {
@@ -212,11 +215,15 @@ export function CompanyProfileSection({ profile, onProfileChange }: CompanyProfi
                 </div>
                 <div className="pm-cp-jurisdiction-row">
                   <span className="pm-cp-jurisdiction-label">Registration authority</span>
-                  <span className="pm-cp-jurisdiction-value">{jurisdictionInfo.registrationAuthority}</span>
+                  <span className="pm-cp-jurisdiction-value">
+                    {jurisdictionInfo.registrationAuthority}
+                  </span>
                 </div>
                 <div className="pm-cp-jurisdiction-row">
                   <span className="pm-cp-jurisdiction-label">Suggested language</span>
-                  <span className="pm-cp-jurisdiction-value">{jurisdictionInfo.suggestedLanguageLabel}</span>
+                  <span className="pm-cp-jurisdiction-value">
+                    {jurisdictionInfo.suggestedLanguageLabel}
+                  </span>
                 </div>
                 <div className="pm-cp-jurisdiction-row">
                   <span className="pm-cp-jurisdiction-label">Address format</span>
@@ -224,8 +231,12 @@ export function CompanyProfileSection({ profile, onProfileChange }: CompanyProfi
                 </div>
                 {jurisdictionInfo.secondaryIdLabel && (
                   <div className="pm-cp-jurisdiction-row">
-                    <span className="pm-cp-jurisdiction-label">{jurisdictionInfo.secondaryIdLabel}</span>
-                    <span className="pm-cp-jurisdiction-value pm-cp-jurisdiction-value--muted">{jurisdictionInfo.secondaryIdPlaceholder}</span>
+                    <span className="pm-cp-jurisdiction-label">
+                      {jurisdictionInfo.secondaryIdLabel}
+                    </span>
+                    <span className="pm-cp-jurisdiction-value pm-cp-jurisdiction-value--muted">
+                      {jurisdictionInfo.secondaryIdPlaceholder}
+                    </span>
                   </div>
                 )}
               </div>
@@ -269,8 +280,13 @@ export function CompanyProfileSection({ profile, onProfileChange }: CompanyProfi
                 const caSubJurisdictions = isCA
                   ? (getJurisdictionInfo("CA")?.subJurisdictions ?? [])
                   : [];
-                const caSubMatch = caSubJurisdictions.find((s) => s.registrationSystem === reg.system);
-                const regNumberLabel = caSubMatch?.registrationNumberLabel ?? regJurisdiction?.taxIdLabel ?? t("cp_reg_number_label");
+                const caSubMatch = caSubJurisdictions.find(
+                  (s) => s.registrationSystem === reg.system,
+                );
+                const regNumberLabel =
+                  caSubMatch?.registrationNumberLabel ??
+                  regJurisdiction?.taxIdLabel ??
+                  t("cp_reg_number_label");
                 return (
                   <div key={reg.id} className="pm-cp-registration-row">
                     <select
@@ -280,19 +296,26 @@ export function CompanyProfileSection({ profile, onProfileChange }: CompanyProfi
                       onChange={(e) => {
                         const newCountry = e.currentTarget.value;
                         const defaults = getJurisdictionDefaults(newCountry);
-                        updateRegistration(reg.id, { country: newCountry, system: defaults.registrationSystem });
+                        updateRegistration(reg.id, {
+                          country: newCountry,
+                          system: defaults.registrationSystem,
+                        });
                       }}
                     >
                       <option value="">—</option>
                       {SUPPORTED_COUNTRIES.map((j) => (
-                        <option key={j.code} value={j.code}>{j.flag} {j.code}</option>
+                        <option key={j.code} value={j.code}>
+                          {j.flag} {j.code}
+                        </option>
                       ))}
                     </select>
                     {isCA && caSubJurisdictions.length > 0 ? (
                       <select
                         value={reg.system}
                         aria-label="Province / territory"
-                        onChange={(e) => updateRegistration(reg.id, { system: e.currentTarget.value })}
+                        onChange={(e) =>
+                          updateRegistration(reg.id, { system: e.currentTarget.value })
+                        }
                       >
                         {caSubJurisdictions.map((s) => (
                           <option key={s.code} value={s.registrationSystem ?? s.code}>
@@ -307,23 +330,30 @@ export function CompanyProfileSection({ profile, onProfileChange }: CompanyProfi
                         placeholder={regJurisdiction?.registrationAuthority ?? "Registry"}
                         maxLength={60}
                         aria-label={t("cp_reg_system_label")}
-                        onChange={(e) => updateRegistration(reg.id, { system: e.currentTarget.value })}
+                        onChange={(e) =>
+                          updateRegistration(reg.id, { system: e.currentTarget.value })
+                        }
                       />
                     )}
                     <input
                       type="text"
                       value={reg.number}
-                      placeholder={regJurisdiction?.taxIdPlaceholder ?? t("cp_reg_number_placeholder")}
+                      placeholder={
+                        regJurisdiction?.taxIdPlaceholder ?? t("cp_reg_number_placeholder")
+                      }
                       maxLength={60}
                       aria-label={regNumberLabel}
-                      onChange={(e) => updateRegistration(reg.id, { number: e.currentTarget.value })}
+                      onChange={(e) =>
+                        updateRegistration(reg.id, { number: e.currentTarget.value })
+                      }
                     />
                     <select
                       value={reg.verificationStatus}
                       aria-label={t("cp_reg_status_label")}
                       onChange={(e) =>
                         updateRegistration(reg.id, {
-                          verificationStatus: e.currentTarget.value as CompanyRegistration["verificationStatus"],
+                          verificationStatus: e.currentTarget
+                            .value as CompanyRegistration["verificationStatus"],
                         })
                       }
                     >
@@ -393,9 +423,7 @@ export function CompanyProfileSection({ profile, onProfileChange }: CompanyProfi
               </div>
               <p className="pm-cp-hint">{t("cp_registered_codes_hint")}</p>
 
-              {registeredCodes.length === 0 && (
-                <p className="pm-cp-empty">{t("cp_codes_empty")}</p>
-              )}
+              {registeredCodes.length === 0 && <p className="pm-cp-empty">{t("cp_codes_empty")}</p>}
 
               {registeredCodes.map((code) => (
                 <div key={code.id} className="pm-cp-code-row">
@@ -415,7 +443,9 @@ export function CompanyProfileSection({ profile, onProfileChange }: CompanyProfi
                     maxLength={20}
                     aria-label={t("cp_code_version_label")}
                     className="pm-cp-input--short"
-                    onChange={(e) => updateActivityCode(code.id, { version: e.currentTarget.value })}
+                    onChange={(e) =>
+                      updateActivityCode(code.id, { version: e.currentTarget.value })
+                    }
                   />
                   <input
                     type="text"
@@ -478,9 +508,7 @@ export function CompanyProfileSection({ profile, onProfileChange }: CompanyProfi
                 placeholder={t("cp_capabilities_placeholder")}
                 maxLength={2000}
                 rows={4}
-                onChange={(e) =>
-                  patchActivities({ declaredCapabilities: e.currentTarget.value })
-                }
+                onChange={(e) => patchActivities({ declaredCapabilities: e.currentTarget.value })}
               />
             </div>
 
@@ -499,9 +527,7 @@ export function CompanyProfileSection({ profile, onProfileChange }: CompanyProfi
               </div>
               <p className="pm-cp-hint">{t("cp_capability_codes_hint")}</p>
 
-              {capabilityCodes.length === 0 && (
-                <p className="pm-cp-empty">{t("cp_codes_empty")}</p>
-              )}
+              {capabilityCodes.length === 0 && <p className="pm-cp-empty">{t("cp_codes_empty")}</p>}
 
               {capabilityCodes.map((code) => (
                 <div key={code.id} className="pm-cp-code-row">
@@ -521,7 +547,9 @@ export function CompanyProfileSection({ profile, onProfileChange }: CompanyProfi
                     maxLength={20}
                     aria-label={t("cp_code_version_label")}
                     className="pm-cp-input--short"
-                    onChange={(e) => updateActivityCode(code.id, { version: e.currentTarget.value })}
+                    onChange={(e) =>
+                      updateActivityCode(code.id, { version: e.currentTarget.value })
+                    }
                   />
                   <input
                     type="text"

@@ -61,7 +61,9 @@ function ProcessingRunPage() {
         <Link to="/" className="pm-run-header-brand">
           PocketMind AI
         </Link>
-        <span className="pm-run-header-sep" aria-hidden="true">·</span>
+        <span className="pm-run-header-sep" aria-hidden="true">
+          ·
+        </span>
         <Link to="/" className="pm-run-back" aria-label={t("monitor_back_to_processing")}>
           ← {t("monitor_back_to_processing")}
         </Link>
@@ -74,7 +76,7 @@ function ProcessingRunPage() {
             documentName: run.documentName,
             status: monitorStatus,
             events: run.events,
-            startedAt: run.startedAt,
+            ...(run.startedAt !== undefined ? { startedAt: run.startedAt } : {}),
             ...(run.result ? { result: run.result } : {}),
           }}
           onOpenResults={handleOpenResults}

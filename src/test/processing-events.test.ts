@@ -280,18 +280,18 @@ describe("analysis activity events", () => {
     );
 
     expect(result.processingSource).toBe("on-device");
-    expect(localModel.generateContent).toHaveBeenCalledTimes(3);
+    expect(localModel.generateContent).toHaveBeenCalledTimes(5);
     const input = localModel.generateContent.mock.calls.map(([prompt]) => String(prompt));
     const sections = input.map((prompt) =>
       prompt.split("SOURCE TEXT:\n")[1]!.replace(/^--- SOURCE INDEX 1 · Page 1 ---\n/, ""),
     );
-    expect(sections[0]).toBe("x".repeat(4000));
+    expect(sections[0]).toBe("x".repeat(2000));
     expect(sections.slice(1).every((section) => section.length <= ON_DEVICE_CHUNK_CHARACTERS)).toBe(
       true,
     );
     expect(sections.slice(1).join("")).toBe("x".repeat(6500));
     expect(events).toContainEqual({ type: "local-retry" });
-    expect(events.filter((event) => event.type === "response")).toHaveLength(2);
+    expect(events.filter((event) => event.type === "response")).toHaveLength(4);
   });
 
   it("does not use cloud processing when local-only processing fails", async () => {

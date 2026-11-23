@@ -13,14 +13,14 @@
 
 O corpo deste relatório preserva os resultados da auditoria original de `737e31a`. Os números de testes, lint, dependências e deploy são **históricos**, não uma nova verificação do estado atual. Esta secção reconcilia o estado operacional atual com as divergências documentais identificadas.
 
-| Item | Estado na auditoria (`737e31a`) | Estado atual (`9d2910c`) |
-|---|---|---|
-| Commit de produção referenciado | `ed19ed4` (histórico) | `9d2910c` (HEAD); `1d99a29` = tag `hackathon-stable` |
-| Erros em produção | Nenhum no fluxo demo | Zero erros verificados em `1d99a29` |
-| TypeScript gate no CI | Ausente | `bunx tsc --noEmit` obrigatório antes dos testes (`9d2910c`) |
-| `ReferenceError: onLoadDiscoveredDocument` | Não existia | Corrigido em `1d99a29` |
-| Smart Discovery / Company Profile | Não existia | Implementado em `3ce64f3` – `4980d14` |
-| Divergência documental `ed19ed4` vs deploy | Identificada como P2 | Reconciliada no README e CHANGELOG nesta atualização |
+| Item                                       | Estado na auditoria (`737e31a`) | Estado atual (`9d2910c`)                                     |
+| ------------------------------------------ | ------------------------------- | ------------------------------------------------------------ |
+| Commit de produção referenciado            | `ed19ed4` (histórico)           | `9d2910c` (HEAD); `1d99a29` = tag `hackathon-stable`         |
+| Erros em produção                          | Nenhum no fluxo demo            | Zero erros verificados em `1d99a29`                          |
+| TypeScript gate no CI                      | Ausente                         | `bunx tsc --noEmit` obrigatório antes dos testes (`9d2910c`) |
+| `ReferenceError: onLoadDiscoveredDocument` | Não existia                     | Corrigido em `1d99a29`                                       |
+| Smart Discovery / Company Profile          | Não existia                     | Implementado em `3ce64f3` – `4980d14`                        |
+| Divergência documental `ed19ed4` vs deploy | Identificada como P2            | Reconciliada no README e CHANGELOG nesta atualização         |
 
 **Revisão do histórico até `5cac563` (mantida):**
 
@@ -31,6 +31,7 @@ O corpo deste relatório preserva os resultados da auditoria original de `737e31
 - Os testes e a comparação de erros TypeScript relatados anteriormente precedem `5cac563`; não são evidência de validação do commit atual. O deploy atual, o consentimento daquela execução, uma análise completa exclusivamente `ON_DEVICE` e a nova configuração de timeouts continuam por verificar.
 
 **Problemas P1 da auditoria original que permanecem em aberto:**
+
 - Lint completo (`npm run lint`) ainda reporta erros de Prettier fora do subconjunto coberto pelo CI.
 - Dependências com vulnerabilidades reportadas pelo `npm audit` não foram atualizadas de forma controlada.
 - Toolchain sem versão Node fixada.
@@ -67,14 +68,14 @@ O demo mostra `v0.4.0 · 737e31a · 2026-11-20 21:52 UTC`, que coincide com o `o
 
 ## Resultado dos checks locais
 
-| Check | Resultado |
-|---|---|
-| `npm ci` | Passou; emitiu avisos de engine do Firebase para Node 24.12+ |
-| `npm test -- --reporter=dot` | **Passou: 119/119 testes em 29 arquivos** |
-| `npm run build` | **Passou** |
-| `npm run lint` | **Falhou: 34 erros e 14 warnings** |
-| `npm audit --omit=dev` | **13 vulnerabilidades de produção: 3 moderadas, 10 altas** |
-| Checkout Git | Limpo; `main` alinhado com `origin/main`, sem alterações feitas |
+| Check                        | Resultado                                                       |
+| ---------------------------- | --------------------------------------------------------------- |
+| `npm ci`                     | Passou; emitiu avisos de engine do Firebase para Node 24.12+    |
+| `npm test -- --reporter=dot` | **Passou: 119/119 testes em 29 arquivos**                       |
+| `npm run build`              | **Passou**                                                      |
+| `npm run lint`               | **Falhou: 34 erros e 14 warnings**                              |
+| `npm audit --omit=dev`       | **13 vulnerabilidades de produção: 3 moderadas, 10 altas**      |
+| Checkout Git                 | Limpo; `main` alinhado com `origin/main`, sem alterações feitas |
 
 Os warnings dos testes incluem atualizações React fora de `act(...)` em alguns testes, principalmente `DocumentQaPanel`, `IntegrationsScreen`, `SettingsScreen` e `processing-provenance`. Não quebram a suíte hoje, mas reduzem a qualidade dos testes e podem esconder comportamento assíncrono frágil.
 

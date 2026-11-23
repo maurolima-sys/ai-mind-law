@@ -70,12 +70,14 @@ ai-mind-law/
 ## Core Components and Relationships
 
 ### State Management (PocketMindApp.tsx)
+
 - Single root component holds all application state: `documents`, `activeDocumentId`, `processingChoice`, `cloudConsent`, `reviews`, `searchQuery`
 - State flows down as props; no external state library (no Redux/Zustand)
 - Four screens rendered conditionally: `OverviewScreen`, `AnalysisScreen`, `ComplianceScreen`, `ProcessingScreen`
 - Navigation via `activeScreen` state (not URL-based within the app)
 
 ### Data Flow
+
 ```
 PDF upload → documentProcessing.ts (PDF.js) → pages: string[]
                                              ↓
@@ -89,18 +91,21 @@ PDF upload → documentProcessing.ts (PDF.js) → pages: string[]
 ```
 
 ### Server Functions (TanStack Start / Nitro)
+
 - `ocr.functions.ts` — LlamaParse OCR (server-side, never exposes API key to browser)
 - `legalResearch.functions.ts` — Firecrawl search (server-side only)
 - `tourNarration.functions.ts` — TTS for guided tour
 - All server functions use `createServerFn` from `@tanstack/react-start`
 
 ### Routing (TanStack Router)
+
 - File-based routing: `src/routes/`
 - `__root.tsx` wraps everything in providers: `QueryClientProvider`, `LocaleProvider`, `RouterProvider`
 - `routeTree.gen.ts` is auto-generated — never edit manually
 - Only two routes: `/` (main app) and `/changelog`
 
 ### i18n Architecture
+
 - `LocaleProvider` in `src/lib/i18n/index.tsx` wraps the app
 - `useLocale()` hook returns `{ t, locale, setLocale }`
 - `t(key)` looks up strings from `en.ts` / `pt.ts` / `es.ts`
@@ -108,6 +113,7 @@ PDF upload → documentProcessing.ts (PDF.js) → pages: string[]
 - AI prompts remain in English (technical instructions to the model)
 
 ### Firebase AI Logic Integration
+
 - `firebaseAi.ts` initializes Firebase app, App Check, and AI instance once (cached on `window.__pocketMindFirebaseRuntime`)
 - `createTenderModel(preference, modelName)` returns a `GenerativeModel` with the correct `InferenceMode`
 - `generateWithModelFallback()` handles retry with exponential backoff and model chain fallback

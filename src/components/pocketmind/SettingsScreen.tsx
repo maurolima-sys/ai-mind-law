@@ -1,4 +1,16 @@
-import { AlertCircle, Database, Eye, EyeOff, ExternalLink, Laptop, Save, ShieldCheck, Trash2, Volume2, Cpu } from "lucide-react";
+import {
+  AlertCircle,
+  Database,
+  Eye,
+  EyeOff,
+  ExternalLink,
+  Laptop,
+  Save,
+  ShieldCheck,
+  Trash2,
+  Volume2,
+  Cpu,
+} from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 
 import { LOCALES, useT, type Locale } from "@/lib/i18n";
@@ -56,7 +68,9 @@ export function SettingsScreen({
     () => loadByokConfig() ?? {},
   );
   const [byokSaved, setByokSaved] = useState(() => isByokConfigComplete(loadByokConfig() ?? {}));
-  const [byokVisible, setByokVisible] = useState<Partial<Record<keyof ByokFirebaseConfig, boolean>>>({});
+  const [byokVisible, setByokVisible] = useState<
+    Partial<Record<keyof ByokFirebaseConfig, boolean>>
+  >({});
 
   function updateByokField(field: keyof ByokFirebaseConfig, value: string) {
     setByokDraft((prev) => ({ ...prev, [field]: value }));
@@ -369,48 +383,50 @@ export function SettingsScreen({
               </p>
             )}
 
-            {([
+            {(
               [
-                "apiKey",
-                t("settings_byok_api_key"),
-                "https://console.firebase.google.com/",
-                "Firebase Console → Project settings → General → Your apps → Config",
-                null,
-                null,
-              ],
-              [
-                "authDomain",
-                t("settings_byok_auth_domain"),
-                "https://console.firebase.google.com/",
-                "Firebase Console → Project settings → General → Your apps → Config",
-                null,
-                null,
-              ],
-              [
-                "projectId",
-                t("settings_byok_project_id"),
-                "https://console.firebase.google.com/",
-                "Firebase Console → Project settings → General → Your apps → Config",
-                null,
-                null,
-              ],
-              [
-                "appId",
-                t("settings_byok_app_id"),
-                "https://console.firebase.google.com/",
-                "Firebase Console → Project settings → General → Your apps → Config",
-                null,
-                null,
-              ],
-              [
-                "appCheckSiteKey",
-                t("settings_byok_appcheck_site_key"),
-                "https://console.firebase.google.com/",
-                "Firebase Console → App Check → Apps → register key",
-                "https://firebase.google.com/docs/app-check/web/recaptcha-enterprise-provider",
-                "App Check docs",
-              ],
-            ] as const).map(([field, label, href, hintText, href2, hint2]) => (
+                [
+                  "apiKey",
+                  t("settings_byok_api_key"),
+                  "https://console.firebase.google.com/",
+                  "Firebase Console → Project settings → General → Your apps → Config",
+                  null,
+                  null,
+                ],
+                [
+                  "authDomain",
+                  t("settings_byok_auth_domain"),
+                  "https://console.firebase.google.com/",
+                  "Firebase Console → Project settings → General → Your apps → Config",
+                  null,
+                  null,
+                ],
+                [
+                  "projectId",
+                  t("settings_byok_project_id"),
+                  "https://console.firebase.google.com/",
+                  "Firebase Console → Project settings → General → Your apps → Config",
+                  null,
+                  null,
+                ],
+                [
+                  "appId",
+                  t("settings_byok_app_id"),
+                  "https://console.firebase.google.com/",
+                  "Firebase Console → Project settings → General → Your apps → Config",
+                  null,
+                  null,
+                ],
+                [
+                  "appCheckSiteKey",
+                  t("settings_byok_appcheck_site_key"),
+                  "https://console.firebase.google.com/",
+                  "Firebase Console → App Check → Apps → register key",
+                  "https://firebase.google.com/docs/app-check/web/recaptcha-enterprise-provider",
+                  "App Check docs",
+                ],
+              ] as const
+            ).map(([field, label, href, hintText, href2, hint2]) => (
               <div key={field} className="pm-settings-byok-field">
                 <div className="pm-settings-byok-label-row">
                   <label htmlFor={`byok-${field}`}>{label}</label>
@@ -445,9 +461,7 @@ export function SettingsScreen({
                         ? t("settings_byok_hide_field")
                         : t("settings_byok_show_field")
                     }
-                    onClick={() =>
-                      setByokVisible((prev) => ({ ...prev, [field]: !prev[field] }))
-                    }
+                    onClick={() => setByokVisible((prev) => ({ ...prev, [field]: !prev[field] }))}
                   >
                     {byokVisible[field] ? (
                       <EyeOff size={14} aria-hidden="true" />

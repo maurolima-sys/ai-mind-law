@@ -264,31 +264,112 @@ export const SUPPORTED_COUNTRIES: JurisdictionInfo[] = [
     activitySystem: "NAICS",
     activityVersion: "2022",
     subJurisdictions: [
-      { code: "CA-FED", label: "Federal", registrationSystem: "Corporation Number", registrationNumberLabel: "Corporation Number" },
-      { code: "CA-ON",  label: "Ontario", registrationSystem: "Ontario Business Registry", registrationNumberLabel: "OCN" },
-      { code: "CA-QC",  label: "Québec",  registrationSystem: "Registraire des entreprises", registrationNumberLabel: "NEQ" },
-      { code: "CA-BC",  label: "British Columbia", registrationSystem: "BC Registry", registrationNumberLabel: "Incorporation Number" },
-      { code: "CA-AB",  label: "Alberta", registrationSystem: "CORES", registrationNumberLabel: "Registry Number" },
-      { code: "CA-MB",  label: "Manitoba", registrationSystem: "Companies Office", registrationNumberLabel: "Corporation Number" },
-      { code: "CA-SK",  label: "Saskatchewan", registrationSystem: "ISC", registrationNumberLabel: "Corporation Number" },
-      { code: "CA-NS",  label: "Nova Scotia", registrationSystem: "Registry of Joint Stock Companies", registrationNumberLabel: "Registry Number" },
-      { code: "CA-NB",  label: "New Brunswick", registrationSystem: "Corporate Registry", registrationNumberLabel: "Corporation Number" },
-      { code: "CA-NL",  label: "Newfoundland & Labrador", registrationSystem: "Registry of Companies", registrationNumberLabel: "Corporation Number" },
-      { code: "CA-PE",  label: "Prince Edward Island", registrationSystem: "Corporate Registry", registrationNumberLabel: "Corporation Number" },
-      { code: "CA-NT",  label: "Northwest Territories", registrationSystem: "Corporate Registry", registrationNumberLabel: "Corporation Number" },
-      { code: "CA-YT",  label: "Yukon", registrationSystem: "Corporate Affairs", registrationNumberLabel: "Corporation Number" },
-      { code: "CA-NU",  label: "Nunavut", registrationSystem: "Corporate Registry", registrationNumberLabel: "Corporation Number" },
+      {
+        code: "CA-FED",
+        label: "Federal",
+        registrationSystem: "Corporation Number",
+        registrationNumberLabel: "Corporation Number",
+      },
+      {
+        code: "CA-ON",
+        label: "Ontario",
+        registrationSystem: "Ontario Business Registry",
+        registrationNumberLabel: "OCN",
+      },
+      {
+        code: "CA-QC",
+        label: "Québec",
+        registrationSystem: "Registraire des entreprises",
+        registrationNumberLabel: "NEQ",
+      },
+      {
+        code: "CA-BC",
+        label: "British Columbia",
+        registrationSystem: "BC Registry",
+        registrationNumberLabel: "Incorporation Number",
+      },
+      {
+        code: "CA-AB",
+        label: "Alberta",
+        registrationSystem: "CORES",
+        registrationNumberLabel: "Registry Number",
+      },
+      {
+        code: "CA-MB",
+        label: "Manitoba",
+        registrationSystem: "Companies Office",
+        registrationNumberLabel: "Corporation Number",
+      },
+      {
+        code: "CA-SK",
+        label: "Saskatchewan",
+        registrationSystem: "ISC",
+        registrationNumberLabel: "Corporation Number",
+      },
+      {
+        code: "CA-NS",
+        label: "Nova Scotia",
+        registrationSystem: "Registry of Joint Stock Companies",
+        registrationNumberLabel: "Registry Number",
+      },
+      {
+        code: "CA-NB",
+        label: "New Brunswick",
+        registrationSystem: "Corporate Registry",
+        registrationNumberLabel: "Corporation Number",
+      },
+      {
+        code: "CA-NL",
+        label: "Newfoundland & Labrador",
+        registrationSystem: "Registry of Companies",
+        registrationNumberLabel: "Corporation Number",
+      },
+      {
+        code: "CA-PE",
+        label: "Prince Edward Island",
+        registrationSystem: "Corporate Registry",
+        registrationNumberLabel: "Corporation Number",
+      },
+      {
+        code: "CA-NT",
+        label: "Northwest Territories",
+        registrationSystem: "Corporate Registry",
+        registrationNumberLabel: "Corporation Number",
+      },
+      {
+        code: "CA-YT",
+        label: "Yukon",
+        registrationSystem: "Corporate Affairs",
+        registrationNumberLabel: "Corporation Number",
+      },
+      {
+        code: "CA-NU",
+        label: "Nunavut",
+        registrationSystem: "Corporate Registry",
+        registrationNumberLabel: "Corporation Number",
+      },
     ],
   },
 ];
 
 export const JURISDICTION_DEFAULTS: Record<string, JurisdictionDefaults> = Object.fromEntries(
-  SUPPORTED_COUNTRIES.map((j) => [j.code, { registrationSystem: j.registrationSystem, activitySystem: j.activitySystem, activityVersion: j.activityVersion }])
+  SUPPORTED_COUNTRIES.map((j) => [
+    j.code,
+    {
+      registrationSystem: j.registrationSystem,
+      activitySystem: j.activitySystem,
+      activityVersion: j.activityVersion,
+    },
+  ]),
 ) as Record<string, JurisdictionDefaults>;
 
 // Keep legacy entries for countries not in the dropdown but previously supported
 const LEGACY_DEFAULTS: Record<string, JurisdictionDefaults> = {
-  DE: { registrationSystem: "Handelsregisternummer", activitySystem: "NACE", activityVersion: "Rev.2" },
+  DE: {
+    registrationSystem: "Handelsregisternummer",
+    activitySystem: "NACE",
+    activityVersion: "Rev.2",
+  },
   FR: { registrationSystem: "SIREN/SIRET", activitySystem: "NAF", activityVersion: "Rev.2" },
   IT: { registrationSystem: "Codice Fiscale", activitySystem: "ATECO", activityVersion: "2007" },
   NL: { registrationSystem: "KvK-nummer", activitySystem: "SBI", activityVersion: "2008" },

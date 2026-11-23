@@ -6,7 +6,16 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", ".output", ".vinxi", "ai-mind-law/**", "scripts/probe-models.mjs"] },
+  {
+    ignores: [
+      "dist",
+      ".output",
+      ".vinxi",
+      "ai-mind-law/**",
+      "scripts/probe-models.mjs",
+      "scripts/budget-analysis.mjs",
+    ],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],

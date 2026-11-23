@@ -1,5 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import { ChevronDown, ChevronUp, ExternalLink, FileText, Loader2, Search, Shield } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  FileText,
+  Loader2,
+  Search,
+  Shield,
+} from "lucide-react";
 
 import { useLocale } from "@/lib/i18n";
 import { loadCompanyProfile } from "@/lib/companyProfile";
@@ -27,7 +35,9 @@ export function SmartDiscoveryPanel({ onLoadDocument }: SmartDiscoveryPanelProps
   const [candidates, setCandidates] = useState<DiscoveryCandidate[] | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [profileMissing, setProfileMissing] = useState(false);
-  const [activityCodes, setActivityCodes] = useState<{ system: string; code: string; description: string }[]>([]);
+  const [activityCodes, setActivityCodes] = useState<
+    { system: string; code: string; description: string }[]
+  >([]);
 
   // Pre-fill from Company Profile on mount
   useEffect(() => {
@@ -44,14 +54,19 @@ export function SmartDiscoveryPanel({ onLoadDocument }: SmartDiscoveryPanelProps
     if (reg?.country) setJurisdiction(reg.country);
 
     const codes = activities.activityCodes
-      .filter((a) => (a.kind === "registered" || a.kind === "capability") && a.label.trim().length > 0)
+      .filter(
+        (a) => (a.kind === "registered" || a.kind === "capability") && a.label.trim().length > 0,
+      )
       .slice(0, 10)
       .map((a) => ({ system: a.system, code: a.code, description: a.label }));
     setActivityCodes(codes);
   }, []);
 
   const canSearch =
-    consent && description.trim().length >= 10 && jurisdiction.trim().length >= 2 && /^[A-Za-z]{2}$/.test(country);
+    consent &&
+    description.trim().length >= 10 &&
+    jurisdiction.trim().length >= 2 &&
+    /^[A-Za-z]{2}$/.test(country);
 
   const handleSearch = useCallback(async () => {
     if (!canSearch) return;
@@ -104,7 +119,11 @@ export function SmartDiscoveryPanel({ onLoadDocument }: SmartDiscoveryPanelProps
           <span className="pm-discovery-header-title">{t("discovery_title")}</span>
           <span className="pm-discovery-header-badge">{t("discovery_badge")}</span>
         </span>
-        {expanded ? <ChevronUp size={16} aria-hidden="true" /> : <ChevronDown size={16} aria-hidden="true" />}
+        {expanded ? (
+          <ChevronUp size={16} aria-hidden="true" />
+        ) : (
+          <ChevronDown size={16} aria-hidden="true" />
+        )}
       </button>
 
       {expanded && (
@@ -199,7 +218,11 @@ export function SmartDiscoveryPanel({ onLoadDocument }: SmartDiscoveryPanelProps
           </div>
 
           {/* ── Error ── */}
-          {error && <p className="pm-discovery-error" role="alert">{error}</p>}
+          {error && (
+            <p className="pm-discovery-error" role="alert">
+              {error}
+            </p>
+          )}
 
           {/* ── Results ── */}
           {candidates !== null && candidates.length > 0 && (
@@ -218,9 +241,7 @@ export function SmartDiscoveryPanel({ onLoadDocument }: SmartDiscoveryPanelProps
                     </div>
                   </div>
 
-                  {c.description && (
-                    <p className="pm-discovery-card-desc">{c.description}</p>
-                  )}
+                  {c.description && <p className="pm-discovery-card-desc">{c.description}</p>}
 
                   <div className="pm-discovery-card-footer">
                     {c.publishedDate && (

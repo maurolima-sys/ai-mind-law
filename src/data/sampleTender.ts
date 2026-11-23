@@ -1,4 +1,4 @@
-import type { Analysis, DocumentRecord } from "@/lib/types";
+import type { Analysis, DocumentRecord, WorkspaceActivity } from "@/lib/types";
 import { verifyEvidence } from "@/lib/services/evidence";
 
 export const DEMO_DOC_ID = "demo-tender";

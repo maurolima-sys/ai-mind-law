@@ -6970,8 +6970,9 @@
 
 /* ── Collapsible sidebar ─────────────────────────────────────────────────── */
 .pm-sidebar {
-  transition: width 220ms cubic-bezier(0.22, 1, 0.36, 1),
-              flex-basis 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition:
+    width 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    flex-basis 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .pm-sidebar--collapsed {
@@ -7004,7 +7005,9 @@
   color: var(--pm-muted);
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 120ms ease, color 120ms ease;
+  transition:
+    background 120ms ease,
+    color 120ms ease;
 }
 .pm-sidebar-collapse-btn:hover {
   background: var(--pm-blue-pale);
@@ -7093,7 +7096,9 @@
   background: transparent;
   color: var(--pm-muted);
   cursor: pointer;
-  transition: background 120ms ease, color 120ms ease;
+  transition:
+    background 120ms ease,
+    color 120ms ease;
 }
 .pm-source-drawer-close:hover {
   background: var(--pm-blue-pale);
@@ -7604,9 +7609,18 @@
   color: var(--pm-text, #111827);
 }
 
-.pm-cp-input--short { width: 4rem; flex-shrink: 0; }
-.pm-cp-input--medium { width: 7rem; flex-shrink: 0; }
-.pm-cp-input--grow { flex: 1; min-width: 8rem; }
+.pm-cp-input--short {
+  width: 4rem;
+  flex-shrink: 0;
+}
+.pm-cp-input--medium {
+  width: 7rem;
+  flex-shrink: 0;
+}
+.pm-cp-input--grow {
+  flex: 1;
+  min-width: 8rem;
+}
 
 .pm-cp-remove-btn {
   display: inline-flex;
