@@ -187,9 +187,17 @@ export function parseTenderResponse(text: string) {
     );
   }
   const trimmed = text.trim();
-  const json = trimmed.startsWith("```")
-    ? trimmed.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "")
-    : trimmed;
+  // Extract the first JSON object from the response.
+  // On-device models may prefix the JSON with prose (e.g. "Here is the analysis:\n{...").
+  let json: string;
+  const fenceMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (fenceMatch) {
+    json = fenceMatch[1] ?? trimmed;
+  } else {
+    const start = trimmed.indexOf("{");
+    const end = trimmed.lastIndexOf("}");
+    json = start !== -1 && end > start ? trimmed.slice(start, end + 1) : trimmed;
+  }
   let parsed: unknown;
   try {
     parsed = JSON.parse(json);

@@ -109,7 +109,7 @@ const riskSchema = z.object({
 // Array bounds guard against GHSA-mrhx-c7xc-m3w5 (Zod DoS via oversized constrained
 // collections). Limits are set well above any realistic tender analysis output.
 export const chunkResponseSchema = z.object({
-  summary: z.string().min(1),
+  summary: z.string().default(""),
   requirements: z.array(findingSchema).max(500),
   deadlines: z.array(deadlineSchema).max(500),
   specifications: z.array(specificationSchema).max(500),
