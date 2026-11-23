@@ -205,7 +205,7 @@ export function ProcessingMonitor({
             </li>
           ))}
         </ol>
-        <p className="pm-monitor-announcement" role="status">
+        <p className="pm-monitor-announcement pm-visually-hidden" role="status">
           {statusLabel}
           {latest ? ` · ${eventMessage(latest, t)}` : ""}
         </p>
@@ -217,7 +217,7 @@ export function ProcessingMonitor({
                 <progress id="pm-monitor-progress" max={progress.max} value={progress.value} />
               </>
             ) : (
-              <span>{t("monitor_indeterminate")}</span>
+              <progress aria-label={t("monitor_running")} />
             )}
           </div>
         )}
