@@ -1231,6 +1231,7 @@ export function PocketMindApp() {
       paginationVerified: paginated,
       analysis,
     };
+    await saveDocumentRecord(updatedDocument);
     setDocuments((current) =>
       current.map((document) => (document.id === updatedDocument.id ? updatedDocument : document)),
     );

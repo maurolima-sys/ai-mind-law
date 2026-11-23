@@ -72,6 +72,7 @@ function ProcessingRunPage() {
             documentName: run.documentName,
             status: monitorStatus,
             events: run.events,
+            startedAt: run.startedAt,
             ...(run.result ? { result: run.result } : {}),
           }}
           onOpenResults={handleOpenResults}

@@ -27,6 +27,7 @@ export type MonitorState = {
   events: MonitorEvent[];
   result?: Analysis;
   autoOpen?: boolean;
+  startedAt?: number;
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -89,10 +90,29 @@ export function ProcessingMonitor({
 }) {
   const t = useT();
   const [paused, setPaused] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
   const listRef = useRef<HTMLOListElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const latest = monitor.events[monitor.events.length - 1];
   const canClose = monitor.status !== "running" && monitor.status !== "waiting";
+
+  // Tick elapsed time every second while running
+  useEffect(() => {
+    if (monitor.status !== "running" && monitor.status !== "waiting") {
+      if (monitor.startedAt) setElapsed(Math.floor((Date.now() - monitor.startedAt) / 1000));
+      return;
+    }
+    const origin = monitor.startedAt ?? Date.now();
+    setElapsed(Math.floor((Date.now() - origin) / 1000));
+    const id = setInterval(() => setElapsed(Math.floor((Date.now() - origin) / 1000)), 1000);
+    return () => clearInterval(id);
+  }, [monitor.status, monitor.startedAt]);
+
+  const elapsedLabel = (() => {
+    const m = Math.floor(elapsed / 60).toString().padStart(2, "0");
+    const s = (elapsed % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  })();
 
   // Move focus to heading on mount
   useEffect(() => {
@@ -163,7 +183,12 @@ export function ProcessingMonitor({
             </h1>
             <p className="pm-monitor-document">{monitor.documentName}</p>
           </div>
-          <span className={`pm-monitor-state is-${monitor.status}`}>{statusLabel}</span>
+          <div style={{ textAlign: "right" }}>
+            <span className={`pm-monitor-state is-${monitor.status}`}>{statusLabel}</span>
+            {monitor.startedAt && (
+              <p className="pm-monitor-elapsed" aria-live="off">{elapsedLabel}</p>
+            )}
+          </div>
         </div>
         <h2>{t("monitor_activity")}</h2>
         <ol
