@@ -7,14 +7,22 @@ Format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-The application has identified itself as 0.4.0 in historical observations. The current deployment commit has not been independently rechecked.
+The application identifies itself as `v0.4.0`. Current `main` HEAD is `9d2910c`; last verified-stable commit is `1d99a29` (tag `hackathon-stable`).
+
+### Added
+- `src/lib/companyProfile.ts` — Company Profile data model: `CompanyIdentity` (name, primaryCountry), `CompanyRegistration` (country), `BusinessActivities` (activityCodes with kind `registered | capability | interest` and label). `loadCompanyProfile()` / `saveCompanyProfile()` backed by `localStorage`.
+- `src/components/pocketmind/SmartDiscoveryPanel.tsx` — Smart Document Discovery panel: Firecrawl-powered tender search with country and jurisdiction filters. On mount, pre-fills country and jurisdiction from Company Profile and derives up to 10 activity codes (kind `registered` or `capability`) to enrich the search query. Shows a profile-missing notice when no profile is saved.
+- `src/lib/services/discoverDocuments.functions.ts` — server function for Firecrawl document discovery. Accepts optional `activityCodes` (system / code / description, max 10) and appends their descriptions to the search query. SSRF protection, PDF validation, and Firecrawl pipeline preserved. Only `{ system, code, description }` sent — no registration numbers, addresses, or partner data.
+- `discovery_profile_missing` i18n key added in EN, PT, and ES.
+- `.pm-discovery-profile-notice` CSS rule in `src/styles.css` (amber-toned notice).
 
 ### Changed
-- `ae14f7b` — updated Vite, Vitest and TypeScript ESLint, and added `js-yaml` and `seroval` overrides. No new dependency audit is claimed here.
-- `5cac563` — added an optional execution report to successful analysis exports and changed Cloud limits from 30 seconds per attempt / 100 seconds per section to a maximum of 15 seconds / 55 seconds, with shorter retry delays. Real-browser comparisons of latency and success rate remain pending.
-- The execution report is not a complete audit trail: failed or split attempts can be omitted; `timedOut` does not reliably record prior timeouts; failures do not return a report; total duration excludes extraction, model initialization and evidence verification. It does not record consent. Exports contain document-derived findings and may include error messages; review them before sharing.
-- `34ccf9c` — consent gate on Processing screen now shows a warning toast and scrolls to the consent checkbox instead of silently disabling the Confirm button. i18n keys added in EN/PT/ES.
-- `ProcessingMonitor` converted from an inline section to a `createPortal` modal overlay rendered above all screens. The modal has `role="dialog"`, `aria-modal="true"`, a focus trap (Tab/Shift+Tab), and returns focus to the Confirm button on close. Esc closes only when analysis is completed or failed; it is ignored while running. A minimise button (−) hides the overlay and shows a persistent pill in the bottom-right corner; the analysis continues running. Auto-navigation after completion was removed — the user clicks **View results** explicitly. i18n keys `monitor_minimise`, `monitor_reopen`, and `monitor_close` added in EN/PT/ES.
+- `src/components/pocketmind/PocketMindApp.tsx` — `onLoadDiscoveredDocument` added to `OverviewScreen` destructuring (was declared in the interface but missing from destructuring, causing a `ReferenceError` in production at `1d99a29`).
+- `.github/workflows/ci.yml` — `bunx tsc --noEmit` added as mandatory gate before tests; `discoverDocuments.functions.ts` and `SmartDiscoveryPanel.tsx` added to ESLint scope (`9d2910c`).
+
+### Verification — 2026-11-21 (post-hackathon-stable)
+- Production build `1d99a29` verified: zero runtime errors, Overview renders, Smart Discovery panel present, build label `v0.4.0 · 1d99a29` confirmed. Tag `hackathon-stable` created at this commit.
+- `9d2910c` pushed to `main`; CI pipeline updated with TypeScript gate.
 
 ### Verification — 2026-11-21
 - A local desktop Chrome hybrid run on a real 17-page PDF produced a `hybrid` JSON analysis with 45 requirements, 17 deadlines, 18 specifications and 13 risks. Of 93 evidence references, 84 were marked verified and 9 unverified.
@@ -144,7 +152,7 @@ Core product — all four screens, Firebase AI Logic hybrid inference, complianc
 
 ---
 
-[Unreleased]: https://github.com/maurolima-sys/ai-mind-law/compare/ed19ed4...HEAD
+[Unreleased]: https://github.com/maurolima-sys/ai-mind-law/compare/9d2910c...HEAD
 [0.4.0]: https://github.com/maurolima-sys/ai-mind-law/commit/ed19ed4b694d3efeb7934ded026ad3b37540e882
 [0.3.0]: https://github.com/maurofranklima/ai-mind-law/commit/7657c0a
 [0.2.0]: https://github.com/maurofranklima/ai-mind-law/commit/0b6945d

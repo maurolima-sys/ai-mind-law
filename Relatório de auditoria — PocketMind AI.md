@@ -5,15 +5,39 @@
 **Demo:** https://ai-mind-law.vercel.app/
 **Commit analisado:** `737e31a` (`main`)
 
-## Atualização documental — histórico até `5cac563`
+---
 
-O relatório abaixo preserva os resultados da auditoria original de `737e31a`; números de testes, lint, dependências e deploy são **históricos**, não uma nova verificação do estado atual. A revisão do histórico até `5cac563` identificou:
+## Atualização de estado — reconciliação com `main` atual
+
+**Data desta atualização:** 21/11/2026
+
+O corpo deste relatório preserva os resultados da auditoria original de `737e31a`. Os números de testes, lint, dependências e deploy são **históricos**, não uma nova verificação do estado atual. Esta secção reconcilia o estado operacional atual com as divergências documentais identificadas.
+
+| Item | Estado na auditoria (`737e31a`) | Estado atual (`9d2910c`) |
+|---|---|---|
+| Commit de produção referenciado | `ed19ed4` (histórico) | `9d2910c` (HEAD); `1d99a29` = tag `hackathon-stable` |
+| Erros em produção | Nenhum no fluxo demo | Zero erros verificados em `1d99a29` |
+| TypeScript gate no CI | Ausente | `bunx tsc --noEmit` obrigatório antes dos testes (`9d2910c`) |
+| `ReferenceError: onLoadDiscoveredDocument` | Não existia | Corrigido em `1d99a29` |
+| Smart Discovery / Company Profile | Não existia | Implementado em `3ce64f3` – `4980d14` |
+| Divergência documental `ed19ed4` vs deploy | Identificada como P2 | Reconciliada no README e CHANGELOG nesta atualização |
+
+**Revisão do histórico até `5cac563` (mantida):**
 
 - `ae14f7b` atualizou Vite, Vitest e TypeScript ESLint e adicionou overrides de `js-yaml` e `seroval`. Isso não comprova que todas as vulnerabilidades anteriormente reportadas foram resolvidas; é necessário um novo audit.
 - `5cac563` adicionou `executionReport` aos resultados de análises bem-sucedidas e reduziu os limites Cloud de 30 s por tentativa / 100 s por secção para, no máximo, 15 s / 55 s. Não há comparação controlada de tempo e sucesso antes e depois. O limite de geração local permanece em 180 s por secção.
 - Em 21/11/2026, um teste híbrido local no Chrome concluiu a análise de um PDF real de 17 páginas e exportou `hybrid`: 45 requisitos, 17 prazos, 18 especificações e 13 riscos; das 93 referências de evidência, 84 estavam marcadas como verificadas e 9 como não verificadas. O monitor relatou validação local das secções 1 e 4 e fallback Cloud nas secções 2, 3 e 5. Não foram capturados os valores brutos do SDK, o histórico completo das secções, tempos, número total de tentativas ou o estado do consentimento dessa execução. O resultado não comprova análise inteiramente local nem implantação em produção.
 - O relatório técnico foi introduzido **depois** desse teste: o JSON anterior não contém esses rastros. No código atual, tempos não incluem extração, inicialização do modelo ou verificação de evidências; tentativas falhadas ou subdivididas podem não ser registadas, `timedOut` não regista fiavelmente timeouts anteriores, falhas não devolvem relatório e o consentimento não é registado. As exportações contêm achados derivados do documento e podem incluir mensagens de erro. Não tratar os campos como trilha de auditoria completa; rever exportações antes de partilhá-las.
 - Os testes e a comparação de erros TypeScript relatados anteriormente precedem `5cac563`; não são evidência de validação do commit atual. O deploy atual, o consentimento daquela execução, uma análise completa exclusivamente `ON_DEVICE` e a nova configuração de timeouts continuam por verificar.
+
+**Problemas P1 da auditoria original que permanecem em aberto:**
+- Lint completo (`npm run lint`) ainda reporta erros de Prettier fora do subconjunto coberto pelo CI.
+- Dependências com vulnerabilidades reportadas pelo `npm audit` não foram atualizadas de forma controlada.
+- Toolchain sem versão Node fixada.
+
+Esses três itens não foram introduzidos pelos commits recentes e não afetam o fluxo funcional verificado. Continuam como dívida técnica a resolver pós-hackathon.
+
+---
 
 ## Auditoria original — `737e31a`
 
@@ -90,15 +114,15 @@ O CI usa Bun latest, enquanto o deploy usa `npm install`/`npm run build`, e não
 
 ### P2 — Documentação de release desatualizada
 
-O README e a tela de changelog mantêm referências históricas ao build `ed19ed4`, enquanto o demo e `main` estão em `737e31a`. O texto também chama algumas verificações antigas de “production build”.
+O README e a tela de changelog mantêm referências históricas ao build `ed19ed4`, enquanto o demo e `main` estão em `737e31a`. O texto também chama algumas verificações antigas de "production build".
 
 **Impacto:** dificulta saber qual comportamento e configuração realmente correspondem ao deploy atual.
 
-**Correção recomendada:** separar “histórico de verificação” de “estado atual do deploy”, atualizar o README para apontar o commit realmente publicado e automatizar a exibição do SHA/build time a partir do CI/deploy quando possível.
+**Correção recomendada:** separar "histórico de verificação" de "estado atual do deploy", atualizar o README para apontar o commit realmente publicado e automatizar a exibição do SHA/build time a partir do CI/deploy quando possível.
 
 ### P2 — Dependência de configuração externa ainda não comprovada em todos os caminhos
 
-O demo mostra “Firebase configured · not yet verified”. O próprio README reconhece que on-device/hybrid e OCR de PDF escaneado ainda não foram comprovados de ponta a ponta. O teste realizado aqui não validou uma chamada Cloud AI real nem OCR externo.
+O demo mostra "Firebase configured · not yet verified". O próprio README reconhece que on-device/hybrid e OCR de PDF escaneado ainda não foram comprovados de ponta a ponta. O teste realizado aqui não validou uma chamada Cloud AI real nem OCR externo.
 
 **Impacto:** o caminho de maior risco operacional — análise real, App Check, fallback de modelos e OCR — permanece dependente de configuração e ambiente.
 

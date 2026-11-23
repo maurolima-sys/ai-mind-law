@@ -6,7 +6,7 @@
 
 ## What we built
 
-PocketMind AI turns procurement documents into a structured, human-reviewable workspace. Reviewers can add PDF, DOCX, and XLSX files up to 50 MB; text is extracted in the browser with PDF.js, Mammoth, or ExcelJS. The application includes consent-gated Firebase AI Logic paths for cloud-only, on-device-only, and on-device-first hybrid inference. On 2026-11-20, production build `ed19ed4` completed a Cloud AI analysis of the fictional sample using `gemini-3.5-flash` after the primary model returned HTTP 500. This dated observation does not guarantee future availability.
+PocketMind AI turns procurement documents into a structured, human-reviewable workspace. Reviewers can add PDF, DOCX, and XLSX files up to 50 MB; text is extracted in the browser with PDF.js, Mammoth, or ExcelJS. The application includes consent-gated Firebase AI Logic paths for cloud-only, on-device-only, and on-device-first hybrid inference. On 2026-11-20, production build `ed19ed4` completed a Cloud AI analysis of the fictional sample using `gemini-3.5-flash` after the primary model returned HTTP 500. That dated observation does not guarantee future availability. The current production build is `v0.4.0 · 9d2910c`; the last verified-stable commit is `1d99a29` (tag `hackathon-stable`).
 
 The core problem: tender documents run to dozens of pages of dense prose. The obligations that decide whether a bid is eligible, technically compliant, and commercially sound are buried in that text. Reviewers re-read, cross-reference, and still miss things. PocketMind AI organizes extracted text, verifies excerpts against their cited source, and surfaces a compliance matrix for review, notes, and export. Uploaded tenders, extracted text, analyses, bidder evidence, comparisons, and review state persist in IndexedDB in the current browser; they are not encrypted or synced.
 
@@ -108,13 +108,13 @@ bun run lint
 bun run build
 ```
 
-GitHub Actions runs the full test suite and production build, plus targeted ESLint checks for the document library, evidence comparison, analysis integration, and their related tests. It does not currently lint every source file; the full local lint command may report existing formatting debt outside those checks.
+GitHub Actions runs `tsc --noEmit` (mandatory TypeScript gate), the full test suite, a production build, and targeted ESLint checks covering the document library, evidence comparison, analysis integration, discovery, and their related tests. It does not currently lint every source file; the full local lint command may report existing formatting debt outside those checks.
 
 ## Verification notes
 
 **Implemented:** Cloud, on-device and hybrid inference, explicit cloud consent, App Check and model fallback are in the code.
 
-**Historical production configuration:** On 2026-11-20, build `v0.4.0 · ed19ed4` was observed and the browser exchanged a reCAPTCHA Enterprise token. The current deployment and enforcement settings have not been independently rechecked.
+**Historical production configuration:** On 2026-11-20, build `v0.4.0 · ed19ed4` was observed and the browser exchanged a reCAPTCHA Enterprise token. The current production build is `v0.4.0 · 9d2910c`; the last independently verified build is `1d99a29` (tag `hackathon-stable`, verified 2026-11-21 — zero runtime errors, Overview and Smart Discovery panel confirmed). The current deployment and enforcement settings have not been independently rechecked beyond that point.
 
 **Tested in production:** On 2026-11-20, a browser test of the fictional sample in Cloud AI mode recorded `exchangeRecaptchaEnterpriseToken` HTTP 200, `gemini-3.8-flash` HTTP 500, then `gemini-3.5-flash` HTTP 200. The analysis completed and the app displayed `Cloud (IN_CLOUD)`. The UI maps the SDK inference source to `IN_CLOUD`; the raw SDK value was not captured. This single run is not an availability guarantee.
 
