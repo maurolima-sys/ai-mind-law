@@ -1032,6 +1032,8 @@ export const pt: Translations = {
   discovery_loading: "A carregar…",
   discovery_disclaimer:
     "Os candidatos são validados apenas quanto ao formato e número de páginas. Verifique a autoridade do emissor e a autenticidade do documento antes de utilizar qualquer conclusão.",
+  discovery_profile_missing:
+    "Nenhum perfil de empresa guardado. Adicione a identidade e os códigos de atividade em Configurações para pré-preencher e enriquecer as pesquisas.",
 
   // ── Company Profile ────────────────────────────────────────────────────────────
   cp_title: "Perfil da Empresa",

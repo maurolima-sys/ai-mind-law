@@ -1048,6 +1048,8 @@
   discovery_loading: "Loading…",
   discovery_disclaimer:
     "Candidates are validated for format and page count only. Verify issuer authority and document authenticity before relying on any finding.",
+  discovery_profile_missing:
+    "No company profile saved. Add your company identity and activity codes in Settings to pre-fill and enrich searches.",
 
   // ── Company Profile ────────────────────────────────────────────────────────────
   cp_title: "Company Profile",

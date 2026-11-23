@@ -12,11 +12,18 @@ const BLOCKED_HOSTNAMES = /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[
 
 // ─── Input schema ─────────────────────────────────────────────────────────────
 
+const activityCodeSchema = z.object({
+  system: z.string().max(50),
+  code: z.string().max(30),
+  description: z.string().max(200),
+});
+
 const inputSchema = z.object({
   consent: z.literal(true),
   description: z.string().trim().min(10).max(500),
   jurisdiction: z.string().trim().min(2).max(150),
   country: z.string().regex(/^[A-Za-z]{2}$/),
+  activityCodes: z.array(activityCodeSchema).max(10).optional(),
 });
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -156,7 +163,12 @@ export const discoverDocuments = createServerFn({ method: "POST" })
           ? "concurso público edital filetype:pdf"
           : "request for proposal tender procurement filetype:pdf";
 
-    const query = `${data.jurisdiction} ${data.description} ${langTerms} site:.gov OR site:.gov.br OR site:.europa.eu`;
+    const activityContext =
+      data.activityCodes && data.activityCodes.length > 0
+        ? data.activityCodes.map((a) => a.description).join(" ")
+        : "";
+
+    const query = `${data.jurisdiction} ${data.description} ${activityContext} ${langTerms} site:.gov OR site:.gov.br OR site:.europa.eu`.replace(/\s+/g, " ").trim();
 
     const response = await fetch("https://api.firecrawl.dev/v2/search", {
       method: "POST",

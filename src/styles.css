@@ -7287,6 +7287,16 @@
   font-size: 9px;
   line-height: 1.5;
 }
+.pm-discovery-profile-notice {
+  margin: 10px 0 0;
+  padding: 8px 10px;
+  border: 1px solid #f0dfb9;
+  border-radius: 7px;
+  background: #fffaf0;
+  color: #7c612e;
+  font-size: 10px;
+  line-height: 1.5;
+}
 
 /* ── Company Profile Section ─────────────────────────────────────────────── */
 

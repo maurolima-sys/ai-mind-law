@@ -1,7 +1,8 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ChevronDown, ChevronUp, ExternalLink, FileText, Loader2, Search, Shield } from "lucide-react";
 
 import { useLocale } from "@/lib/i18n";
+import { loadCompanyProfile } from "@/lib/companyProfile";
 import { discoverDocuments } from "@/lib/services/discoverDocuments.functions";
 import type { DiscoveryCandidate } from "@/lib/types";
 
@@ -25,6 +26,29 @@ export function SmartDiscoveryPanel({ onLoadDocument }: SmartDiscoveryPanelProps
   const [error, setError] = useState<string | null>(null);
   const [candidates, setCandidates] = useState<DiscoveryCandidate[] | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [profileMissing, setProfileMissing] = useState(false);
+  const [activityCodes, setActivityCodes] = useState<{ system: string; code: string; description: string }[]>([]);
+
+  // Pre-fill from Company Profile on mount
+  useEffect(() => {
+    const profile = loadCompanyProfile();
+    const identity = profile.identity;
+    const activities = profile.activities;
+
+    const hasIdentity = identity.name.trim().length > 0;
+    setProfileMissing(!hasIdentity);
+
+    if (identity.primaryCountry) setCountry(identity.primaryCountry);
+
+    const reg = identity.registrations[0];
+    if (reg?.country) setJurisdiction(reg.country);
+
+    const codes = activities.activityCodes
+      .filter((a) => (a.kind === "registered" || a.kind === "capability") && a.label.trim().length > 0)
+      .slice(0, 10)
+      .map((a) => ({ system: a.system, code: a.code, description: a.label }));
+    setActivityCodes(codes);
+  }, []);
 
   const canSearch =
     consent && description.trim().length >= 10 && jurisdiction.trim().length >= 2 && /^[A-Za-z]{2}$/.test(country);
@@ -36,7 +60,13 @@ export function SmartDiscoveryPanel({ onLoadDocument }: SmartDiscoveryPanelProps
     setCandidates(null);
     try {
       const results = await discoverDocuments({
-        data: { consent: true, description: description.trim(), jurisdiction: jurisdiction.trim(), country },
+        data: {
+          consent: true,
+          description: description.trim(),
+          jurisdiction: jurisdiction.trim(),
+          country,
+          activityCodes: activityCodes.length > 0 ? activityCodes : undefined,
+        },
       });
       setCandidates(results);
       if (results.length === 0) setError(t("discovery_no_results"));
@@ -45,7 +75,7 @@ export function SmartDiscoveryPanel({ onLoadDocument }: SmartDiscoveryPanelProps
     } finally {
       setLoading(false);
     }
-  }, [canSearch, description, jurisdiction, country, t]);
+  }, [canSearch, description, jurisdiction, country, activityCodes, t]);
 
   const handleAnalyze = useCallback(
     async (candidate: DiscoveryCandidate) => {
@@ -84,6 +114,13 @@ export function SmartDiscoveryPanel({ onLoadDocument }: SmartDiscoveryPanelProps
             <Shield size={13} aria-hidden="true" />
             {t("discovery_privacy_note")}
           </p>
+
+          {/* ── Profile missing notice ── */}
+          {profileMissing && (
+            <p className="pm-discovery-profile-notice" role="note">
+              {t("discovery_profile_missing")}
+            </p>
+          )}
 
           {/* ── Form ── */}
           <div className="pm-discovery-form">
