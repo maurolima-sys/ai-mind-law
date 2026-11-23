@@ -2,7 +2,7 @@ import { Schema } from "firebase/ai";
 import { z } from "zod";
 
 const findingSchema = z.object({
-  description: z.string().min(1),
+  description: z.string().default(""),
   category: z
     .string()
     .transform((v) => {
@@ -34,29 +34,29 @@ const findingSchema = z.object({
     .union([z.boolean(), z.string()])
     .transform((v) => (typeof v === "string" ? v.toLowerCase() !== "false" && v !== "0" : v)),
   confidence: z
-    .union([z.number(), z.string()])
-    .transform((v) => (typeof v === "string" ? parseFloat(v) : v))
-    .pipe(z.number().min(0).max(1)),
+    .union([z.number(), z.string(), z.null()])
+    .transform((v) => (v === null ? 0.5 : typeof v === "string" ? parseFloat(v) : v))
+    .pipe(z.number().min(0).max(1).catch(0.5)),
   sourceIndex: z
     .union([z.number(), z.string()])
     .transform((v) => (typeof v === "string" ? parseInt(v, 10) : v))
-    .pipe(z.number().int().positive()),
+    .pipe(z.number().int().min(0).catch(1)),
   excerpt: z.string().default(""),
 });
 
 const deadlineSchema = z.object({
-  description: z.string().min(1),
+  description: z.string().default(""),
   date: z.string().nullable().default(null),
   relatedRequirement: z.string().nullable().default(null),
   sourceIndex: z
     .union([z.number(), z.string()])
     .transform((v) => (typeof v === "string" ? parseInt(v, 10) : v))
-    .pipe(z.number().int().positive()),
+    .pipe(z.number().int().min(0).catch(1)),
   excerpt: z.string().default(""),
 });
 
 const specificationSchema = z.object({
-  item: z.string().min(1),
+  item: z.string().default(""),
   quantity: z
     .union([z.string(), z.number()])
     .nullable()
@@ -67,7 +67,7 @@ const specificationSchema = z.object({
     .nullable()
     .default(null)
     .transform((v) => (v === null ? null : String(v))),
-  details: z.string().min(1),
+  details: z.string().default(""),
   notes: z
     .string()
     .nullable()
@@ -76,12 +76,12 @@ const specificationSchema = z.object({
   sourceIndex: z
     .union([z.number(), z.string()])
     .transform((v) => (typeof v === "string" ? parseInt(v, 10) : v))
-    .pipe(z.number().int().positive()),
+    .pipe(z.number().int().min(0).catch(1)),
   excerpt: z.string().default(""),
 });
 
 const riskSchema = z.object({
-  title: z.string().min(1),
+  title: z.string().default(""),
   severity: z
     .string()
     .transform((v) => {
@@ -98,11 +98,11 @@ const riskSchema = z.object({
       return normalized === "suggestion" ? "suggestion" : "detected";
     })
     .pipe(z.enum(["detected", "suggestion"])),
-  explanation: z.string().min(1),
+  explanation: z.string().default(""),
   sourceIndex: z
     .union([z.number(), z.string()])
     .transform((v) => (typeof v === "string" ? parseInt(v, 10) : v))
-    .pipe(z.number().int().positive()),
+    .pipe(z.number().int().min(0).catch(1)),
   excerpt: z.string().default(""),
 });
 

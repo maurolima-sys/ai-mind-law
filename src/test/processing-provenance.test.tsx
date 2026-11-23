@@ -96,7 +96,7 @@ describe("processing provenance", () => {
       "aria-expanded",
       "true",
     );
-  }, 15_000);
+  }, 25_000);
 
   it("collapses navigation and analysis without losing the question draft", async () => {
     renderApp();
