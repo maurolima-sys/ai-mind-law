@@ -24,6 +24,7 @@ import {
   geminiModelLabel,
   initializeDeviceModelWithTimeout,
   isAppCheckError,
+  isOnDeviceUnavailableError,
   PRIMARY_GEMINI_MODEL,
   TOTAL_MODEL_ATTEMPTS,
   type GeminiModelName,
@@ -437,6 +438,11 @@ export async function analyzeTender(
       deviceModelError = detail;
       if (preference === "local") {
         if (getOnDeviceTimeoutStage(error)) throw error;
+        if (isOnDeviceUnavailableError(error)) {
+          throw new Error(
+            "On-device inference is not available in this browser. Use Chrome with the Prompt API enabled, or switch to Cloud or Hybrid mode.",
+          );
+        }
         throw new Error(`On-device inference is unavailable. ${detail}`);
       }
       options.onEvent?.({ type: "model-unavailable" });

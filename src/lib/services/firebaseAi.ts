@@ -14,8 +14,8 @@ import { TENDER_ANALYSIS_RESPONSE_SCHEMA } from "@/lib/services/tenderAnalysisSc
 import { loadByokConfig, hashByokConfig, type ByokFirebaseConfig } from "@/lib/byokConfig";
 import type { AiProvider } from "@/lib/preferences";
 
-export const PRIMARY_GEMINI_MODEL = "gemini-3.5-flash";
-export const SECONDARY_GEMINI_MODEL = "gemini-3.8-flash";
+export const PRIMARY_GEMINI_MODEL = "gemini-3.8-flash";
+export const SECONDARY_GEMINI_MODEL = "gemini-3.6-flash";
 export const TERTIARY_GEMINI_MODEL = "gemini-3.5-flash-lite";
 
 export const GEMINI_MODEL_FALLBACK_CHAIN = [
@@ -30,9 +30,9 @@ export type GeminiModelName = (typeof GEMINI_MODEL_FALLBACK_CHAIN)[number];
 // token is requested on the next attempt with a different model instance.
 const RETRYABLE_STATUS_CODES = new Set([401, 429, 500, 502, 503]);
 const TIMEOUT_ERROR_CODE = "TIMEOUT";
-const GENERATION_TIMEOUT_MS = 30_000;
+const GENERATION_TIMEOUT_MS = 60_000;
 export const ON_DEVICE_GENERATION_TIMEOUT_MS = 180_000;
-const TOTAL_GENERATION_BUDGET_MS = 100_000;
+const TOTAL_GENERATION_BUDGET_MS = 180_000;
 const RETRY_STEPS = [
   { modelName: PRIMARY_GEMINI_MODEL, delayMs: 0, jitterMs: 0 },
   { modelName: SECONDARY_GEMINI_MODEL, delayMs: 3_000, jitterMs: 1_000 },
@@ -154,6 +154,18 @@ export function isAppCheckError(error: unknown): boolean {
   )
     return true;
   return candidate.cause ? isAppCheckError(candidate.cause) : false;
+}
+
+export function isOnDeviceUnavailableError(error: unknown): boolean {
+  if (typeof error !== "object" || error === null) return false;
+  const candidate = error as { code?: unknown; message?: unknown };
+  if (candidate.code === "api-not-enabled") return true;
+  if (
+    typeof candidate.message === "string" &&
+    /Local LanguageModel API not available/i.test(candidate.message)
+  )
+    return true;
+  return false;
 }
 
 export function isRetryableFirebaseAiError(error: unknown): boolean {
