@@ -2070,6 +2070,7 @@ function OverviewScreen({
   onOpenAnalysis,
   onOpenProcessing,
   onLoadSampleRfp,
+  onLoadDiscoveredDocument,
   onSelectDocument,
   onDeleteDocument,
 }: {
