@@ -224,15 +224,6 @@ export function requireInferenceSource(source: string | undefined): InferenceSou
   // not the key name, regardless of SDK version.
   if (source === FirebaseInferenceSource.ON_DEVICE) return "ON_DEVICE";
   if (source === FirebaseInferenceSource.IN_CLOUD) return "IN_CLOUD";
-  // Defensive fallback: if the SDK returns an unexpected value (e.g. a new enum
-  // member in a future SDK version), treat it as cloud rather than crashing a
-  // successful analysis. The unknown value is preserved in the error log.
-  if (source !== undefined) {
-    console.warn(
-      `Firebase AI Logic returned an unrecognised inferenceSource value: "${source}". Treating as IN_CLOUD.`,
-    );
-    return "IN_CLOUD";
-  }
   throw new Error(
     `Firebase AI Logic returned a result without reporting its inference source (received: ${String(source)}). Update the Firebase SDK before using this result.`,
   );
