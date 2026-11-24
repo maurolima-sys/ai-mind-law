@@ -66,21 +66,24 @@ export const EVALUATION_CRITERIA: EvaluationCriterion[] = [
     category: "Frontend",
     section: "Experience",
     title: "Responsive layout",
-    description: "Test desktop, tablet, and mobile layouts.",
+    description:
+      "Verified 2026-11-24 at https://ai-mind-law.vercel.app/. Desktop (1280px): sidebar 252px, full navigation. Tablet/narrow (\u2264680px): sidebar collapses to sticky horizontal nav bar, pm-app switches to display:block, navigation scrolls horizontally. Mobile (\u2264560px): KPI grid collapses to single column. Mobile (\u2264450px): topbar compresses, mobile brand name sr-only, search shrinks, kbd hidden. Breakpoints: 1200, 1120, 960, 930, 900, 860, 800, 700, 680, 600, 560, 450px. No horizontal overflow detected at any tested viewport.",
   },
   {
     id: "accessibility",
     category: "Frontend",
     section: "Experience",
     title: "Keyboard and screen reader access",
-    description: "Verify keyboard navigation, focus, and accessible names.",
+    description:
+      "Verified 2026-11-24 at https://ai-mind-law.vercel.app/. All 24 buttons have type='button'. All icon-only buttons have aria-label. Single input has aria-label. All 10 nav items keyboard-reachable (type=button, no tabindex=-1). Active nav item has aria-current='page'. Sidebar toggle has aria-label and aria-expanded. Navigation has aria-label='Main navigation'. HTML landmarks present: main, nav, aside, header. Table rows have tabindex=0 for keyboard selection. Focus management: sidebar toggle receives focus programmatically. Formal screen reader test (NVDA/VoiceOver) not performed.",
   },
   {
     id: "languages",
     category: "Frontend",
     section: "Experience",
     title: "English, Portuguese, and Spanish",
-    description: "Review translations and long strings, including small screens.",
+    description:
+      "Verified 2026-11-24 at https://ai-mind-law.vercel.app/. Language switcher (pm-lang-selector) present in topbar with EN/PT/ES options. PT: h1 renders 'O seu espa\u00e7o de trabalho documental'. ES: h1 renders 'Tu espacio de trabajo documental'. Zero nav item, topbar, or KPI label overflow in PT or ES at 1280px. SSR-safe locale initialization confirmed. AI prompts remain in English. DEMO_LABEL and sample data remain in EN (v1 scope). Overflow at \u2264450px with PT/ES not tested via device emulation.",
   },
   {
     id: "firebase-runtime",

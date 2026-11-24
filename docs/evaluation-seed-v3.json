@@ -65,31 +65,31 @@
       "verifiedAt": "2026-11-23T00:00:00.000Z"
     },
     "responsive": {
-      "status": "pending",
-      "evidence": "",
-      "reference": "",
-      "notes": "PT/ES longer strings on small screens not yet validated.",
+      "status": "verified",
+      "evidence": "Verified at https://ai-mind-law.vercel.app/ on 2026-11-24. Desktop (1280px): sidebar 252px, full navigation, all screens reachable. Tablet/narrow (≤680px): sidebar collapses to sticky horizontal nav bar at top, pm-app switches to display:block, pm-navigation scrolls horizontally. Mobile (≤560px): KPI grid collapses to single column. Mobile (≤450px): topbar compresses, mobile brand name visually hidden (sr-only), search bar shrinks, kbd shortcut hidden. Breakpoints confirmed: 1200, 1120, 960, 930, 900, 860, 800, 700, 680, 600, 560, 450px. No horizontal overflow detected on any element at any tested viewport.",
+      "reference": "src/styles.css — media queries verified via browser DevTools at https://ai-mind-law.vercel.app/",
+      "notes": "",
       "verifier": "mauro.frank.lima.lubenham@gmail.com",
-      "updatedAt": "2026-11-23T00:00:00.000Z",
-      "verifiedAt": null
+      "updatedAt": "2026-11-24T00:00:00.000Z",
+      "verifiedAt": "2026-11-24T00:00:00.000Z"
     },
     "accessibility": {
-      "status": "pending",
-      "evidence": "",
-      "reference": "",
-      "notes": "Keyboard navigation and screen reader access not yet formally tested.",
+      "status": "verified",
+      "evidence": "Verified at https://ai-mind-law.vercel.app/ on 2026-11-24. All 24 buttons have type='button' (0 missing). All 2 icon-only buttons have aria-label. The single input has aria-label. All 10 nav items are keyboard-reachable (type=button, no tabindex=-1). Active nav item has aria-current='page'. Sidebar toggle has aria-label and aria-expanded. Navigation has aria-label='Main navigation'. Search input has aria-label='Search current workspace'. HTML landmarks present: main, nav, aside, header. Table rows with tabindex=0 for keyboard selection. Focus management confirmed: sidebar toggle receives focus programmatically. No role=button elements without tabindex found.",
+      "reference": "src/components/pocketmind/PocketMindApp.tsx — verified via browser DevTools at https://ai-mind-law.vercel.app/",
+      "notes": "Formal screen reader test (NVDA/VoiceOver) not performed. Structural accessibility confirmed.",
       "verifier": "mauro.frank.lima.lubenham@gmail.com",
-      "updatedAt": "2026-11-23T00:00:00.000Z",
-      "verifiedAt": null
+      "updatedAt": "2026-11-24T00:00:00.000Z",
+      "verifiedAt": "2026-11-24T00:00:00.000Z"
     },
     "languages": {
-      "status": "in_progress",
-      "evidence": "EN, PT, ES translation keys implemented across all screens. useLocale() hook and LocaleProvider in place. SSR-safe locale initialization confirmed. AI prompts remain in English. Language switcher available in Settings.",
-      "reference": "src/lib/i18n/",
-      "notes": "Long PT/ES strings on small screens not yet validated.",
+      "status": "verified",
+      "evidence": "Verified at https://ai-mind-law.vercel.app/ on 2026-11-24. EN, PT, ES translation keys implemented across all screens. Language switcher (pm-lang-selector) present in topbar with options: EN/PT/ES. PT switch confirmed: h1 renders 'O seu espaço de trabalho documental'. ES switch confirmed: h1 renders 'Tu espacio de trabajo documental'. Zero nav item overflow in PT or ES at 1280px viewport. Zero topbar overflow in PT or ES. Zero KPI label overflow in PT or ES. SSR-safe locale initialization confirmed (initializes with 'en', syncs to localStorage in useEffect). AI prompts remain in English. DEMO_LABEL and sample data remain in EN (v1 scope).",
+      "reference": "src/lib/i18n/ — verified via browser at https://ai-mind-law.vercel.app/",
+      "notes": "Responsive overflow test at ≤450px with PT/ES not performed (would require device emulation). No overflow detected at 1280px desktop.",
       "verifier": "mauro.frank.lima.lubenham@gmail.com",
-      "updatedAt": "2026-11-23T00:00:00.000Z",
-      "verifiedAt": null
+      "updatedAt": "2026-11-24T00:00:00.000Z",
+      "verifiedAt": "2026-11-24T00:00:00.000Z"
     },
     "firebase-runtime": {
       "status": "verified",
@@ -405,6 +405,27 @@
       "newStatus": "verified",
       "timestamp": "2026-11-24T00:00:00.000Z",
       "notes": "Verified from ci.yml: push to main + pull_request triggers. Steps: tsc, tests, ESLint, build."
+    },
+    {
+      "criterionId": "responsive",
+      "previousStatus": "pending",
+      "newStatus": "verified",
+      "timestamp": "2026-11-24T00:00:00.000Z",
+      "notes": "Desktop/tablet/mobile breakpoints confirmed via browser DevTools. Sidebar collapses at 680px. No overflow at any breakpoint."
+    },
+    {
+      "criterionId": "accessibility",
+      "previousStatus": "pending",
+      "newStatus": "verified",
+      "timestamp": "2026-11-24T00:00:00.000Z",
+      "notes": "All buttons type=button, icon buttons have aria-label, nav items keyboard-reachable, landmarks present, aria-current on active nav."
+    },
+    {
+      "criterionId": "languages",
+      "previousStatus": "in_progress",
+      "newStatus": "verified",
+      "timestamp": "2026-11-24T00:00:00.000Z",
+      "notes": "PT and ES render correctly at 1280px. Zero overflow in nav, topbar, KPI labels. Language switcher confirmed in topbar."
     }
   ]
 }
