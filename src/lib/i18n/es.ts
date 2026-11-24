@@ -895,10 +895,11 @@ export const es: Translations = {
     "Verifica la configuración del conector. La operación OCR sigue vinculada a un PDF consentido por separado.",
   integrations_llama_consent_note:
     "Esta pantalla no carga archivos. Verifica el OCR real en Procesamiento después del consentimiento por documento.",
+  integrations_eleven_title: "Narración del tour",
   integrations_eleven_detail:
-    "Verifica la configuración del servidor y puede sintetizar narración fija de diagnóstico.",
+    "Verifica el soporte de síntesis de voz del navegador y puede reproducir narración fija de diagnóstico.",
   integrations_eleven_test_note:
-    "La prueba de voz envía solo texto fijo de este módulo. No incluye texto del tour ni documentos del espacio de trabajo.",
+    "La prueba de voz usa el motor de voz integrado del navegador. No se envía audio a ningún servidor.",
   integrations_eleven_run: "Ejecutar prueba de voz",
   integrations_check_configuration: "Verificar configuración",
   integrations_checking: "Verificando la configuración del servidor…",

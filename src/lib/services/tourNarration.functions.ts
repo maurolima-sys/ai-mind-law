@@ -1,94 +1,131 @@
 /**
- * Server function: ElevenLabs text-to-speech for guided-tour narration.
+ * Tour narration — Mistral Voxtral TTS (server function) with browser
+ * speechSynthesis as automatic fallback.
  *
- * Security model:
- *  - ELEVENLABS_API_KEY stays server-side only; never sent to the browser.
- *  - Input is validated and capped before forwarding to ElevenLabs.
- *  - The binary MP3 is returned directly as base64 so the browser can create
- *    a Blob URL without an extra round-trip.
- *
- * ElevenLabs endpoint used:
- *  POST /v1/text-to-speech/{voiceId}?output_format=mp3_44100_128
- *  Model: eleven_multilingual_v2  (supports EN, PT, ES natively)
- *
- * Voice map (all multilingual, one per locale):
- *  en → George  JBFqnCBsd6RMkjVDRZzb  (documentary narration, clear English)
- *  pt → Brian   nPczCjzI2devNBz1zQrb  (professional Portuguese)
- *  es → Laura   FGY2WhTYpPnrIDTdsKH5  (crisp Spanish)
+ * Server path: POST /v1/audio/speech → { audio_data: "<base64 mp3>" }
+ * Fallback: browser speechSynthesis (no network, no key required).
  */
 
 import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
 
-const ELEVENLABS_BASE = "https://api.elevenlabs.io/v1";
-const MODEL_ID = "eleven_multilingual_v2";
-const OUTPUT_FORMAT = "mp3_44100_128";
+// ─── availability ─────────────────────────────────────────────────────────────
 
-const VOICE_BY_LOCALE: Record<string, string> = {
-  en: "JBFqnCBsd6RMkjVDRZzb", // George
-  pt: "nPczCjzI2devNBz1zQrb", // Brian
-  es: "FGY2WhTYpPnrIDTdsKH5", // Laura
-};
+/** Returns true when either Mistral TTS or browser speechSynthesis is usable. */
+export async function checkTourNarrationAvailability(): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+  return true; // Mistral server fn always available; speechSynthesis is fallback
+}
 
-/** Max characters forwarded to ElevenLabs per request (title + body joined). */
-const MAX_CHARS = 600;
+// ─── locale → BCP-47 lang hint (fallback only) ────────────────────────────────
 
-const inputSchema = z.object({
-  text: z.string().trim().min(1).max(MAX_CHARS),
-  locale: z.enum(["en", "pt", "es"]),
-});
+const LANG: Record<string, string> = { en: "en-US", pt: "pt-PT", es: "es-ES" };
 
-/**
- * Availability check — returns true only when the key is configured.
- * Called once on tour mount; result is cached in the browser for the session.
- */
-export const checkTourNarrationAvailability = createServerFn({
-  method: "GET",
-}).handler(async () => Boolean(process.env["ELEVENLABS_API_KEY"]));
+// ─── active handles ───────────────────────────────────────────────────────────
 
-/**
- * Synthesise speech for one tour step.
- * Returns base64-encoded MP3 audio.
- */
-export const synthesiseTourStep = createServerFn({ method: "POST" })
-  .validator((data: unknown) => inputSchema.parse(data))
-  .handler(async ({ data }): Promise<{ audioBase64: string }> => {
-    const apiKey = process.env["ELEVENLABS_API_KEY"];
-    if (!apiKey) {
-      throw new Error("Tour narration is not configured on the server.");
-    }
+let _audio: HTMLAudioElement | null = null;
+let _utterance: SpeechSynthesisUtterance | null = null;
 
-    const voiceId = VOICE_BY_LOCALE[data.locale] ?? VOICE_BY_LOCALE["en"];
-    const url = `${ELEVENLABS_BASE}/text-to-speech/${voiceId}?output_format=${OUTPUT_FORMAT}`;
+export function stopTourNarration(): void {
+  if (_audio) {
+    _audio.pause();
+    _audio.src = "";
+    _audio = null;
+  }
+  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+  }
+  _utterance = null;
+}
 
-    const response = await fetch(url, {
+// ─── server function ──────────────────────────────────────────────────────────
+
+const _synthesiseMistral = createServerFn({ method: "POST" })
+  .validator((d: { text: string }) => d)
+  .handler(async ({ data }) => {
+    const key = process.env["MISTRAL_API_KEY"];
+    if (!key) return { audioBase64: "" };
+
+    const res = await fetch("https://api.mistral.ai/v1/audio/speech", {
       method: "POST",
       headers: {
-        "xi-api-key": apiKey,
+        Authorization: `Bearer ${key}`,
         "Content-Type": "application/json",
-        Accept: "audio/mpeg",
       },
       body: JSON.stringify({
-        text: data.text,
-        model_id: MODEL_ID,
-        voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.75,
-          style: 0.0,
-          use_speaker_boost: true,
-        },
+        model: "voxtral-mini-tts-latest",
+        input: data.text,
+        voice: "en_paul_neutral",
       }),
-      signal: AbortSignal.timeout(20_000),
     });
 
-    if (!response.ok) {
-      const detail = (await response.text()).slice(0, 300);
-      console.error(`ElevenLabs TTS failed [${response.status}]: ${detail}`);
-      throw new Error(`Tour narration failed [${response.status}].`);
-    }
+    if (!res.ok) return { audioBase64: "" };
 
-    const buffer = await response.arrayBuffer();
-    // Convert to base64 in the Worker/Node environment.
-    const audioBase64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
-    return { audioBase64 };
+    const json = (await res.json()) as { audio_data?: string };
+    return { audioBase64: json.audio_data ?? "" };
   });
+
+// ─── synthesise ───────────────────────────────────────────────────────────────
+
+export interface SynthesiseResult {
+  audioBase64: string;
+}
+
+/**
+ * Speak `text` using Mistral TTS (server) or browser speechSynthesis (fallback).
+ * Resolves when audio ends or immediately if both paths are unavailable.
+ */
+export async function synthesiseTourStep({
+  data,
+}: {
+  data: { text: string; locale: string };
+}): Promise<SynthesiseResult> {
+  if (typeof window === "undefined") return { audioBase64: "" };
+
+  stopTourNarration();
+
+  // ── Mistral path ────────────────────────────────────────────────────────────
+  try {
+    const result = await _synthesiseMistral({ data: { text: data.text } });
+    if (result.audioBase64) {
+      return new Promise((resolve, reject) => {
+        const src = `data:audio/mp3;base64,${result.audioBase64}`;
+        const audio = new Audio(src);
+        _audio = audio;
+        audio.onended = () => {
+          _audio = null;
+          resolve({ audioBase64: result.audioBase64 });
+        };
+        audio.onerror = () => {
+          _audio = null;
+          reject(new Error("Audio playback error"));
+        };
+        audio.play().catch(reject);
+      });
+    }
+  } catch {
+    // fall through to speechSynthesis
+  }
+
+  // ── speechSynthesis fallback ────────────────────────────────────────────────
+  if (!("speechSynthesis" in window)) return { audioBase64: "" };
+
+  return new Promise((resolve, reject) => {
+    const utterance = new SpeechSynthesisUtterance(data.text);
+    utterance.lang = LANG[data.locale] ?? "en-US";
+    utterance.rate = 0.95;
+    _utterance = utterance;
+    utterance.onend = () => {
+      _utterance = null;
+      resolve({ audioBase64: "" });
+    };
+    utterance.onerror = (event) => {
+      _utterance = null;
+      if (event.error === "interrupted" || event.error === "canceled") {
+        resolve({ audioBase64: "" });
+      } else {
+        reject(new Error(`Speech synthesis error: ${event.error}`));
+      }
+    };
+    window.speechSynthesis.speak(utterance);
+  });
+}

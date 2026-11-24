@@ -155,7 +155,7 @@ export async function runElevenLabsDiagnostic(locale: PreferenceLocale): Promise
         "speech",
         "not-configured",
         startedAt,
-        "ElevenLabs narration is not configured on the server.",
+        "Tour narration is not supported in this environment.",
       );
     }
     const narrationText =
@@ -164,13 +164,14 @@ export async function runElevenLabsDiagnostic(locale: PreferenceLocale): Promise
         : locale === "es"
           ? "El diagnóstico de voz de PocketMind se ha completado."
           : "The PocketMind voice diagnostic has completed.";
-    await synthesiseTourStep({ data: { text: narrationText, locale } });
+    const result = await synthesiseTourStep({ data: { text: narrationText, locale } });
+    const source = result.audioBase64 ? "Mistral Voxtral TTS" : "browser speech synthesis";
     return record(
       "elevenlabs",
       "speech",
       "success",
       startedAt,
-      "ElevenLabs returned an audio response for fixed diagnostic text.",
+      `Tour narration completed via ${source}.`,
     );
   } catch (error) {
     return record("elevenlabs", "speech", "failure", startedAt, errorMessage(error));
@@ -187,8 +188,8 @@ export async function runElevenLabsAvailabilityDiagnostic(): Promise<DiagnosticR
       available ? "configured" : "not-configured",
       startedAt,
       available
-        ? "ElevenLabs server configuration is present. No speech request was made."
-        : "ElevenLabs narration is not configured on the server.",
+        ? "Tour narration is available (Mistral Voxtral TTS with browser speech fallback)."
+        : "Tour narration is not supported in this environment.",
     );
   } catch (error) {
     return record("elevenlabs", "availability", "failure", startedAt, errorMessage(error));

@@ -909,10 +909,11 @@
     "Checks connector configuration. An OCR operation remains tied to a separately consented PDF.",
   integrations_llama_consent_note:
     "No file is uploaded by this screen. Verify a real OCR result from Processing & privacy after per-document consent.",
+  integrations_eleven_title: "Tour narration",
   integrations_eleven_detail:
-    "Checks server configuration and can synthesize fixed diagnostic narration.",
+    "Checks browser speech synthesis support and can play fixed diagnostic narration.",
   integrations_eleven_test_note:
-    "The speech test sends only fixed product text shown in this module. It does not include tour or document text from the workspace.",
+    "The speech test uses the browser's built-in speech engine. No audio is sent to any server.",
   integrations_eleven_run: "Run speech test",
   integrations_check_configuration: "Check configuration",
   integrations_checking: "Checking server configuration…",

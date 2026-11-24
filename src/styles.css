@@ -376,8 +376,13 @@
   align-items: center;
   gap: 16px;
   padding: 0 20px;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--pm-line);
+  position: sticky;
+  top: 0;
+  z-index: 30;
 }
 .pm-search {
   width: min(420px, 52vw);
@@ -696,10 +701,10 @@
   border-bottom: 1px solid #e9edf4;
   background: #f8fafd;
   color: #697994;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  text-transform: none;
   white-space: nowrap;
 }
 .pm-table td {
@@ -1363,6 +1368,20 @@
 @keyframes pm-spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pm-sidebar {
+    transition: none;
+  }
+  .pm-tour-spotlight {
+    transition: none;
+  }
+  .pm-spin,
+  .pm-qa-spinner,
+  .pm-tour-audio-spin {
+    animation: none;
   }
 }
 .pm-processing-footer {
@@ -2897,6 +2916,47 @@
   }
   .pm-source-page pre {
     min-height: 210px;
+  }
+}
+
+@media (max-width: 860px) {
+  /* 0. Topbar — prevent horizontal overflow */
+  .pm-topbar {
+    overflow: hidden;
+    /* sticky already set on base rule; backdrop-filter degrades gracefully */
+  }
+  .pm-topbar-right {
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  /* 1. Search bar — constrain width, allow shrink */
+  .pm-search {
+    width: min(280px, 36vw);
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
+  /* 2. Hide user text label, keep avatar + pill */
+  .pm-user-text {
+    display: none;
+  }
+
+  /* 3. Hero CTA — stack vertically */
+  .pm-hero-cta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .pm-hero-cta-actions {
+    align-items: stretch;
+  }
+
+  /* 4. Workspace meta span — truncate */
+  .pm-workspace-meta span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
@@ -4815,6 +4875,7 @@
     top 240ms cubic-bezier(0.22, 1, 0.36, 1),
     width 240ms cubic-bezier(0.22, 1, 0.36, 1),
     height 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: left, top, width, height;
 }
 .pm-tour-spotlight.is-modal {
   left: 0;
@@ -6973,6 +7034,7 @@
   transition:
     width 220ms cubic-bezier(0.22, 1, 0.36, 1),
     flex-basis 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: width;
 }
 
 .pm-sidebar--collapsed {

@@ -330,7 +330,7 @@ export function IntegrationsScreen({
               <Mic2 size={20} aria-hidden="true" />
             </span>
             <div>
-              <h2>ElevenLabs</h2>
+              <h2>{t("integrations_eleven_title")}</h2>
               <p>{t("integrations_eleven_detail")}</p>
             </div>
             <span

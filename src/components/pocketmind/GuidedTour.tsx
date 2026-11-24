@@ -4,7 +4,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Compass,
-  Loader,
   Sparkles,
   Volume2,
   VolumeX,
@@ -14,6 +13,7 @@ import {
 import { useLocale } from "@/lib/i18n";
 import {
   checkTourNarrationAvailability,
+  stopTourNarration,
   synthesiseTourStep,
 } from "@/lib/services/tourNarration.functions";
 
@@ -114,12 +114,11 @@ function stepText(title: string, body: string): string {
 type NarrationStatus = "idle" | "loading" | "playing" | "error";
 
 /**
- * Manages ElevenLabs narration for the guided tour.
+ * Manages browser speechSynthesis narration for the guided tour.
  *
- * - Checks availability once on mount.
- * - Fetches audio per step, caches Blob URLs in memory to avoid repeat calls.
+ * - Checks availability once on mount (synchronous browser API check).
+ * - Speaks each step via speechSynthesis; no caching needed (no network cost).
  * - Respects mute preference persisted to localStorage.
- * - Cleans up Blob URLs and Audio on unmount / tour end.
  */
 function useNarration(active: boolean, locale: "en" | "pt" | "es", narrationEnabled: boolean) {
   const [available, setAvailable] = useState<boolean | null>(null);
@@ -131,11 +130,6 @@ function useNarration(active: boolean, locale: "en" | "pt" | "es", narrationEnab
     }
   });
   const [status, setStatus] = useState<NarrationStatus>("idle");
-
-  // Blob URL cache: stepIndex → objectURL
-  const cacheRef = useRef<Map<number, string>>(new Map());
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const abortRef = useRef<AbortController | null>(null);
 
   // Check availability once when the tour opens.
   useEffect(() => {
@@ -151,32 +145,21 @@ function useNarration(active: boolean, locale: "en" | "pt" | "es", narrationEnab
     setAvailable(null);
   }, [narrationEnabled]);
 
-  // Reset availability check when tour is opened again after being closed.
   useEffect(() => {
     if (active) return;
     stopAudio();
     setStatus("idle");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
 
-  // Revoke all blob URLs on unmount.
   useEffect(() => {
     return () => {
       stopAudio();
-      cacheRef.current.forEach((url) => URL.revokeObjectURL(url));
-      cacheRef.current.clear();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function stopAudio() {
-    abortRef.current?.abort();
-    abortRef.current = null;
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.src = "";
-      audioRef.current = null;
-    }
+    stopTourNarration();
     setStatus("idle");
   }
 
@@ -192,48 +175,19 @@ function useNarration(active: boolean, locale: "en" | "pt" | "es", narrationEnab
     if (next) stopAudio();
   }
 
-  /**
-   * Play narration for a given step.
-   * Uses the cache when available; fetches from the server function otherwise.
-   */
   async function playStep(stepIndex: number, title: string, body: string) {
     if (!narrationEnabled || !available || muted) return;
     stopAudio();
-
-    const cached = cacheRef.current.get(stepIndex);
-    if (cached) {
-      playUrl(cached);
-      return;
-    }
-
-    const ac = new AbortController();
-    abortRef.current = ac;
     setStatus("loading");
-
     try {
       const text = stepText(title, body);
-      const { audioBase64 } = await synthesiseTourStep({ data: { text, locale } });
-      if (ac.signal.aborted) return;
-
-      // Convert base64 → Blob → object URL.
-      const bytes = Uint8Array.from(atob(audioBase64), (c) => c.charCodeAt(0));
-      const blob = new Blob([bytes], { type: "audio/mpeg" });
-      const url = URL.createObjectURL(blob);
-      cacheRef.current.set(stepIndex, url);
-
-      if (!ac.signal.aborted) playUrl(url);
+      await synthesiseTourStep({ data: { text, locale } });
+      setStatus("idle");
     } catch {
-      if (!ac.signal.aborted) setStatus("error");
+      setStatus("error");
     }
-  }
-
-  function playUrl(url: string) {
-    const audio = new Audio(url);
-    audioRef.current = audio;
-    audio.onplay = () => setStatus("playing");
-    audio.onended = () => setStatus("idle");
-    audio.onerror = () => setStatus("error");
-    audio.play().catch(() => setStatus("error"));
+    // stepIndex unused — speechSynthesis has no caching cost
+    void stepIndex;
   }
 
   return { available, muted, status, toggleMute, playStep, stopAudio };
@@ -490,13 +444,7 @@ export function GuidedTour({
                 aria-label={narration.muted ? "Unmute narration" : "Mute narration"}
                 title={narration.muted ? "Unmute narration" : "Mute narration"}
               >
-                {narration.status === "loading" ? (
-                  <Loader size={14} className="pm-tour-audio-spin" />
-                ) : narration.muted ? (
-                  <VolumeX size={14} />
-                ) : (
-                  <Volume2 size={14} />
-                )}
+                {narration.muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
               </button>
             )}
 
