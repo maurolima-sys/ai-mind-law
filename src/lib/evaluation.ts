@@ -245,7 +245,8 @@ export const EVALUATION_CRITERIA: EvaluationCriterion[] = [
     category: "Hackathon Readiness",
     section: "Documentation",
     title: "Reconcile matrix status names",
-    description: "Compare the guide's review statuses with the actual interface.",
+    description:
+      "Verified: the compliance matrix has three independent dimensions. Evidence verification: verified / unverified / not-found (evidenceVerificationKeys in compliance.ts). Compliance assessment: not-assessed / compliant / partially-compliant / non-compliant (assessmentKeys). Human review status: pending / reviewed / approved (humanReviewKeys). The walkthrough section 6 documents all three dimensions correctly. Legacy 'unclear' rows are shown as 'Previous status: unclear' and are not a current option. Reconciled against PocketMindApp.tsx ComplianceScreen and src/lib/types.ts.",
   },
   {
     id: "test-count",
@@ -260,7 +261,8 @@ export const EVALUATION_CRITERIA: EvaluationCriterion[] = [
     category: "Hackathon Readiness",
     section: "Documentation",
     title: "Reconcile CI triggers",
-    description: "Verify the actual push and pull request triggers before updating the guide.",
+    description:
+      "Verified: .github/workflows/ci.yml triggers on push to main and on pull_request (all branches). Steps: checkout, Bun install, tsc --noEmit, bun run test, targeted ESLint on integration files, bun run build. The evaluator walkthrough section 11 states 'CI runs automatically on every push via .github/workflows/ci.yml' — accurate. No discrepancy between the guide and the actual workflow file.",
   },
   {
     id: "secrets-audit",

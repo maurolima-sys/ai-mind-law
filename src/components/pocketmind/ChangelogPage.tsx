@@ -12,6 +12,7 @@ import {
   ScrollText,
   Shield,
   Sparkles,
+  Volume2,
   Wrench,
   Zap,
 } from "lucide-react";
@@ -41,11 +42,60 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: "0.5.0",
+    label: "Mistral Voxtral TTS narration",
+    date: "2026-11-24",
+    commit: "69735db",
+    status: "latest",
+    summary:
+      "Tour narration upgraded from browser speechSynthesis to Mistral Voxtral TTS (voxtral-mini-tts-latest, voice en_paul_neutral) via a real server function. speechSynthesis retained as automatic fallback. LlamaParse OCR rewritten to call LlamaCloud API directly. MISTRAL_API_KEY and LLAMACLOUD_API_KEY synced to Vercel as server-side secrets. dotenv added as dev dependency.",
+    icon: Volume2,
+    iconColor: "var(--pm-blue)",
+    changes: [
+      {
+        kind: "added",
+        text: "tourNarration.functions.ts rewritten as a real TanStack Start server function. Calls POST /v1/audio/speech on api.mistral.ai with model voxtral-mini-tts-latest and voice en_paul_neutral. Returns { audio_data: base64 mp3 }. Client plays via new Audio(data:audio/mp3;base64,...). Falls back to browser speechSynthesis on any error.",
+      },
+      {
+        kind: "added",
+        text: "MISTRAL_API_KEY and LLAMACLOUD_API_KEY added to Vercel Production and Preview as Secret type via Vercel CLI. Neither key is exposed to the browser bundle.",
+      },
+      {
+        kind: "changed",
+        text: "ocr.functions.ts rewritten to call LlamaCloud API directly (api.cloud.llamaindex.ai). Flow: upload → parse job → poll checking body.job.status === COMPLETED → result in poll body. Removed LOVABLE_API_KEY dependency. LLAMACLOUD_API_KEY is the sole credential.",
+      },
+      {
+        kind: "changed",
+        text: "aiDiagnostics.ts: ElevenLabs diagnostic messages updated to reflect Mistral Voxtral TTS with browser speech fallback. runElevenLabsDiagnostic now reports the actual source used (Mistral Voxtral TTS or browser speech synthesis).",
+      },
+      {
+        kind: "changed",
+        text: "IntegrationsScreen.tsx: ElevenLabs card title now uses t('integrations_eleven_title') i18n key. EN: Tour narration / PT: Narração do tour / ES: Narración del tour.",
+      },
+      {
+        kind: "added",
+        text: "dotenv added as dev dependency for use in Node scripts that read .env.local (pre-push-check.mjs, Vercel sync scripts).",
+      },
+      {
+        kind: "fixed",
+        text: "GuidedTour.tsx: prettier formatting fixed — stopAudio inline body and Volume2/VolumeX ternary JSX. Unused eslint-disable directive removed.",
+      },
+      {
+        kind: "fixed",
+        text: "ocr.functions.ts: inline type annotation expanded to multi-line to satisfy prettier.",
+      },
+      {
+        kind: "added",
+        text: "scripts/set-vercel-vars.ps1: LLAMACLOUD_API_KEY and MISTRAL_API_KEY entries added to the sync manifest.",
+      },
+    ],
+  },
+  {
     version: "0.4.9",
     label: "On-device inference verified",
     date: "2026-11-23",
     commit: "da88078",
-    status: "latest",
+    status: "stable",
     summary:
       "First confirmed end-to-end on-device analysis: SEDA-Vinyl-Siding-Facia-RFP.pdf (4 pages) completed 3/3 sections with ON_DEVICE inference — zero cloud fallback, 18 findings. Root cause chain resolved across 4 commits: Zod enum case, sourceIndex as string, empty fields, prose-prefixed JSON, .min(1) on text fields, .positive() rejecting 0, null confidence. Evaluation criteria descriptions and video storyboard updated.",
     icon: BrainCircuit,

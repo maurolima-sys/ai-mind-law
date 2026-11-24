@@ -281,13 +281,13 @@
       "verifiedAt": "2026-11-23T00:00:00.000Z"
     },
     "matrix-doc": {
-      "status": "in_progress",
-      "evidence": "Compliance matrix review states in code: pending, reviewed, satisfied, unclear. UI shows Pending, Reviewed, Satisfied, Unclear. Older rows saved as unclear show Previous status: unclear label. Full reconciliation with guide not yet completed.",
-      "reference": "src/lib/types.ts, src/components/pocketmind/PocketMindApp.tsx",
+      "status": "verified",
+      "evidence": "Reconciled against PocketMindApp.tsx ComplianceScreen and src/lib/types.ts. Three independent dimensions: (1) Evidence verification — verified / unverified / not-found (evidenceVerificationKeys in compliance.ts, displayed as Verified / Check excerpt / Not provided). (2) Compliance assessment — not-assessed / compliant / partially-compliant / non-compliant (assessmentKeys). (3) Human review status — pending / reviewed / approved (humanReviewKeys, select dropdown in matrix). Legacy 'unclear' rows show 'Previous status: unclear' label and are not a current option. Walkthrough section 6 documents all three dimensions correctly. No discrepancy between guide and interface.",
+      "reference": "src/lib/types.ts, src/lib/services/compliance.ts, src/components/pocketmind/PocketMindApp.tsx ComplianceScreen",
       "notes": "",
       "verifier": "mauro.frank.lima.lubenham@gmail.com",
-      "updatedAt": "2026-11-23T00:00:00.000Z",
-      "verifiedAt": null
+      "updatedAt": "2026-11-24T00:00:00.000Z",
+      "verifiedAt": "2026-11-24T00:00:00.000Z"
     },
     "test-count": {
       "status": "verified",
@@ -299,13 +299,13 @@
       "verifiedAt": "2026-11-23T00:00:00.000Z"
     },
     "ci-triggers": {
-      "status": "in_progress",
-      "evidence": "GitHub Actions CI runs on push to main. Workflow confirmed running: tsc --noEmit, full test suite, production build, targeted ESLint checks. Pull request triggers not independently verified.",
+      "status": "verified",
+      "evidence": "Verified from .github/workflows/ci.yml: triggers on push to branches: [main] and on pull_request (all branches). Steps: checkout, Bun install --frozen-lockfile, tsc --noEmit, bun run test, targeted ESLint on 27 integration files, bun run build. Walkthrough section 11 states 'CI runs automatically on every push via .github/workflows/ci.yml' — accurate. No discrepancy between guide and actual workflow file.",
       "reference": ".github/workflows/ci.yml",
-      "notes": "PR trigger verification pending.",
+      "notes": "",
       "verifier": "mauro.frank.lima.lubenham@gmail.com",
-      "updatedAt": "2026-11-23T00:00:00.000Z",
-      "verifiedAt": null
+      "updatedAt": "2026-11-24T00:00:00.000Z",
+      "verifiedAt": "2026-11-24T00:00:00.000Z"
     },
     "secrets-audit": {
       "status": "verified",
@@ -391,6 +391,20 @@
       "newStatus": "verified",
       "timestamp": "2026-11-23T00:00:00.000Z",
       "notes": "Updated with on-device verification 2026-11-23. Commit 61c5e07."
+    },
+    {
+      "criterionId": "matrix-doc",
+      "previousStatus": "in_progress",
+      "newStatus": "verified",
+      "timestamp": "2026-11-24T00:00:00.000Z",
+      "notes": "Reconciled: three independent dimensions confirmed in PocketMindApp.tsx and types.ts. Walkthrough section 6 accurate."
+    },
+    {
+      "criterionId": "ci-triggers",
+      "previousStatus": "in_progress",
+      "newStatus": "verified",
+      "timestamp": "2026-11-24T00:00:00.000Z",
+      "notes": "Verified from ci.yml: push to main + pull_request triggers. Steps: tsc, tests, ESLint, build."
     }
   ]
 }
