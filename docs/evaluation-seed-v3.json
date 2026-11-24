@@ -1,0 +1,396 @@
+{
+  "version": 1,
+  "records": {
+    "dashboard": {
+      "status": "verified",
+      "evidence": "Dashboard loads fictional sample without Firebase. Metric cards show documents, requirements, critical risks, pending reviews. Recent documents list and review queue visible. Upload tile present. Sidebar navigation confirmed: Dashboard, Documents, Analysis, Compliance matrix, Risks, Projects, Processing, Settings, Integrations.",
+      "reference": "https://ai-mind-law.vercel.app/",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": "2026-11-23T00:00:00.000Z"
+    },
+    "analysis": {
+      "status": "verified",
+      "evidence": "Analysis screen shows findings with source excerpts. Source panel displays extracted page text. Source verified / Verify source badges per finding. Confidence score per requirement. Filter chips for Requirements, Deadlines, Specifications, Risks, Missing. Export JSON confirmed. On-device run 2026-11-23 returned 18 findings from SEDA-Vinyl-Siding-Facia-RFP.pdf.",
+      "reference": "docs/SEDA-Vinyl-Siding-Facia-RFP-analysis.json",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": "2026-11-23T00:00:00.000Z"
+    },
+    "matrix": {
+      "status": "verified",
+      "evidence": "Compliance matrix lists requirements with category, mandatory flag, evidence excerpt, page. Three independent states: evidence verification, compliance assessment, review status. Review notes per requirement. Export CSV confirmed. Data stored in IndexedDB, not synced.",
+      "reference": "src/lib/services/csv.ts, src/components/pocketmind/PocketMindApp.tsx",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": "2026-11-23T00:00:00.000Z"
+    },
+    "qa-ui": {
+      "status": "verified",
+      "evidence": "DocumentQaPanel available after text extraction. Answers separate stated facts, working hypotheses, unresolved questions. Citations checked against extracted text and labelled Verified or Verify against the PDF. Browser speech input optional. 149 tests pass including document-qa-panel.test.tsx.",
+      "reference": "src/components/pocketmind/DocumentQaPanel.tsx",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": "2026-11-23T00:00:00.000Z"
+    },
+    "mode": {
+      "status": "verified",
+      "evidence": "Processing screen shows four mode cards: On-device only, Cloud AI, Hybrid, Sample data. On-device confirmed 2026-11-23 (3/3 ON_DEVICE, zero cloud fallback). Cloud confirmed 2026-11-20 (HTTP 200). Sample data loads prepared analysis without Firebase. Hybrid confirmed 2026-11-21 (mixed ON_DEVICE + cloud fallback).",
+      "reference": "src/components/pocketmind/PocketMindApp.tsx — ProcessingScreen",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": "2026-11-23T00:00:00.000Z"
+    },
+    "consent": {
+      "status": "verified",
+      "evidence": "Cloud consent checkbox visible on Processing screen and cannot be bypassed. cloudConsent state in PocketMindApp.tsx gates all cloud inference paths. Consent is session-only and not persisted. On-device mode requires no consent — confirmed in 2026-11-23 run.",
+      "reference": "src/components/pocketmind/PocketMindApp.tsx",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": "2026-11-23T00:00:00.000Z"
+    },
+    "source": {
+      "status": "verified",
+      "evidence": "On-device 2026-11-23: Analysis screen reported Firebase AI Logic · on-device, 3/3 sections ON_DEVICE. Cloud 2026-11-20: UI showed Cloud (IN_CLOUD). requireInferenceSource() maps SDK InferenceSource enum to typed InferenceSource. Badge displayed after each run. Hybrid 2026-11-21: mixed source reported.",
+      "reference": "src/lib/services/firebaseAi.ts, docs/SEDA-Vinyl-Siding-Facia-RFP-analysis.json",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": "2026-11-23T00:00:00.000Z"
+    },
+    "responsive": {
+      "status": "pending",
+      "evidence": "",
+      "reference": "",
+      "notes": "PT/ES longer strings on small screens not yet validated.",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": null
+    },
+    "accessibility": {
+      "status": "pending",
+      "evidence": "",
+      "reference": "",
+      "notes": "Keyboard navigation and screen reader access not yet formally tested.",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": null
+    },
+    "languages": {
+      "status": "in_progress",
+      "evidence": "EN, PT, ES translation keys implemented across all screens. useLocale() hook and LocaleProvider in place. SSR-safe locale initialization confirmed. AI prompts remain in English. Language switcher available in Settings.",
+      "reference": "src/lib/i18n/",
+      "notes": "Long PT/ES strings on small screens not yet validated.",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": null
+    },
+    "firebase-runtime": {
+      "status": "verified",
+      "evidence": "getGenerativeModel called with InferenceMode.ONLY_IN_CLOUD, ONLY_ON_DEVICE, and PREFER_ON_DEVICE. generateContent reached Firebase AI Logic and returned structured responses. On-device path confirmed 2026-11-23: 3/3 ON_DEVICE sections. Cloud path confirmed 2026-11-20: HTTP 200 response.",
+      "reference": "src/lib/services/firebaseAi.ts, src/lib/services/tenderAnalysis.ts",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": "2026-11-23T00:00:00.000Z"
+    },
+    "on-device": {
+      "status": "verified",
+      "evidence": "2026-11-23, build eeb6c9c: SEDA-Vinyl-Siding-Facia-RFP.pdf (4 pages, 851 KB) completed 3/3 sections with ON_DEVICE inference — zero cloud fallback. 18 findings returned (12 requirements, 3 deadlines, 1 specification, 2 inconsistencies). Monitor showed Structured response validated for each section. Analysis screen reported Firebase AI Logic · on-device. Exported JSON preserved as SEDA-Vinyl-Siding-Facia-RFP-analysis.json. Root cause chain resolved across commits ea19390 a3a90cd eeb6c9c 61c5e07.",
+      "reference": "docs/SEDA-Vinyl-Siding-Facia-RFP-analysis.json — build eeb6c9c",
+      "notes": "A complete on-device analysis of a larger document (10+ pages) and production deployment remain unverified.",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": "2026-11-23T00:00:00.000Z"
+    },
+    "cloud": {
+      "status": "verified",
+      "evidence": "Production test 2026-11-20, build ed19ed4: exchangeRecaptchaEnterpriseToken HTTP 200, gemini-3.8-flash HTTP 500, gemini-3.5-flash HTTP 200. UI showed Cloud (IN_CLOUD). Earlier 2026-11-19: processingSource cloud-fallback, gemini-3.5-flash-lite, 10 requirements, 5 deadlines, 3 specifications, 1 risk.",
+      "reference": "docs/Riverside Civic Centre - Construction Tender-analysis.json",
+      "notes": "Availability can change. Raw SDK value not captured on 2026-11-20.",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-20T00:00:00.000Z",
+      "verifiedAt": "2026-11-20T00:00:00.000Z"
+    },
+    "hybrid": {
+      "status": "verified",
+      "evidence": "2026-11-21 local desktop Chrome test on a real 17-page PDF: completed and exported hybrid. 45 requirements, 17 deadlines, 18 specifications, 13 risks. Monitor reported sections 1 and 4 ON_DEVICE, sections 2/3/5 cloud fallback. 84/93 evidence references verified, 9 unverified.",
+      "reference": "docs/EVALUATOR_WALKTHROUGH.md section 10",
+      "notes": "Raw SDK source values, timings and consent state not independently captured. Predates executionReport instrumentation.",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-21T00:00:00.000Z",
+      "verifiedAt": "2026-11-21T00:00:00.000Z"
+    },
+    "app-check-init": {
+      "status": "verified",
+      "evidence": "initializeAppCheck called before any model call in firebaseAi.ts. ReCaptchaEnterpriseProvider used in production (VITE_FIREBASE_APPCHECK_RECAPTCHA_SITE_KEY). Debug provider used only in dev builds via build-time define __APPCHECK_DEBUG_TOKEN__.",
+      "reference": "src/lib/services/firebaseAi.ts — commit 78bbab8",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-19T22:00:00.000Z",
+      "verifiedAt": "2026-11-19T22:00:00.000Z"
+    },
+    "app-check-production": {
+      "status": "verified",
+      "evidence": "Production test 2026-11-20, build ed19ed4: exchangeRecaptchaEnterpriseToken returned HTTP 200 and a fallback generateContent request completed with HTTP 200. Earlier fix 2026-11-19: useLimitedUseAppCheckTokens:true resolved 401 rejections.",
+      "reference": "src/lib/services/firebaseAi.ts — commit ef4a84d",
+      "notes": "Firebase Console enforcement settings not independently inspected.",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-20T00:00:00.000Z",
+      "verifiedAt": "2026-11-20T00:00:00.000Z"
+    },
+    "response-schema": {
+      "status": "verified",
+      "evidence": "Cloud: TENDER_ANALYSIS_RESPONSE_SCHEMA passed as responseSchema, structured output returned and Zod safeParse passed. On-device (2026-11-23): no responseSchema (Chrome Prompt API does not support it); Zod coercion handles enum case, sourceIndex as string, empty fields, prose-prefixed JSON, null confidence.",
+      "reference": "src/lib/services/tenderAnalysisSchema.ts — commits ea19390 a3a90cd eeb6c9c",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": "2026-11-23T00:00:00.000Z"
+    },
+    "zod": {
+      "status": "verified",
+      "evidence": "parseTenderResponse uses Zod safeParse with field-path error reporting. All strict validators removed for on-device tolerance: .default('') on text fields, .min(0).catch(1) on sourceIndex, null confidence mapped to 0.5, case-insensitive enum normalization. 149/149 tests pass including tender-analysis.test.ts.",
+      "reference": "src/lib/services/tenderAnalysisSchema.ts, src/test/tender-analysis.test.ts — commit 61c5e07",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": "2026-11-23T00:00:00.000Z"
+    },
+    "fallback": {
+      "status": "verified",
+      "evidence": "Model fallback chain: gemini-3.8-flash -> gemini-3.6-flash -> gemini-3.5-flash-lite. Production 2026-11-20: gemini-3.8-flash HTTP 500, gemini-3.5-flash HTTP 200. Exponential backoff retry for HTTP 429/500/502/503. 149 tests pass including model-fallback.test.ts.",
+      "reference": "src/lib/services/firebaseAi.ts, src/test/model-fallback.test.ts",
+      "notes": "gemini-3.7-flash omitted: Gemini Developer API routes it to gemini-3.8-flash.",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": "2026-11-23T00:00:00.000Z"
+    },
+    "pdf": {
+      "status": "verified",
+      "evidence": "PDF.js extraction runs entirely in the browser. documentProcessing.ts uses pdfjs-dist with no network calls. Text stored in IndexedDB locally. Cloud consent required before any text is sent to Firebase AI Logic. Confirmed in on-device run 2026-11-23: SEDA-Vinyl-Siding-Facia-RFP.pdf extracted locally before analysis.",
+      "reference": "src/lib/services/documentProcessing.ts",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": "2026-11-23T00:00:00.000Z"
+    },
+    "ocr": {
+      "status": "in_progress",
+      "evidence": "LlamaParse OCR path implemented with separate per-document consent. Server function in ocr.functions.ts. UI flow in ProcessingScreen offers OCR when PDF.js finds no selectable text. End-to-end test with a real scanned PDF not yet completed.",
+      "reference": "src/lib/services/externalOcr.ts, src/lib/services/ocr.functions.ts",
+      "notes": "Requires a real scanned PDF with no selectable text to test end-to-end.",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-19T22:00:00.000Z",
+      "verifiedAt": null
+    },
+    "qa-inference": {
+      "status": "verified",
+      "evidence": "DocumentQaPanel uses generateWithModelFallback with the selected inference preference. documentQa.ts builds prompts and parses responses using the same Zod safeParse path. 149 tests pass including document-qa.test.ts and document-qa-panel.test.tsx.",
+      "reference": "src/lib/services/documentQa.ts, src/components/pocketmind/DocumentQaPanel.tsx",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": "2026-11-23T00:00:00.000Z"
+    },
+    "persistence": {
+      "status": "verified",
+      "evidence": "Documents, extracted text, analyses, review notes, evidence files, and activity persist in IndexedDB across sessions. Library lists uploaded documents only. Data is not encrypted or synced. Deletion available from Settings. 149 tests pass including local-workspace-migration.test.ts.",
+      "reference": "src/components/pocketmind/PocketMindApp.tsx, src/test/local-workspace-migration.test.ts",
+      "notes": "Data is not encrypted and may be removed by clearing browser data.",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": "2026-11-23T00:00:00.000Z"
+    },
+    "implementation": {
+      "status": "verified",
+      "evidence": "Firebase AI Logic called at runtime with InferenceMode. App Check initialized before model calls. Model fallback chain traversed in production. On-device inference confirmed 2026-11-23: 3/3 ON_DEVICE sections, zero cloud fallback, exported JSON with executionReport. Inference source reported by SDK surfaced in UI.",
+      "reference": "src/lib/services/firebaseAi.ts, docs/SEDA-Vinyl-Siding-Facia-RFP-analysis.json",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": "2026-11-23T00:00:00.000Z"
+    },
+    "design": {
+      "status": "verified",
+      "evidence": "Complete document-review workflow: upload -> mode selection -> analysis -> compliance matrix -> export. Consent-gated cloud. Source-linked findings. Guided tour. Dashboard metrics. All screens reachable from sidebar navigation. Confirmed at https://ai-mind-law.vercel.app/.",
+      "reference": "https://ai-mind-law.vercel.app/",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": "2026-11-23T00:00:00.000Z"
+    },
+    "impact": {
+      "status": "verified",
+      "evidence": "Procurement problem documented: tender documents run to dozens of pages; obligations buried in prose. PocketMind AI extracts requirements, deadlines, specifications, risks with source-verified excerpts. Compliance matrix with CSV export. On-device inference for sensitive documents. Target users: procurement teams, bid consultants.",
+      "reference": "README.md, docs/EVALUATOR_WALKTHROUGH.md",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": "2026-11-23T00:00:00.000Z"
+    },
+    "idea": {
+      "status": "verified",
+      "evidence": "Privacy-by-choice architecture: inference source surfaced to user because it matters for document privacy. Explicit consent before cloud. On-device confirmed operational 2026-11-23. Source transparency: every finding links to verified excerpt. Processing mode is a product feature, not an implementation detail.",
+      "reference": "docs/EVALUATOR_WALKTHROUGH.md section 8",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": "2026-11-23T00:00:00.000Z"
+    },
+    "repository": {
+      "status": "verified",
+      "evidence": "https://github.com/maurolima-sys/ai-mind-law is publicly accessible without authentication. Full source and commit history from ab25e1a onward. Apache 2.0 LICENSE at root.",
+      "reference": "https://github.com/maurolima-sys/ai-mind-law",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-19T22:00:00.000Z",
+      "verifiedAt": "2026-11-19T22:00:00.000Z"
+    },
+    "license": {
+      "status": "verified",
+      "evidence": "LICENSE file present at repository root. Apache License 2.0. Correct copyright header.",
+      "reference": "LICENSE",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-19T22:00:00.000Z",
+      "verifiedAt": "2026-11-19T22:00:00.000Z"
+    },
+    "hosted": {
+      "status": "verified",
+      "evidence": "https://ai-mind-law.vercel.app/ loads without authentication. Dashboard, Processing, Analysis, Compliance matrix, Risks, Projects, Settings, and Integrations screens confirmed reachable. Cloud AI analysis completed in production 2026-11-20, build ed19ed4.",
+      "reference": "https://ai-mind-law.vercel.app/",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-20T00:00:00.000Z",
+      "verifiedAt": "2026-11-20T00:00:00.000Z"
+    },
+    "walkthrough": {
+      "status": "verified",
+      "evidence": "EVALUATOR_WALKTHROUGH.md updated through commit 61c5e07: on-device verification 2026-11-23 recorded in section 4 and section 10 table. Cloud test 2026-11-20 recorded. Fallback chain corrected. Test count updated to 149 tests (31 files).",
+      "reference": "docs/EVALUATOR_WALKTHROUGH.md — commit 61c5e07",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": "2026-11-23T00:00:00.000Z"
+    },
+    "matrix-doc": {
+      "status": "in_progress",
+      "evidence": "Compliance matrix review states in code: pending, reviewed, satisfied, unclear. UI shows Pending, Reviewed, Satisfied, Unclear. Older rows saved as unclear show Previous status: unclear label. Full reconciliation with guide not yet completed.",
+      "reference": "src/lib/types.ts, src/components/pocketmind/PocketMindApp.tsx",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": null
+    },
+    "test-count": {
+      "status": "verified",
+      "evidence": "npm test reports 149 tests across 31 test files. All passing. Zoom test timeout increased to 25s to prevent load-dependent failures. Commit 61c5e07.",
+      "reference": "src/test/ — 31 files, commit 61c5e07",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": "2026-11-23T00:00:00.000Z"
+    },
+    "ci-triggers": {
+      "status": "in_progress",
+      "evidence": "GitHub Actions CI runs on push to main. Workflow confirmed running: tsc --noEmit, full test suite, production build, targeted ESLint checks. Pull request triggers not independently verified.",
+      "reference": ".github/workflows/ci.yml",
+      "notes": "PR trigger verification pending.",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": null
+    },
+    "secrets-audit": {
+      "status": "verified",
+      "evidence": "git log -- .env.local returns empty (zero history). .env committed in c9eb502 contains only public Firebase client config (VITE_* variables). Debug token moved to build-time define __APPCHECK_DEBUG_TOKEN__ injected only in dev builds. FIRECRAWL_API_KEY and ELEVENLABS_API_KEY are server-side only, never in VITE_* variables.",
+      "reference": "vite.config.ts — commit 78bbab8",
+      "notes": "",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-19T22:00:00.000Z",
+      "verifiedAt": "2026-11-19T22:00:00.000Z"
+    },
+    "video": {
+      "status": "pending",
+      "evidence": "",
+      "reference": "docs/POCKETMIND_VIDEO_STORYBOARD.md — commit 93f88ff",
+      "notes": "3-minute on-device evidence-first storyboard prepared. Recording not yet completed.",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": null
+    },
+    "submission": {
+      "status": "in_progress",
+      "evidence": "Repository public, license present, hosted demo live, walkthrough updated, 149 tests passing, quality gate passing. Video pending. Final submission form not yet submitted.",
+      "reference": "docs/EVALUATOR_WALKTHROUGH.md section 12",
+      "notes": "Blocked on video recording.",
+      "verifier": "mauro.frank.lima.lubenham@gmail.com",
+      "updatedAt": "2026-11-23T00:00:00.000Z",
+      "verifiedAt": null
+    }
+  },
+  "history": [
+    {
+      "criterionId": "cloud",
+      "previousStatus": "pending",
+      "newStatus": "verified",
+      "timestamp": "2026-11-19T21:45:50.132Z",
+      "notes": "Production Cloud AI analysis completed. cloud-fallback, gemini-3.5-flash-lite."
+    },
+    {
+      "criterionId": "app-check-production",
+      "previousStatus": "pending",
+      "newStatus": "verified",
+      "timestamp": "2026-11-19T22:00:00.000Z",
+      "notes": "Limited-use token accepted. Fix: useLimitedUseAppCheckTokens:true."
+    },
+    {
+      "criterionId": "secrets-audit",
+      "previousStatus": "pending",
+      "newStatus": "verified",
+      "timestamp": "2026-11-19T22:00:00.000Z",
+      "notes": "Git history audited. No secrets committed."
+    },
+    {
+      "criterionId": "ocr",
+      "previousStatus": "pending",
+      "newStatus": "in_progress",
+      "timestamp": "2026-11-19T22:00:00.000Z",
+      "notes": "Implementation complete. End-to-end test with real scanned PDF pending."
+    },
+    {
+      "criterionId": "hybrid",
+      "previousStatus": "pending",
+      "newStatus": "verified",
+      "timestamp": "2026-11-21T00:00:00.000Z",
+      "notes": "Local 17-page PDF: sections 1+4 ON_DEVICE, sections 2/3/5 cloud fallback. 45 requirements exported."
+    },
+    {
+      "criterionId": "on-device",
+      "previousStatus": "pending",
+      "newStatus": "verified",
+      "timestamp": "2026-11-23T00:00:00.000Z",
+      "notes": "SEDA-Vinyl-Siding-Facia-RFP.pdf: 3/3 ON_DEVICE, 18 findings, zero cloud fallback. Build eeb6c9c."
+    },
+    {
+      "criterionId": "zod",
+      "previousStatus": "pending",
+      "newStatus": "verified",
+      "timestamp": "2026-11-23T00:00:00.000Z",
+      "notes": "All on-device schema tolerance fixes applied. 149/149 tests passing."
+    },
+    {
+      "criterionId": "walkthrough",
+      "previousStatus": "pending",
+      "newStatus": "verified",
+      "timestamp": "2026-11-23T00:00:00.000Z",
+      "notes": "Updated with on-device verification 2026-11-23. Commit 61c5e07."
+    }
+  ]
+}

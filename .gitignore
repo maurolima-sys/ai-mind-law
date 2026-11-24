@@ -75,6 +75,9 @@ ai-mind-law/
 # Analysis JSON exports at root level
 /*-analysis.json
 
+# Evaluation workspace snapshots — local backup, not for the repo
+evaluation-snapshot.json
+
 # watchdog — local dev tool, not part of the repo
 watchdog.py
 .env.watchdog-backup
