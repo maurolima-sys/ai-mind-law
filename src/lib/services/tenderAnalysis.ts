@@ -381,9 +381,11 @@ export async function analyzeTender(
       format === "pdf" ? `Page ${index + 1}` : `Source segment ${index + 1}`,
     );
   const paginationVerified = options.paginationVerified ?? true;
-  const maxChunkCharacters =
+  // Hybrid and local start with small chunks suited for on-device inference.
+  // Cloud uses large chunks from the start.
+  const initialChunkCharacters =
     preference === "cloud" ? MAX_CHUNK_CHARACTERS : ON_DEVICE_CHUNK_CHARACTERS;
-  const chunks = chunkTenderText(pages, sourceLocations, maxChunkCharacters);
+  const chunks = chunkTenderText(pages, sourceLocations, initialChunkCharacters);
   if (chunks.length === 0) {
     throw new Error(
       "No readable text was found in this document. Scanned-PDF OCR may be available if configured.",
@@ -570,11 +572,14 @@ export async function analyzeTender(
     }
     let sectionSource: SectionInferenceSource = "ON_DEVICE";
     try {
-      const generated = await generateWithModelFallback(
-        firstPassPreference,
-        generateSection,
-        fallbackOptions,
-      );
+      const generated = await generateWithModelFallback(firstPassPreference, generateSection, {
+        ...fallbackOptions,
+        // In hybrid mode the on-device pass has a shorter budget so a slow
+        // or failing local model hands off to cloud without a 3-minute wait.
+        ...(preference === "hybrid" && firstPassPreference === "local"
+          ? { localTimeoutMs: 45_000 }
+          : {}),
+      });
       sectionSource =
         generated.result.response.inferenceSource === "in_cloud"
           ? forcedCloudFallback
@@ -612,6 +617,29 @@ export async function analyzeTender(
       const isAppCheck = isAppCheckError(error);
       forcedCloudFallback = true;
       sectionSource = "CLOUD_FALLBACK";
+      // Re-chunk the remaining sections with cloud-sized chunks so the fallback
+      // path sends 16 000-char batches instead of the 2 000-char on-device ones.
+      const remainingPages = [
+        ...new Set(chunks.slice(index).flatMap((c) => c.pages.map((p) => p.sourceIndex))),
+      ];
+      if (remainingPages.length > 0) {
+        const remainingSourceLocations = remainingPages.map(
+          (si) => sourceLocations[si - 1] ?? `Source segment ${si}`,
+        );
+        const remainingText = remainingPages.map((si) => pages[si - 1] ?? "");
+        const largeChunks = chunkTenderText(
+          remainingText,
+          remainingSourceLocations,
+          MAX_CHUNK_CHARACTERS,
+        );
+        // Remap sourceIndex values to match the original page numbering.
+        largeChunks.forEach((c) =>
+          c.pages.forEach((p) => {
+            p.sourceIndex = remainingPages[p.sourceIndex - 1] ?? p.sourceIndex;
+          }),
+        );
+        chunks.splice(index, chunks.length - index, ...largeChunks);
+      }
       options.onEvent?.({ type: "cloud-retry" });
       onProgress({
         phase: "analyzing",
@@ -646,7 +674,11 @@ export async function analyzeTender(
         try {
           localFallbackModel ??= model;
           const localModel = localFallbackModel;
-          for (const page of chunk.pages) {
+          // After re-chunking, chunks[index] may be larger than ON_DEVICE_CHUNK_CHARACTERS.
+          // Iterate over all pages in the current (possibly re-chunked) section and
+          // split each page into on-device-sized sub-chunks.
+          const currentChunk = chunks[index] ?? chunk;
+          for (const page of currentChunk.pages) {
             for (let offset = 0; offset < page.text.length; offset += ON_DEVICE_CHUNK_CHARACTERS) {
               const localChunk = {
                 pages: [

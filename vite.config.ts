@@ -38,6 +38,9 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
+    optimizeDeps: {
+      exclude: ["pdfjs-dist", "@tanstack/router-core", "seroval"],
+    },
     define: {
       __APP_VERSION__: JSON.stringify("0.4.0"),
       __BUILD_TIME__: JSON.stringify(new Date().toISOString()),

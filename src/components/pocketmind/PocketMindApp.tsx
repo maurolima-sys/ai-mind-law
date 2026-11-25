@@ -1292,7 +1292,6 @@ export function PocketMindApp() {
     setIsAnalyzing(true);
     setErrorMessage("");
     startMonitor(selectedDocument);
-    void navigate({ to: "/processing/run" });
     try {
       let pages: string[];
       let locations: string[];
@@ -1342,8 +1341,10 @@ export function PocketMindApp() {
         appendMonitor(selectedDocument.id, { type: "ocr-waiting" });
         setMonitorStatus(selectedDocument.id, "waiting");
         void checkExternalOcrStatus();
+        // Stay on the Processing screen so the user can choose OCR or proceed with extracted text
         return;
       }
+      void navigate({ to: "/processing/run" });
       if (selectedDocument.source === "upload") {
         const updatedDocument: DocumentRecord = {
           ...selectedDocument,
@@ -1388,6 +1389,7 @@ export function PocketMindApp() {
     setIsAnalyzing(true);
     setErrorMessage("");
     startMonitor(selectedDocument);
+    void navigate({ to: "/processing/run" });
     appendMonitor(selectedDocument.id, { type: "text-reused" });
     try {
       setProgressDetail("Analyzing the text extracted in this browser");
@@ -1431,6 +1433,7 @@ export function PocketMindApp() {
     setIsAnalyzing(true);
     setErrorMessage("");
     startMonitor(selectedDocument);
+    void navigate({ to: "/processing/run" });
     try {
       setProgressDetail("Sending the PDF to LlamaParse for external text extraction");
       appendMonitor(selectedDocument.id, { type: "ocr-started" });
