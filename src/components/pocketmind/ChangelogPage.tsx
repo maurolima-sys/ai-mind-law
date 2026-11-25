@@ -42,11 +42,52 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: "0.5.2",
+    label: "Execution report & OCR flow fixes",
+    date: "2026-11-25",
+    commit: "6fc4115",
+    status: "latest",
+    summary:
+      "tenderAnalysis execution report extended with per-section timing fields and new tests. Scanned PDF OCR flow fixed: monitor now opens only after consent, not before the scanned-PDF check. ProcessingMonitor UX improved. ocrNormalize extended. New analysis route added. i18n strings updated for EN/PT/ES.",
+    icon: Wrench,
+    iconColor: "var(--pm-purple)",
+    changes: [
+      {
+        kind: "fixed",
+        text: "Scanned PDF OCR flow: navigate to ProcessingMonitor only after the scanned-PDF check and user consent. Previously the monitor opened before OCR options were shown, leaving users stuck.",
+      },
+      {
+        kind: "fixed",
+        text: "analyzeExtractedTextAnyway() and runLlamaParseOcr() now navigate to the monitor route so the live activity log is always visible when processing starts.",
+      },
+      {
+        kind: "changed",
+        text: "ProcessingMonitor UX improvements: CSS and layout polish for the live activity panel.",
+      },
+      {
+        kind: "changed",
+        text: "ocrNormalize extended to handle additional LlamaCloud response shapes.",
+      },
+      {
+        kind: "added",
+        text: "tenderAnalysis execution report: per-section timing fields (durationMs, attempts, timedOut) extended and covered by new tests in tender-analysis.test.ts.",
+      },
+      {
+        kind: "added",
+        text: "New analysis route src/routes/analysis/$docId.tsx added to routeTree.",
+      },
+      {
+        kind: "changed",
+        text: "i18n: EN/PT/ES strings updated for OCR flow and monitor labels.",
+      },
+    ],
+  },
+  {
     version: "0.5.0",
     label: "Mistral Voxtral TTS narration",
     date: "2026-11-24",
     commit: "69735db",
-    status: "latest",
+    status: "stable",
     summary:
       "Tour narration upgraded from browser speechSynthesis to Mistral Voxtral TTS (voxtral-mini-tts-latest, voice en_paul_neutral) via a real server function. speechSynthesis retained as automatic fallback. LlamaParse OCR rewritten to call LlamaCloud API directly. MISTRAL_API_KEY and LLAMACLOUD_API_KEY synced to Vercel as server-side secrets. dotenv added as dev dependency.",
     icon: Volume2,
