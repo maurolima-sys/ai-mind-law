@@ -276,6 +276,7 @@ export function ProcessingMonitor({
 
   return (
     <section className="pm-monitor" aria-label={t("monitor_title")}>
+      {/* ── Left column: radar telemetry ── */}
       <div className="pm-monitor-visual">
         <div
           className={`pm-monitor-radar${paused || monitor.status !== "running" ? " is-paused" : ""}`}
@@ -284,22 +285,39 @@ export function ProcessingMonitor({
           <div className="pm-monitor-sweep" />
           <div className="pm-monitor-center" />
         </div>
-        {inferenceSourceLabel && (
-          <div className="pm-monitor-source-badge">
-            {inferenceSourceLabel === "On-device" ? (
-              <Laptop size={12} aria-hidden="true" />
+
+        {/* Inference engine row */}
+        <div className="pm-monitor-engine-row">
+          <span className="pm-monitor-engine-label">Inference engine</span>
+          <span className="pm-monitor-engine-value">
+            {inferenceSourceLabel ? (
+              <>
+                {inferenceSourceLabel === "On-device" ? (
+                  <Laptop size={11} aria-hidden="true" />
+                ) : (
+                  <Cloud size={11} aria-hidden="true" />
+                )}
+                {inferenceSourceLabel}
+              </>
             ) : (
-              <Cloud size={12} aria-hidden="true" />
+              "Hybrid policy"
             )}
-            {inferenceSourceLabel}
-          </div>
-        )}
+          </span>
+        </div>
+
         {monitor.status === "running" && (
           <button type="button" className="pm-monitor-motion" onClick={() => setPaused(!paused)}>
             {t(paused ? "monitor_resume_motion" : "monitor_pause_motion")}
           </button>
         )}
+        {monitor.status === "running" && onCancel && (
+          <button type="button" className="pm-button pm-button--ghost-cancel" onClick={onCancel}>
+            {t("monitor_cancel")}
+          </button>
+        )}
       </div>
+
+      {/* ── Right column: heading + activity + results ── */}
       <div className="pm-monitor-content">
         <div className="pm-monitor-heading">
           <div>
@@ -327,59 +345,58 @@ export function ProcessingMonitor({
             style={{ width: `${determinedPct}%` }}
           />
         </div>
-        <h2>{t("monitor_activity")}</h2>
-        <ol
-          ref={listRef}
-          className="pm-monitor-events"
-          aria-label={t("monitor_activity")}
-          aria-live="polite"
-          aria-atomic="false"
-        >
-          {monitor.events.map((event, index) => {
-            const isLatest = index === monitor.events.length - 1;
-            const tone = eventTone(event);
-            return (
-              <li key={index} className={`${isLatest ? "is-latest" : ""} tone-${tone}`}>
-                <span className={`pm-monitor-dot pm-monitor-dot--${tone}`} aria-hidden="true">
-                  {tone === "success" && <CheckCircle2 size={10} />}
-                  {tone === "warning" && <AlertTriangle size={10} />}
-                  {tone === "active" && isLatest && <Loader2 size={10} className="pm-spin" />}
-                </span>
-                <span>{eventMessage(event, t)}</span>
-              </li>
-            );
-          })}
-        </ol>
+
+        {/* Activity log */}
+        <div className="pm-monitor-activity-box">
+          <h2>{t("monitor_activity")}</h2>
+          <ol
+            ref={listRef}
+            className="pm-monitor-events"
+            aria-label={t("monitor_activity")}
+            aria-live="polite"
+            aria-atomic="false"
+          >
+            {monitor.events.map((event, index) => {
+              const isLatest = index === monitor.events.length - 1;
+              const tone = eventTone(event);
+              return (
+                <li key={index} className={`${isLatest ? "is-latest" : ""} tone-${tone}`}>
+                  <span className={`pm-monitor-dot pm-monitor-dot--${tone}`} aria-hidden="true">
+                    {tone === "success" && <CheckCircle2 size={10} />}
+                    {tone === "warning" && <AlertTriangle size={10} />}
+                    {tone === "active" && isLatest && <Loader2 size={10} className="pm-spin" />}
+                  </span>
+                  <span>{eventMessage(event, t)}</span>
+                </li>
+              );
+            })}
+          </ol>
+          {monitor.status === "running" && (
+            <div className="pm-monitor-progress">
+              {progress && latest ? (
+                <>
+                  <label htmlFor="pm-monitor-progress">{eventMessage(latest, t)}</label>
+                  <progress id="pm-monitor-progress" max={progress.max} value={progress.value} />
+                </>
+              ) : latest?.type === "request-started" ||
+                latest?.type === "model-download" ||
+                latest?.type === "text-page" ||
+                latest?.type === "output-validated" ? (
+                <progress aria-label={t("monitor_running")} />
+              ) : null}
+            </div>
+          )}
+        </div>
+
         <p className="pm-monitor-announcement pm-visually-hidden" role="status">
           {statusLabel}
           {latest ? ` · ${eventMessage(latest, t)}` : ""}
         </p>
-        {monitor.status === "running" && (
-          <div className="pm-monitor-progress">
-            {progress && latest ? (
-              <>
-                <label htmlFor="pm-monitor-progress">{eventMessage(latest, t)}</label>
-                <progress id="pm-monitor-progress" max={progress.max} value={progress.value} />
-              </>
-            ) : latest?.type === "request-started" ||
-              latest?.type === "model-download" ||
-              latest?.type === "text-page" ||
-              latest?.type === "output-validated" ? (
-              <progress aria-label={t("monitor_running")} />
-            ) : null}
-          </div>
-        )}
-        {monitor.status === "running" && onCancel && (
-          <div className="pm-monitor-actions">
-            <button type="button" className="pm-button pm-button--ghost-cancel" onClick={onCancel}>
-              {t("monitor_cancel")}
-            </button>
-          </div>
-        )}
+
+        {/* Completion hero */}
         {counts && (
           <div className="pm-monitor-results">
             <div className="pm-monitor-hero">
-              {/* Success header */}
               <div className="pm-monitor-hero-header">
                 <div className="pm-monitor-hero-icon" aria-hidden="true">
                   <CheckCircle2 size={22} />
@@ -395,8 +412,6 @@ export function ProcessingMonitor({
                   </p>
                 </div>
               </div>
-
-              {/* Stats grid */}
               <div className="pm-monitor-stats">
                 {counts
                   .filter((item) => item.count > 0)
@@ -407,14 +422,11 @@ export function ProcessingMonitor({
                     </div>
                   ))}
               </div>
-
-              {/* Primary CTA */}
               <button type="button" className="pm-monitor-cta" onClick={onOpenResults}>
                 <span>{t("monitor_view_results")}</span>
                 <ArrowRight size={18} aria-hidden="true" className="pm-monitor-cta-arrow" />
               </button>
             </div>
-
             <div className="pm-monitor-next-steps">
               <strong>{t("monitor_next_steps_title")}</strong>
               <ol>
