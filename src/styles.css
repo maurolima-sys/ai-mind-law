@@ -8086,3 +8086,169 @@
 .pm-delete-doc-modal-confirm {
   background: var(--pm-red, #dc2626) !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UNSLOP DESIGN TOKENS — escala modular, superfícies e sombras consistentes
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Type scale (ratio 1.25, base 14px) ── */
+  --pm-text-xs:   0.694rem;  /* ~11px — labels, captions, meta */
+  --pm-text-sm:   0.8rem;    /* ~13px — table cells, badges    */
+  --pm-text-base: 0.875rem;  /* ~14px — body copy              */
+  --pm-text-md:   1rem;      /* 16px  — subheadings            */
+  --pm-text-lg:   1.125rem;  /* 18px  — section titles         */
+  --pm-text-xl:   1.4rem;    /* ~22px — page headings          */
+  --pm-text-2xl:  1.65rem;   /* ~26px — hero headings          */
+
+  /* ── Spacing scale (4px base) ── */
+  --pm-space-1: 4px;
+  --pm-space-2: 8px;
+  --pm-space-3: 12px;
+  --pm-space-4: 16px;
+  --pm-space-5: 20px;
+  --pm-space-6: 24px;
+  --pm-space-8: 32px;
+
+  /* ── Surface tokens (replaces ad-hoc near-whites) ── */
+  --pm-surface-0: #ffffff;
+  --pm-surface-1: #f8fafd;   /* card background  */
+  --pm-surface-2: #f2f5fb;   /* subtle section   */
+  --pm-surface-3: #edf1f8;   /* hover / selected */
+
+  /* ── Shadow scale ── */
+  --pm-shadow-xs: 0 1px 2px oklch(0.24 0.05 265 / 0.04);
+  --pm-shadow-sm: 0 1px 3px oklch(0.24 0.05 265 / 0.06),
+                  0 4px 12px -6px oklch(0.24 0.05 265 / 0.08);
+  --pm-shadow-md: 0 4px 16px -4px oklch(0.24 0.05 265 / 0.12),
+                  0 1px 4px oklch(0.24 0.05 265 / 0.06);
+  --pm-shadow-lg: 0 12px 32px -8px oklch(0.24 0.05 265 / 0.16),
+                  0 2px 8px oklch(0.24 0.05 265 / 0.06);
+}
+
+/* ── Apply shadow scale to existing card components ── */
+.pm-panel,
+.pm-metric,
+.pm-mode-card,
+.pm-kpi-card,
+.pm-project-card,
+.pm-integration-card,
+.pm-settings-card,
+.pm-process-flow,
+.pm-processing-footer,
+.pm-confirm-bar,
+.pm-flow-footer-card {
+  box-shadow: var(--pm-shadow-xs);
+}
+
+.pm-panel:hover,
+.pm-metric:hover,
+.pm-kpi-card:hover,
+.pm-project-card:hover {
+  box-shadow: var(--pm-shadow-sm);
+}
+
+/* ── Consolidate badge system ── */
+/* All badge variants now share one base rule */
+.pm-badge,
+.pm-status-pill,
+.pm-kpi-delta,
+.pm-confidence-tag,
+.pm-status-pill-score,
+.pm-origin-badge,
+.pm-integration-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: var(--pm-text-xs);
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+/* ── Tighten page heading typography ── */
+.pm-page-heading h1 {
+  font-size: var(--pm-text-xl);
+  letter-spacing: -0.03em;
+}
+
+.pm-page-heading p {
+  font-size: var(--pm-text-sm);
+  line-height: 1.55;
+}
+
+/* ── Panel heading consistency ── */
+.pm-panel-heading h2,
+.pm-findings-heading h2,
+.pm-risk-list-heading h2,
+.pm-settings-heading h2 {
+  font-size: var(--pm-text-base);
+  letter-spacing: -0.02em;
+}
+
+/* ── Table typography ── */
+.pm-table th {
+  font-size: var(--pm-text-xs);
+  letter-spacing: 0.04em;
+}
+
+.pm-table td {
+  font-size: var(--pm-text-sm);
+}
+
+/* ── Metric card numbers ── */
+.pm-metric-value,
+.pm-kpi-value {
+  font-size: var(--pm-text-xl);
+  letter-spacing: -0.04em;
+}
+
+.pm-metric-label,
+.pm-kpi-label {
+  font-size: var(--pm-text-xs);
+}
+
+/* ── Surface consolidation: replace ad-hoc near-whites ── */
+.pm-panel,
+.pm-mode-card,
+.pm-kpi-card,
+.pm-project-card,
+.pm-integration-card,
+.pm-process-flow,
+.pm-processing-footer,
+.pm-confirm-bar,
+.pm-flow-footer-card,
+.pm-source-drawer,
+.pm-risk-response,
+.pm-inference-report,
+.pm-runtime-status,
+.pm-summary-strip {
+  background: var(--pm-surface-0);
+}
+
+.pm-upload-tile,
+.pm-file-drop,
+.pm-qa-privacy,
+.pm-discovery-card,
+.pm-evidence-detail blockquote,
+.pm-finding-evidence blockquote,
+.pm-qa-citation {
+  background: var(--pm-surface-1);
+}
+
+.pm-table th,
+.pm-viewer-toolbar,
+.pm-qa-research-fields,
+.pm-sample-output-box {
+  background: var(--pm-surface-2);
+}
+
+.pm-documents-table tbody tr:hover,
+.pm-matrix-table tr.is-selected,
+.pm-nav-item:hover,
+.pm-pm-mode-card:hover {
+  background: var(--pm-surface-3);
+}
