@@ -1,0 +1,14 @@
+{
+  "apphosting": {
+    "backendId": "pocketmind-ai",
+    "rootDir": "/",
+    "ignore": [
+      "node_modules",
+      ".git",
+      ".vercel",
+      ".output",
+      "firebase-debug.log",
+      "firebase-debug.*.log"
+    ]
+  }
+}
