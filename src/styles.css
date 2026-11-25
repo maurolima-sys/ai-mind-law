@@ -8025,3 +8025,16 @@
   font-family: ui-monospace, "SF Mono", monospace;
   font-size: 10px;
 }
+
+/* ── Delete document dialog overlay ─────────────────────────────────────────── */
+.pm-evidence-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
+  padding: 1rem;
+}
