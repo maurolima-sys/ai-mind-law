@@ -263,7 +263,7 @@
 /* ── Run page wrapper ────────────────────────────────────────────────────────── */
 .pm-run-page {
   min-height: 100dvh;
-  background: #0a1628;
+  background: oklch(0.97 0.004 240);
   display: flex;
   flex-direction: column;
 }
@@ -271,30 +271,32 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid #1e3a55;
+  padding: 0.875rem 1.5rem;
+  background: #fff;
+  border-bottom: 1px solid oklch(0.91 0.01 240);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 .pm-run-header-brand {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #c2e9ff;
+  color: oklch(0.24 0.05 265);
   font-weight: 700;
   font-size: 0.95rem;
   text-decoration: none;
 }
 .pm-run-header-brand:focus-visible {
-  outline: 2px solid #a4e7ff;
+  outline: 2px solid #0ea5e9;
   outline-offset: 3px;
   border-radius: 4px;
 }
 .pm-run-header-sep {
-  color: #376c91;
+  color: oklch(0.7 0.02 240);
 }
 .pm-run-back {
-  color: #77c9f0;
+  color: oklch(0.45 0.05 240);
   background: transparent;
-  border: 1px solid #376c91;
+  border: 1px solid oklch(0.88 0.01 240);
   border-radius: 6px;
   padding: 0.4rem 0.85rem;
   font-size: 0.85rem;
@@ -303,12 +305,16 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 .pm-run-back:hover {
-  background: #1e3a55;
+  background: oklch(0.95 0.005 240);
+  border-color: oklch(0.78 0.02 240);
 }
 .pm-run-back:focus-visible {
-  outline: 2px solid #a4e7ff;
+  outline: 2px solid #0ea5e9;
   outline-offset: 3px;
 }
 .pm-run-main {
@@ -323,20 +329,20 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  background: #1e3a55;
-  border: 1px solid #376c91;
+  background: #fff;
+  border: 1px solid oklch(0.88 0.01 240);
   border-radius: 8px;
-  color: #c2e9ff;
+  color: oklch(0.35 0.04 240);
   font-size: 0.9rem;
   margin: 0 1.5rem 1rem;
 }
 .pm-run-banner a {
-  color: #77c9f0;
+  color: #0ea5e9;
   font-weight: 600;
   text-decoration: underline;
 }
 .pm-run-banner a:focus-visible {
-  outline: 2px solid #a4e7ff;
+  outline: 2px solid #0ea5e9;
   outline-offset: 2px;
   border-radius: 2px;
 }
@@ -349,27 +355,28 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(5, 15, 30, 0.72);
+  background: rgba(15, 23, 42, 0.5);
   backdrop-filter: blur(4px);
   padding: 1rem;
 }
 .pm-cancel-dialog {
-  background: #101f35;
-  border: 1px solid #376c91;
+  background: #fff;
+  border: 1px solid oklch(0.88 0.01 240);
   border-radius: 12px;
   padding: 1.5rem;
   max-width: 420px;
   width: 100%;
-  color: #e8f3ff;
+  color: oklch(0.24 0.05 265);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.18);
 }
 .pm-cancel-dialog h2 {
   margin: 0 0 0.75rem;
   font-size: 1.1rem;
-  color: #fff;
+  color: oklch(0.18 0.05 265);
 }
 .pm-cancel-dialog p {
   margin: 0 0 1.25rem;
-  color: #c2d9ec;
+  color: oklch(0.45 0.04 240);
   font-size: 0.9rem;
 }
 .pm-cancel-dialog-actions {
