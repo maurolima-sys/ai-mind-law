@@ -3,6 +3,8 @@ import type { Translations } from "./en";
 export const pt: Translations = {
   monitor_title: "Monitor inteligente de processamento",
   monitor_activity: "Atividade de processamento em tempo real",
+  monitor_narration_start: "Iniciar narração",
+  monitor_narration_stop: "Parar narração",
   monitor_running: "Processando",
   monitor_waiting: "Ação necessária",
   monitor_failed: "Falha no processamento",
@@ -495,9 +497,10 @@ export const pt: Translations = {
   drop_note:
     "PDF, DOCX ou XLSX · máximo 50 MB · PDFs digitalizados podem usar OCR externo opcional",
 
-  ocr_scanned_title: "Este parece ser um PDF digitalizado.",
-  ocr_scanned_desc:
-    "Pode enviar este ficheiro para o LlamaParse para extração de texto externa. O Firebase AI Logic analisará o texto extraído a seguir.",
+  ocr_sparse_title: "{{count}} páginas têm pouco ou nenhum texto selecionável.",
+  ocr_sparse_desc:
+    "Pode enviar este PDF ao LlamaParse para aplicar OCR às páginas assinaladas. O ficheiro PDF completo é transferido; o Firebase AI Logic analisará o texto combinado em seguida.",
+  ocr_sparse_pages: "Páginas assinaladas para OCR: {{pages}}",
   ocr_analyze_extracted: "Analisar o texto disponível neste browser",
   ocr_checking: "A verificar se o OCR externo está ativado...",
   ocr_disabled_title: "O OCR externo não está ativado.",
@@ -505,7 +508,8 @@ export const pt: Translations = {
   ocr_check_again: "Verificar novamente",
   ocr_error: "Não foi possível verificar a disponibilidade do conector.",
   ocr_retry: "Tentar novamente",
-  ocr_consent_title: "Consinto o envio deste PDF para o LlamaParse para OCR externo.",
+  ocr_consent_title:
+    "Consinto o envio deste PDF ao LlamaParse para aplicar OCR às páginas assinaladas.",
   ocr_consent_detail:
     "Este consentimento é separado do consentimento de nuvem do Firebase. O PDF é enviado para o LlamaParse mesmo quando a inferência no dispositivo está selecionada.",
   ocr_extract_btn: "Extrair com LlamaParse",

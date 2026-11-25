@@ -9,6 +9,7 @@ const MAX_BYTES = 20 * 1024 * 1024;
 const inputSchema = z.object({
   consent: z.literal(true),
   fileName: z.string().min(1).max(255),
+  targetPages: z.array(z.number().int().min(1).max(2_000)).min(1).max(2_000),
   base64: z
     .string()
     .min(1)
@@ -61,7 +62,12 @@ export const extractWithLlamaParse = createServerFn({ method: "POST" })
     const parseRes = await fetch(`${BASE_URL}/api/v2/parse`, {
       method: "POST",
       headers: { ...authHeaders, "Content-Type": "application/json" },
-      body: JSON.stringify({ file_id: fileId, tier: "fast", version: "latest" }),
+      body: JSON.stringify({
+        file_id: fileId,
+        tier: "fast",
+        version: "latest",
+        page_ranges: { target_pages: data.targetPages.join(",") },
+      }),
     });
     if (!parseRes.ok) await failure(parseRes, "parse start");
     const { id: jobId } = (await parseRes.json()) as { id?: string };

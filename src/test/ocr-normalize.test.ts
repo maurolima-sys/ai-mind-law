@@ -27,7 +27,7 @@ describe("LlamaParse page normalization", () => {
 
 describe("external OCR consent", () => {
   it("refuses to send without consent", async () => {
-    await expect(runExternalOcr(new File(["%PDF-"], "a.pdf"), false)).rejects.toThrow(
+    await expect(runExternalOcr(new File(["%PDF-"], "a.pdf"), false, [2])).rejects.toThrow(
       /Allow external/,
     );
   });

@@ -1,7 +1,16 @@
 import { useEffect, useRef, useState } from "react";
-import { AlertTriangle, CheckCircle2, Cloud, Laptop, Loader2, ArrowRight } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Cloud,
+  Laptop,
+  Loader2,
+  ArrowRight,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 
-import { useT } from "@/lib/i18n";
+import { useLocale, useT } from "@/lib/i18n";
 import type { AnalysisProgressEvent } from "@/lib/services/tenderAnalysis";
 import type { Analysis } from "@/lib/types";
 import "./ProcessingMonitor.css";
@@ -165,8 +174,9 @@ export function ProcessingMonitor({
   onCancel?: () => void;
   sectionSoundEnabled?: boolean;
 }) {
-  const t = useT();
+  const { locale, t } = useLocale();
   const [paused, setPaused] = useState(false);
+  const [narrationEnabled, setNarrationEnabled] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const listRef = useRef<HTMLOListElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -263,6 +273,26 @@ export function ProcessingMonitor({
           ? "monitor_failed"
           : "monitor_completed",
   );
+  const narrationMessage =
+    monitor.status === "completed"
+      ? t("monitor_completed")
+      : latest
+        ? eventMessage(latest, t)
+        : statusLabel;
+
+  useEffect(() => {
+    if (!narrationEnabled || typeof window === "undefined" || !("speechSynthesis" in window)) {
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(narrationMessage);
+    utterance.lang = locale === "pt" ? "pt-PT" : locale === "es" ? "es-ES" : "en-US";
+    utterance.rate = 1;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+
+    return () => window.speechSynthesis.cancel();
+  }, [locale, narrationEnabled, narrationMessage]);
 
   const result = monitor.result;
   const counts = result && [
@@ -348,7 +378,24 @@ export function ProcessingMonitor({
 
         {/* Activity log */}
         <div className="pm-monitor-activity-box">
-          <h2>{t("monitor_activity")}</h2>
+          <div className="pm-monitor-activity-heading">
+            <h2>{t("monitor_activity")}</h2>
+            {typeof window !== "undefined" && "speechSynthesis" in window && (
+              <button
+                type="button"
+                className="pm-monitor-narration"
+                aria-pressed={narrationEnabled}
+                onClick={() => setNarrationEnabled((enabled) => !enabled)}
+              >
+                {narrationEnabled ? (
+                  <VolumeX size={16} aria-hidden="true" />
+                ) : (
+                  <Volume2 size={16} aria-hidden="true" />
+                )}
+                {t(narrationEnabled ? "monitor_narration_stop" : "monitor_narration_start")}
+              </button>
+            )}
+          </div>
           <ol
             ref={listRef}
             className="pm-monitor-events"

@@ -1,6 +1,8 @@
 ﻿export const en = {
   monitor_title: "Processing intelligence monitor",
   monitor_activity: "Live processing activity",
+  monitor_narration_start: "Start narration",
+  monitor_narration_stop: "Stop narration",
   monitor_running: "Processing",
   monitor_waiting: "Action needed",
   monitor_failed: "Processing failed",
@@ -510,9 +512,10 @@
   drop_note: "PDF, DOCX, or XLSX · maximum 50 MB · scanned PDFs may use optional external OCR",
 
   // ── Processing — external OCR ─────────────────────────────────────────────────
-  ocr_scanned_title: "This looks like a scanned PDF.",
-  ocr_scanned_desc:
-    "You can send this file to LlamaParse for external text extraction. Firebase AI Logic will analyze the extracted text afterward.",
+  ocr_sparse_title: "{{count}} pages have little or no selectable text.",
+  ocr_sparse_desc:
+    "You can send this PDF to LlamaParse for OCR of the flagged pages. The full PDF file is transferred; Firebase AI Logic analyzes the merged text afterward.",
+  ocr_sparse_pages: "Pages flagged for OCR: {{pages}}",
   ocr_analyze_extracted: "Analyze the text available in this browser",
   ocr_checking: "Checking whether external OCR is enabled...",
   ocr_disabled_title: "External OCR is not enabled.",
@@ -520,7 +523,7 @@
   ocr_check_again: "Check again",
   ocr_error: "Could not check connector availability.",
   ocr_retry: "Retry check",
-  ocr_consent_title: "I consent to sending this PDF to LlamaParse for external OCR.",
+  ocr_consent_title: "I consent to sending this PDF to LlamaParse for OCR of the flagged pages.",
   ocr_consent_detail:
     "This consent is separate from Firebase cloud consent. The PDF is sent to LlamaParse even when on-device inference is selected.",
   ocr_extract_btn: "Extract with LlamaParse",

@@ -1,15 +1,34 @@
 import { describe, expect, it } from "vitest";
 
 import { markUnpaginatedEvidenceUnverified } from "@/lib/services/ocrEvidence";
-import { shouldOfferExternalOcr } from "@/lib/services/ocrNormalize";
+import {
+  mergeOcrPageText,
+  pagesNeedingExternalOcr,
+  shouldOfferExternalOcr,
+} from "@/lib/services/ocrNormalize";
 import type { Analysis } from "@/lib/types";
 
 describe("external OCR review safeguards", () => {
-  it("offers external OCR for missing or very sparse selectable text", () => {
+  it("flags sparse pages without sending well-extracted documents to OCR", () => {
+    const digitalPages = Array.from(
+      { length: 56 },
+      (_, index) =>
+        `SECTION ${index + 1} SUBMITTAL REQUIREMENTS. The contractor shall provide complete documentation, references, qualifications, and a signed proposal form before the stated deadline.`,
+    );
+
     expect(shouldOfferExternalOcr([])).toBe(true);
     expect(shouldOfferExternalOcr(["Only a short fragment."])).toBe(true);
-    expect(shouldOfferExternalOcr(["A".repeat(120)])).toBe(false);
+    expect(pagesNeedingExternalOcr(digitalPages)).toEqual([]);
+    digitalPages[16] = "";
+    expect(pagesNeedingExternalOcr(digitalPages)).toEqual([17]);
+    expect(shouldOfferExternalOcr(["A".repeat(120)])).toBe(true);
     expect(shouldOfferExternalOcr(["A".repeat(80), "", "", "", ""])).toBe(true);
+  });
+
+  it("merges OCR only into its matching original page and keeps native text", () => {
+    expect(
+      mergeOcrPageText(["Native page 1", "", "Native page 3"], ["", "Scanned page 2"]),
+    ).toEqual(["Native page 1", "Scanned page 2", "Native page 3"]);
   });
 
   it("removes unconfirmed page citations and flags every finding for review", () => {

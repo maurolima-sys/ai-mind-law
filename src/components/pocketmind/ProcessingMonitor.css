@@ -474,6 +474,43 @@
   margin-top: 0.9rem;
 }
 
+.pm-monitor-activity-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.pm-monitor-activity-heading h2 {
+  min-width: 0;
+}
+
+.pm-monitor-narration {
+  min-height: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid #52718e;
+  border-radius: 999px;
+  background: #263a53;
+  color: #e7edf6;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pm-monitor-narration:hover {
+  background: #314a68;
+}
+
+.pm-monitor-narration:focus-visible {
+  outline: 2px solid #a4e7ff;
+  outline-offset: 3px;
+}
+
 .pm-monitor-progress {
   font-size: 0.9rem;
   line-height: 1.5;

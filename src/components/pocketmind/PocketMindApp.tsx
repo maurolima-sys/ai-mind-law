@@ -147,7 +147,7 @@ import {
   isInvalidFirebaseAppCheckTokenError,
 } from "@/lib/services/firebaseAi";
 import { markUnpaginatedEvidenceUnverified } from "@/lib/services/ocrEvidence";
-import { shouldOfferExternalOcr } from "@/lib/services/ocrNormalize";
+import { mergeOcrPageText, pagesNeedingExternalOcr } from "@/lib/services/ocrNormalize";
 import { analyzeTender } from "@/lib/services/tenderAnalysis";
 import {
   defaultPreferences,
@@ -168,6 +168,7 @@ import {
   CATEGORIES,
   type Analysis,
   type DocumentRecord,
+  type PageExtractionMethod,
   type DocumentFormat,
   type DocumentTextSource,
   type EvidenceMatch,
@@ -194,6 +195,15 @@ type Screen =
 type ProcessingChoice = "demo" | InferencePreference;
 type ExternalOcrAvailability = "checking" | "enabled" | "disabled" | "error";
 type FindingKind = "Requirement" | "Deadline" | "Specification" | "Risk" | "Missing information";
+
+function extractionMethodsFor(
+  source: DocumentTextSource,
+  pageCount: number,
+): PageExtractionMethod[] {
+  const method: PageExtractionMethod =
+    source === "llamaparse" ? "ocr" : source === "pdfjs" ? "pdfjs" : "browser";
+  return Array.from({ length: pageCount }, () => method);
+}
 
 type Finding = {
   id: string;
@@ -351,7 +361,13 @@ function EvidenceStatus({ evidence }: { evidence: Evidence }) {
   );
 }
 
-export function PocketMindApp() {
+export function PocketMindApp({
+  initialScreen = "overview",
+  initialDocumentId = DEMO_DOC_ID,
+}: {
+  initialScreen?: Screen;
+  initialDocumentId?: string;
+} = {}) {
   const t = useT();
   const { locale, setLocale } = useLocale();
   const navigate = useNavigate();
@@ -366,8 +382,8 @@ export function PocketMindApp() {
     defaultPreferences(configuredDefaultMode),
   );
   const [documents, setDocuments] = useState<DocumentRecord[]>(() => [buildDemoDocument()]);
-  const [selectedDocumentId, setSelectedDocumentId] = useState(DEMO_DOC_ID);
-  const [screen, setScreen] = useState<Screen>("overview");
+  const [selectedDocumentId, setSelectedDocumentId] = useState(initialDocumentId);
+  const [screen, setScreen] = useState<Screen>(initialScreen);
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [search, setSearch] = useState("");
   const [questionDraftsByDocumentId, setQuestionDraftsByDocumentId] = useState<
@@ -401,6 +417,9 @@ export function PocketMindApp() {
   const [scannedTextByDocumentId, setScannedTextByDocumentId] = useState<Record<string, string[]>>(
     {},
   );
+  const [sparsePageNumbersByDocumentId, setSparsePageNumbersByDocumentId] = useState<
+    Record<string, number[]>
+  >({});
   const [documentTextSources, setDocumentTextSources] = useState<
     Record<string, DocumentTextSource>
   >({});
@@ -862,6 +881,7 @@ export function PocketMindApp() {
         ...selectedDocument,
         pages: extracted.pages,
         sourceLocations: extracted.sourceLocations,
+        pageExtractionMethods: extractionMethodsFor(extracted.textSource, extracted.pages.length),
         textSource: extracted.textSource,
         paginationVerified: extracted.paginationVerified,
       };
@@ -881,11 +901,16 @@ export function PocketMindApp() {
       }));
       setActivePage(1);
 
-      if (
-        (selectedDocument.format ?? getDocumentFormat(selectedDocument.name)) === "pdf" &&
-        shouldOfferExternalOcr(extracted.pages)
-      ) {
+      const sparsePageNumbers =
+        (selectedDocument.format ?? getDocumentFormat(selectedDocument.name)) === "pdf"
+          ? pagesNeedingExternalOcr(extracted.pages)
+          : [];
+      if (sparsePageNumbers.length > 0) {
         setScannedDocumentId(selectedDocument.id);
+        setSparsePageNumbersByDocumentId((current) => ({
+          ...current,
+          [selectedDocument.id]: sparsePageNumbers,
+        }));
         setScannedTextByDocumentId((current) => ({
           ...current,
           [selectedDocument.id]: extracted.pages,
@@ -1220,6 +1245,7 @@ export function PocketMindApp() {
     textSource: DocumentTextSource,
     paginated: boolean,
     locations: string[],
+    pageExtractionMethods?: PageExtractionMethod[],
   ) {
     if (!selectedDocument) {
       throw new Error("Choose a document before starting an analysis.");
@@ -1256,6 +1282,8 @@ export function PocketMindApp() {
       ...selectedDocument,
       pages,
       sourceLocations: locations,
+      pageExtractionMethods:
+        pageExtractionMethods ?? extractionMethodsFor(textSource, pages.length),
       textSource,
       paginationVerified: paginated,
       analysis,
@@ -1318,11 +1346,13 @@ export function PocketMindApp() {
       let locations: string[];
       let textSource: DocumentTextSource = "browser";
       let paginated = true;
+      let pageExtractionMethods: PageExtractionMethod[];
       if (selectedDocument.source === "demo") {
         appendMonitor(selectedDocument.id, { type: "sample-text" });
         pages = selectedDocument.pages;
         locations =
           selectedDocument.sourceLocations ?? pages.map((_, index) => `Page ${index + 1}`);
+        pageExtractionMethods = extractionMethodsFor("browser", pages.length);
         setProgressDetail("Using fictional sample text; no real PDF is uploaded.");
       } else {
         if (!file) {
@@ -1342,21 +1372,32 @@ export function PocketMindApp() {
           appendMonitor(selectedDocument.id, { type: "text-reused" });
           pages = selectedDocument.pages;
           locations = selectedDocument.sourceLocations ?? [];
+          pageExtractionMethods =
+            selectedDocument.pageExtractionMethods ??
+            extractionMethodsFor(textSource, pages.length);
         } else {
           const extracted = await extractLocalDocument(file, format, selectedDocument.id);
           pages = extracted.pages;
           locations = extracted.sourceLocations;
           textSource = extracted.textSource;
           paginated = extracted.paginationVerified;
+          pageExtractionMethods = extractionMethodsFor(textSource, pages.length);
         }
       }
-      if (
+      const sparsePageNumbers =
         selectedDocument.source === "upload" &&
         (selectedDocument.format ?? getDocumentFormat(selectedDocument.name)) === "pdf" &&
-        textSource === "pdfjs" &&
-        shouldOfferExternalOcr(pages)
-      ) {
+        textSource === "pdfjs"
+          ? pagesNeedingExternalOcr(pages).filter(
+              (pageNumber) => pageExtractionMethods[pageNumber - 1] !== "ocr",
+            )
+          : [];
+      if (sparsePageNumbers.length > 0) {
         setScannedDocumentId(selectedDocument.id);
+        setSparsePageNumbersByDocumentId((current) => ({
+          ...current,
+          [selectedDocument.id]: sparsePageNumbers,
+        }));
         setScannedTextByDocumentId((current) => ({ ...current, [selectedDocument.id]: pages }));
         setExternalOcrConsentDocumentId(null);
         appendMonitor(selectedDocument.id, { type: "ocr-waiting" });
@@ -1371,6 +1412,7 @@ export function PocketMindApp() {
           ...selectedDocument,
           pages,
           sourceLocations: locations,
+          pageExtractionMethods,
           textSource,
           paginationVerified: paginated,
         };
@@ -1383,7 +1425,7 @@ export function PocketMindApp() {
         setDocumentTextSources((current) => ({ ...current, [selectedDocument.id]: textSource }));
         setDocumentPagination((current) => ({ ...current, [selectedDocument.id]: paginated }));
       }
-      await analyzePages(pages, textSource, paginated, locations);
+      await analyzePages(pages, textSource, paginated, locations, pageExtractionMethods);
     } catch (error) {
       setMonitorStatus(selectedDocument.id, "failed");
       reportAnalysisError(error, "Analysis could not be completed.");
@@ -1425,11 +1467,13 @@ export function PocketMindApp() {
   }
 
   async function runLlamaParseOcr() {
+    const targetPages = sparsePageNumbersByDocumentId[selectedDocument?.id ?? ""] ?? [];
     if (
       !selectedDocument ||
       selectedDocument.source !== "upload" ||
       (selectedDocument.format ?? getDocumentFormat(selectedDocument.name)) !== "pdf" ||
-      !file
+      !file ||
+      targetPages.length === 0
     ) {
       setErrorMessage("Choose a PDF before starting external text extraction.");
       return;
@@ -1456,38 +1500,49 @@ export function PocketMindApp() {
     startMonitor(selectedDocument);
     void navigate({ to: "/processing/run" });
     try {
-      setProgressDetail("Sending the PDF to LlamaParse for external text extraction");
+      setProgressDetail(
+        `Sending the PDF to LlamaParse to process ${targetPages.length} sparse pages`,
+      );
       appendMonitor(selectedDocument.id, { type: "ocr-started" });
-      const result = await runExternalOcr(file, true);
+      const result = await runExternalOcr(file, true, targetPages);
       if (!result.pages.some((page) => page.trim())) {
         throw new Error("LlamaParse returned no text for this PDF.");
       }
+      if (!result.paginated) {
+        throw new Error(
+          "LlamaParse did not return page numbers; selective OCR cannot be merged safely.",
+        );
+      }
+      const nativePages = scannedTextByDocumentId[selectedDocument.id] ?? selectedDocument.pages;
+      const mergedPages = mergeOcrPageText(nativePages, result.pages);
+      const pageExtractionMethods =
+        selectedDocument.pageExtractionMethods ?? extractionMethodsFor("pdfjs", nativePages.length);
+      const mergedExtractionMethods = pageExtractionMethods.map((method, index) =>
+        result.pages[index]?.trim() ? "ocr" : method,
+      );
       appendMonitor(selectedDocument.id, { type: "ocr-completed" });
       setDocuments((current) =>
         current.map((document) =>
           document.id === selectedDocument.id
             ? {
                 ...document,
-                pages: result.pages,
-                sourceLocations: result.pages.map((_, index) =>
-                  result.paginated ? `Page ${index + 1}` : `Extracted segment ${index + 1}`,
-                ),
-                textSource: "llamaparse",
-                paginationVerified: result.paginated,
+                pages: mergedPages,
+                sourceLocations:
+                  selectedDocument.sourceLocations ??
+                  mergedPages.map((_, index) => `Page ${index + 1}`),
+                pageExtractionMethods: mergedExtractionMethods,
+                textSource: "pdfjs",
+                paginationVerified: true,
               }
             : document,
         ),
       );
-      setDocumentTextSources((current) => ({ ...current, [selectedDocument.id]: "llamaparse" }));
-      setDocumentPagination((current) => ({
-        ...current,
-        [selectedDocument.id]: result.paginated,
-      }));
+      setDocumentTextSources((current) => ({ ...current, [selectedDocument.id]: "pdfjs" }));
+      setDocumentPagination((current) => ({ ...current, [selectedDocument.id]: true }));
       setProgressDetail("Analyzing extracted text with Firebase AI Logic");
-      const sourceLocations = result.pages.map((_, index) =>
-        result.paginated ? `Page ${index + 1}` : `Extracted segment ${index + 1}`,
-      );
-      await analyzePages(result.pages, "llamaparse", result.paginated, sourceLocations);
+      const sourceLocations =
+        selectedDocument.sourceLocations ?? mergedPages.map((_, index) => `Page ${index + 1}`);
+      await analyzePages(mergedPages, "pdfjs", true, sourceLocations, mergedExtractionMethods);
     } catch (error) {
       setMonitorStatus(selectedDocument.id, "failed");
       reportAnalysisError(error, "External text extraction could not be completed.");
@@ -2031,6 +2086,7 @@ export function PocketMindApp() {
               choice={processingChoice}
               cloudConsent={cloudConsent}
               showExternalOcrPrompt={scannedDocumentId === selectedDocument.id}
+              ocrPageNumbers={sparsePageNumbersByDocumentId[selectedDocument.id] ?? []}
               externalOcrAvailability={externalOcrAvailability}
               externalOcrConsent={externalOcrConsentDocumentId === selectedDocument.id}
               hasExtractedText={Boolean(
@@ -3781,6 +3837,7 @@ export function ProcessingScreen({
   choice,
   cloudConsent,
   showExternalOcrPrompt,
+  ocrPageNumbers = [],
   externalOcrAvailability,
   externalOcrConsent,
   hasExtractedText,
@@ -3813,6 +3870,7 @@ export function ProcessingScreen({
   choice: ProcessingChoice;
   cloudConsent: boolean;
   showExternalOcrPrompt: boolean;
+  ocrPageNumbers?: number[];
   externalOcrAvailability: ExternalOcrAvailability;
   externalOcrConsent: boolean;
   hasExtractedText: boolean;
@@ -4239,8 +4297,9 @@ export function ProcessingScreen({
           <div className="pm-external-ocr-heading">
             <AlertCircle size={18} />
             <div>
-              <strong>{t("ocr_scanned_title")}</strong>
-              <p>{t("ocr_scanned_desc")}</p>
+              <strong>{t("ocr_sparse_title", { count: ocrPageNumbers.length })}</strong>
+              <p>{t("ocr_sparse_desc")}</p>
+              <p>{t("ocr_sparse_pages", { pages: ocrPageNumbers.join(", ") })}</p>
             </div>
           </div>
           {hasExtractedText && (

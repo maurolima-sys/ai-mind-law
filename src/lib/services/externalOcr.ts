@@ -10,11 +10,15 @@ async function toBase64(file: File): Promise<string> {
 }
 
 /** Sends the PDF to LlamaParse via the server. Caller must have explicit OCR consent. */
-export async function runExternalOcr(file: File, consent: boolean): Promise<NormalizedOcr> {
+export async function runExternalOcr(
+  file: File,
+  consent: boolean,
+  targetPages: number[],
+): Promise<NormalizedOcr> {
   if (!consent)
     throw new Error("Allow external text extraction before sending this PDF to LlamaParse.");
   return extractWithLlamaParse({
-    data: { consent: true, fileName: file.name, base64: await toBase64(file) },
+    data: { consent: true, fileName: file.name, base64: await toBase64(file), targetPages },
   });
 }
 

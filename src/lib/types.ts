@@ -3,6 +3,7 @@ export type InferencePreference = "local" | "cloud" | "hybrid";
 export type ProcessingSource = "demo" | "on-device" | "cloud" | "cloud-fallback" | "hybrid";
 export type DocumentFormat = "pdf" | "docx" | "xlsx";
 export type DocumentTextSource = "pdfjs" | "llamaparse" | "browser";
+export type PageExtractionMethod = "pdfjs" | "ocr" | "browser" | "none";
 export type ReviewStatus = "pending" | "reviewed" | "satisfied" | "unclear";
 export type HumanReviewStatus = "pending" | "reviewed" | "approved";
 export type ComplianceAssessment =
@@ -146,6 +147,7 @@ export interface DocumentRecord {
   status?: "Analysed" | "Processing" | "Pending";
   pages: string[];
   sourceLocations?: string[];
+  pageExtractionMethods?: PageExtractionMethod[];
   textSource?: DocumentTextSource;
   paginationVerified?: boolean;
   addedAt: string;

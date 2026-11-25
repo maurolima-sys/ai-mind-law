@@ -4,9 +4,44 @@ export interface NormalizedOcr {
   paginated: boolean;
 }
 
+export function pagesNeedingExternalOcr(pages: string[]): number[] {
+  return pages.flatMap((page, index) => (needsExternalOcr(page) ? [index + 1] : []));
+}
+
+function needsExternalOcr(page: string): boolean {
+  const text = page
+    .normalize("NFKC")
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!text) return true;
+
+  const words = text.match(/[\p{L}\p{N}]+/gu) ?? [];
+  if (text.length < 80 || words.length < 12) return true;
+
+  const replacementCharacters = (text.match(/\uFFFD/g) ?? []).length;
+  if (replacementCharacters > 3) return true;
+
+  const letters = (text.match(/[\p{L}]/gu) ?? []).length;
+  return letters / Math.max(text.length, 1) < 0.35;
+}
+
 export function shouldOfferExternalOcr(pages: string[]): boolean {
-  const characterCount = pages.reduce((total, page) => total + page.trim().length, 0);
-  return characterCount < 100 || (pages.length >= 5 && characterCount / pages.length < 20);
+  return pages.length === 0 || pagesNeedingExternalOcr(pages).length > 0;
+}
+
+export function mergeOcrPageText(nativePages: string[], ocrPages: string[]): string[] {
+  return nativePages.map((nativeText, index) => {
+    const ocrText = ocrPages[index]?.trim();
+    if (!ocrText) return nativeText;
+    if (!nativeText.trim()) return ocrText;
+
+    const normalizedNative = nativeText.replace(/\s+/g, " ").trim();
+    const normalizedOcr = ocrText.replace(/\s+/g, " ").trim();
+    if (normalizedNative.includes(normalizedOcr)) return nativeText;
+    if (normalizedOcr.includes(normalizedNative)) return ocrText;
+    return `${nativeText.trim()}\n${ocrText}`;
+  });
 }
 
 type PageLike = {

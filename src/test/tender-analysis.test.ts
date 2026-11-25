@@ -170,6 +170,21 @@ describe("parseTenderResponse", () => {
       1, 1, 1,
     ]);
   });
+
+  it("starts separate chunks at numbered procurement sections and keeps heading context", () => {
+    const text =
+      "Introductory notice.\nSECTION 1: GENERAL INFORMATION\nContact the procurement officer.\nSECTION 2: SUBMITTAL REQUIREMENTS\nSubmit the signed proposal and references.";
+    const chunks = chunkTenderText([text], ["Page 1"], 1_000);
+
+    expect(chunks.map((chunk) => chunk.heading)).toEqual([
+      undefined,
+      "SECTION 1: GENERAL INFORMATION",
+      "SECTION 2: SUBMITTAL REQUIREMENTS",
+    ]);
+    expect(chunks.flatMap((chunk) => chunk.pages.map((page) => page.text)).join("")).toBe(text);
+    expect(chunks[1]?.pages.map((page) => page.text).join("")).not.toContain("SECTION 2");
+    expect(chunks[2]?.pages.map((page) => page.text).join("")).not.toContain("SECTION 1");
+  });
 });
 
 describe("resolveProcessingSource", () => {
