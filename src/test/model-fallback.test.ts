@@ -7,6 +7,10 @@ import {
   getFirebaseAiHttpStatus,
   isInvalidFirebaseAppCheckTokenError,
   isRetryableFirebaseAiError,
+  isDailyQuotaExhaustedError,
+  isDailyQuotaExhaustedSession,
+  markDailyQuotaExhausted,
+  resetDailyQuotaExhaustedSession,
   ON_DEVICE_GENERATION_TIMEOUT_MS,
   PRIMARY_GEMINI_MODEL,
   SECONDARY_GEMINI_MODEL,
@@ -16,6 +20,7 @@ import {
 describe("Firebase AI retry policy", () => {
   afterEach(() => {
     vi.useRealTimers();
+    resetDailyQuotaExhaustedSession();
   });
 
   it("extracts Firebase SDK status metadata and retries only transient statuses", () => {
@@ -185,5 +190,224 @@ describe("Firebase AI retry policy", () => {
       { modelName: SECONDARY_GEMINI_MODEL, status: undefined },
       { modelName: TERTIARY_GEMINI_MODEL, status: undefined },
     ]);
+  });
+
+  // ─── Ordem #5: daily quota circuit breaker ─────────────────────────────────
+  // Fixture built from the real 429 body captured on 2026-11-25 (free-tier
+  // daily quota, gemini-3.8-flash, limit 20), shaped the way @firebase/ai@3.1.0
+  // makeRequest() constructs the AIError (message + customErrorData.status).
+
+  const realDailyQuotaMessage =
+    "Error fetching from https://firebasevertexai.googleapis.com/: [429 Too Many Requests] " +
+    "You exceeded your current quota, please check your plan and billing details. " +
+    "Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, " +
+    "limit: 20, model: gemini-3.8-flash, description: Generate content requests per day limit " +
+    "exceeded on Free Tier. Please retry in 16h59m52.655870729s.";
+
+  function dailyQuotaErrorFixture(): Error {
+    return Object.assign(new Error(realDailyQuotaMessage), {
+      customErrorData: { status: 429, statusText: "", errorDetails: [] },
+    });
+  }
+
+  it("identifies a daily quota 429 as non-retryable from the real captured body", () => {
+    const dailyQuotaError = dailyQuotaErrorFixture();
+    expect(isDailyQuotaExhaustedError(dailyQuotaError)).toBe(true);
+    // Daily quota is not a transient error — never retried.
+    expect(isRetryableFirebaseAiError(dailyQuotaError)).toBe(false);
+
+    // A plain rate-limit 429 without a daily signal stays retryable.
+    const rateLimitError = Object.assign(new Error("[429 Too Many Requests] rate limit exceeded"), {
+      customErrorData: { status: 429 },
+    });
+    expect(isDailyQuotaExhaustedError(rateLimitError)).toBe(false);
+    expect(isRetryableFirebaseAiError(rateLimitError)).toBe(true);
+  });
+
+  it("classifies conservatively: short RetryInfo or ambiguous 429s are per-minute", () => {
+    // Short "retry in" duration — under 5 minutes — is a per-minute limit.
+    const shortRetry = Object.assign(
+      new Error("[429 Too Many Requests] rate limit exceeded. Please retry in 2m7s."),
+      { customErrorData: { status: 429 } },
+    );
+    expect(isDailyQuotaExhaustedError(shortRetry)).toBe(false);
+    expect(isRetryableFirebaseAiError(shortRetry)).toBe(true);
+
+    // QuotaFailure structured details without a PerDay quota id — not daily.
+    const minuteQuotaDetails = Object.assign(new Error("[429] quota exceeded"), {
+      customErrorData: {
+        status: 429,
+        errorDetails: [
+          {
+            "@type": "type.googleapis.com/google.rpc.QuotaFailure",
+            violations: [{ quota_id: "GenerateRequestsPerMinutePerProjectPerModel" }],
+          },
+        ],
+      },
+    });
+    expect(isDailyQuotaExhaustedError(minuteQuotaDetails)).toBe(false);
+
+    // PerDay quota id in structured details — daily, even without free text.
+    const dayQuotaDetails = Object.assign(new Error("[429] quota exceeded"), {
+      customErrorData: {
+        status: 429,
+        errorDetails: [
+          {
+            "@type": "type.googleapis.com/google.rpc.QuotaFailure",
+            violations: [{ quota_id: "GenerateRequestsPerDayPerProjectPerModel" }],
+          },
+        ],
+      },
+    });
+    expect(isDailyQuotaExhaustedError(dayQuotaDetails)).toBe(true);
+    expect(isRetryableFirebaseAiError(dayQuotaDetails)).toBe(false);
+  });
+
+  it("advances to the next model immediately (no backoff) when the primary hits the daily quota, and marks it for the session", async () => {
+    vi.useFakeTimers();
+    const calls: string[] = [];
+    const quotaUpdates: Array<{
+      quotaExhausted?: string;
+      quotaSkip?: boolean;
+      modelName: string;
+    }> = [];
+
+    const request = generateWithModelFallback(
+      "cloud",
+      async (modelName) => {
+        calls.push(modelName);
+        if (modelName === PRIMARY_GEMINI_MODEL) throw dailyQuotaErrorFixture();
+        return "completed";
+      },
+      {
+        onRetry: ({ modelName, quotaExhausted, quotaSkip }) =>
+          quotaUpdates.push({
+            modelName,
+            ...(quotaExhausted !== undefined ? { quotaExhausted } : {}),
+            ...(quotaSkip !== undefined ? { quotaSkip } : {}),
+          }),
+      },
+    );
+
+    // No 3-second backoff: the secondary is attempted without waiting.
+    await vi.advanceTimersByTimeAsync(0);
+    await expect(request).resolves.toEqual({
+      result: "completed",
+      modelName: SECONDARY_GEMINI_MODEL,
+    });
+    expect(calls).toEqual([PRIMARY_GEMINI_MODEL, SECONDARY_GEMINI_MODEL]);
+    expect(quotaUpdates).toEqual([
+      { modelName: SECONDARY_GEMINI_MODEL, quotaExhausted: PRIMARY_GEMINI_MODEL },
+    ]);
+    expect(isDailyQuotaExhaustedSession()).toBe(false);
+  });
+
+  it("skips a marked model without a request on the next call and expires the mark", async () => {
+    vi.useFakeTimers();
+    const dailyQuotaError = dailyQuotaErrorFixture();
+    const firstCalls: string[] = [];
+    await generateWithModelFallback("cloud", async (modelName) => {
+      firstCalls.push(modelName);
+      // Only the primary hits the daily quota; the secondary serves the call.
+      if (modelName === PRIMARY_GEMINI_MODEL) throw dailyQuotaError;
+      return "ok";
+    });
+
+    // Second analysis in the same session: primary is skipped with no request,
+    // the chain starts at the secondary immediately.
+    const secondCalls: string[] = [];
+    const secondEvents: Array<{ quotaExhausted?: string; quotaSkip?: boolean }> = [];
+    await generateWithModelFallback(
+      "cloud",
+      async (modelName) => {
+        secondCalls.push(modelName);
+        return "ok";
+      },
+      {
+        onRetry: ({ quotaExhausted, quotaSkip }) =>
+          secondEvents.push({
+            ...(quotaExhausted !== undefined ? { quotaExhausted } : {}),
+            ...(quotaSkip !== undefined ? { quotaSkip } : {}),
+          }),
+      },
+    ).then(() => undefined);
+
+    expect(secondCalls).toEqual([SECONDARY_GEMINI_MODEL]);
+    expect(secondEvents).toEqual([{ quotaExhausted: PRIMARY_GEMINI_MODEL, quotaSkip: true }]);
+
+    // After the mark expires, the primary is attempted again.
+    resetDailyQuotaExhaustedSession();
+    markDailyQuotaExhausted(PRIMARY_GEMINI_MODEL, 1_000);
+    await vi.advanceTimersByTimeAsync(1_001);
+    const thirdCalls: string[] = [];
+    await generateWithModelFallback("cloud", async (modelName) => {
+      thirdCalls.push(modelName);
+      return "ok";
+    });
+    expect(thirdCalls).toEqual([PRIMARY_GEMINI_MODEL]);
+  });
+
+  it("gives the primary one fresh attempt when every model is marked, then reports the quota to the user", async () => {
+    vi.useFakeTimers();
+    for (const model of GEMINI_MODEL_FALLBACK_CHAIN) {
+      markDailyQuotaExhausted(model, 60_000);
+    }
+    expect(isDailyQuotaExhaustedSession()).toBe(true);
+
+    // All marked → the primary is tried once anyway.
+    const calls: string[] = [];
+    const request = generateWithModelFallback("cloud", async (modelName) => {
+      calls.push(modelName);
+      return "recovered";
+    });
+    await vi.runAllTimersAsync();
+    await expect(request).resolves.toEqual({
+      result: "recovered",
+      modelName: PRIMARY_GEMINI_MODEL,
+    });
+    expect(calls).toEqual([PRIMARY_GEMINI_MODEL]);
+
+    // All marked and the primary also fails with the daily 429 → one attempt
+    // only, and a user-facing quota message (no chain walk, no raw body).
+    resetDailyQuotaExhaustedSession();
+    for (const model of GEMINI_MODEL_FALLBACK_CHAIN) {
+      markDailyQuotaExhausted(model, 60_000);
+    }
+    const failingCalls: string[] = [];
+    const failure = await generateWithModelFallback("cloud", async (modelName) => {
+      failingCalls.push(modelName);
+      throw dailyQuotaErrorFixture();
+    }).catch((e: unknown) => e as Error);
+    expect(failingCalls).toEqual([PRIMARY_GEMINI_MODEL]);
+    expect((failure as Error).message).toMatch(/daily quota/i);
+    expect((failure as Error).message).not.toMatch(/AIza|token/);
+  });
+
+  it("keeps chain order and per-attempt timeouts unchanged for transient failures", async () => {
+    vi.useFakeTimers();
+    const calls: string[] = [];
+    const retryDelays: number[] = [];
+    let lastCallTime = 0;
+    const request = generateWithModelFallback("cloud", async (modelName) => {
+      const now = Date.now();
+      if (lastCallTime) retryDelays.push(now - lastCallTime);
+      lastCallTime = now;
+      calls.push(modelName);
+      if (modelName !== TERTIARY_GEMINI_MODEL) {
+        throw { customErrorData: { status: 500 } };
+      }
+      return "completed";
+    });
+
+    await vi.runAllTimersAsync();
+    await expect(request).resolves.toEqual({
+      result: "completed",
+      modelName: TERTIARY_GEMINI_MODEL,
+    });
+    // Chain order unchanged and the documented backoff (3s–4s) still applied.
+    expect(calls).toEqual([...GEMINI_MODEL_FALLBACK_CHAIN]);
+    expect(retryDelays[1]).toBeGreaterThanOrEqual(3_000);
+    // The 401 App Check token is still treated as transient (unrelated change is forbidden).
+    expect(isRetryableFirebaseAiError({ customErrorData: { status: 401 } })).toBe(true);
   });
 });

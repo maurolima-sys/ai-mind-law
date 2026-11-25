@@ -47,6 +47,120 @@ export const TOTAL_MODEL_ATTEMPTS = RETRY_STEPS.length;
 
 export type OnDeviceTimeoutStage = "initialization" | "generation";
 
+// ─── Daily quota circuit breaker (per model) ──────────────────────────────────
+// Session-scope memory (module state, never written to localStorage), keyed by
+// model with expiry — a model marked as exhausted is skipped without delay, and
+// the mark expires so a post-reset session retries the model automatically.
+const DAILY_QUOTA_FALLBACK_TTL_MS = 60 * 60_000;
+const _dailyQuotaExhaustedUntil = new Map<GeminiModelName, number>();
+
+/** Marks a model as daily-quota-exhausted for `retryAfterMs` (default 1 hour). */
+export function markDailyQuotaExhausted(model: GeminiModelName, retryAfterMs?: number): void {
+  _dailyQuotaExhaustedUntil.set(
+    model,
+    Date.now() +
+      (retryAfterMs !== undefined && retryAfterMs > 0 ? retryAfterMs : DAILY_QUOTA_FALLBACK_TTL_MS),
+  );
+}
+
+function isDailyQuotaExhaustedModel(model: GeminiModelName): boolean {
+  const until = _dailyQuotaExhaustedUntil.get(model);
+  if (until === undefined) return false;
+  if (until <= Date.now()) {
+    _dailyQuotaExhaustedUntil.delete(model);
+    return false;
+  }
+  return true;
+}
+
+/** True when every model in the chain is currently marked as daily-exhausted. */
+export function isDailyQuotaExhaustedSession(): boolean {
+  return GEMINI_MODEL_FALLBACK_CHAIN.every((model) => isDailyQuotaExhaustedModel(model));
+}
+
+/** Clears all daily-quota marks — exposed for tests only. */
+export function resetDailyQuotaExhaustedSession(): void {
+  _dailyQuotaExhaustedUntil.clear();
+}
+
+/** Parses "Please retry in 16h59m52s"-style durations; returns milliseconds. */
+export function parseRetryInDurationMs(message: string): number | undefined {
+  const match = message.match(
+    /retry\s+in\s+(?:(\d+)\s*h(?:ours?)?)?\s*(?:(\d+)\s*m(?:in(?:ute)?s?)?)?\s*(?:(\d+(?:\.\d+)?)\s*s(?:ec(?:ond)?s?)?)/i,
+  );
+  if (!match) return undefined;
+  const [, hours, minutes, seconds] = match;
+  if (hours === undefined && minutes === undefined && seconds === undefined) return undefined;
+  const ms =
+    (hours ? Number(hours) * 3_600_000 : 0) +
+    (minutes ? Number(minutes) * 60_000 : 0) +
+    (seconds ? Math.round(Number(seconds) * 1_000) : 0);
+  return ms > 0 ? ms : undefined;
+}
+
+/**
+ * Classifies a 429 whose message/details indicate a daily (non-transient) quota
+ * limit. Conservative per detection order verified against @firebase/ai@3.1.0:
+ *   (a) customErrorData.errorDetails QuotaFailure/quotaId containing "PerDay"
+ *   (b) message "retry in" duration greater than 5 minutes
+ *   (c) message text "per day"
+ * A 429 without a clear daily signal is treated as a per-minute rate limit
+ * (retryable, existing behaviour) — never inferred from the status alone.
+ */
+export function isDailyQuotaExhaustedError(error: unknown): boolean {
+  if (getFirebaseAiHttpStatus(error) !== 429) return false;
+  if (typeof error !== "object" || error === null) return false;
+  const candidate = error as {
+    message?: unknown;
+    customErrorData?: {
+      message?: unknown;
+      errorDetails?: unknown;
+    };
+  };
+
+  // (a) structured QuotaFailure / RetryInfo details, when the SDK preserved them.
+  const errorDetails = candidate.customErrorData?.errorDetails;
+  if (Array.isArray(errorDetails)) {
+    for (const detail of errorDetails) {
+      const typed = detail as { "@type"?: string; violations?: unknown; retry_delay?: unknown };
+      if (typeof typed?.["@type"] === "string" && /QuotaFailure/i.test(typed["@type"])) {
+        const violations = Array.isArray(typed.violations) ? typed.violations : [typed.violations];
+        for (const violation of violations) {
+          const ids = [
+            (violation as { quotaId?: unknown })?.quotaId,
+            (violation as { quota_id?: unknown })?.quota_id,
+            (violation as { quota_metric?: unknown })?.quota_metric,
+          ];
+          if (ids.some((id) => typeof id === "string" && /per[_ ]?day/i.test(id))) return true;
+        }
+      }
+      if (
+        typeof typed?.["@type"] === "string" &&
+        /RetryInfo/i.test(typed["@type"]) &&
+        typeof typed.retry_delay === "string"
+      ) {
+        const seconds = Number(typed.retry_delay);
+        if (Number.isFinite(seconds) && seconds * 1_000 > 5 * 60_000) return true;
+      }
+    }
+  }
+
+  // (b) "retry in" with duration over 5 minutes, applied to the SDK message —
+  // which embeds the full response error body and stringified details.
+  const messages = [candidate.message, candidate.customErrorData?.message].filter(
+    (message): message is string => typeof message === "string",
+  );
+  for (const message of messages) {
+    const retryAfterMs = parseRetryInDurationMs(message);
+    if (retryAfterMs !== undefined && retryAfterMs > 5 * 60_000) return true;
+  }
+
+  // (c) explicit "per day" text.
+  if (messages.some((message) => /per\s+[_-]?day/i.test(message))) return true;
+
+  return false;
+}
+
 export function getOnDeviceTimeoutStage(error: unknown): OnDeviceTimeoutStage | undefined {
   if (typeof error !== "object" || error === null || !("code" in error)) return undefined;
   if (error.code === DEVICE_MODEL_INIT_TIMEOUT_CODE) return "initialization";
@@ -177,6 +291,8 @@ export function isRetryableFirebaseAiError(error: unknown): boolean {
   ) {
     return true;
   }
+  // Daily quota exhaustion is a 429 but must not be retried.
+  if (isDailyQuotaExhaustedError(error)) return false;
   const status = getFirebaseAiHttpStatus(error);
   return status !== undefined && RETRYABLE_STATUS_CODES.has(status);
 }
@@ -198,7 +314,15 @@ export async function generateWithModelFallback<T>(
   preference: InferencePreference,
   generate: (modelName: GeminiModelName, signal?: AbortSignal) => Promise<T>,
   options: {
-    onRetry?: (update: { modelName: GeminiModelName; status?: number; attempt: number }) => void;
+    onRetry?: (update: {
+      modelName: GeminiModelName;
+      status?: number;
+      attempt: number;
+      /** The model that hit (or skipped due to) daily-quota exhaustion (Ordem #5). */
+      quotaExhausted?: GeminiModelName;
+      /** True when no request was made — the model was already marked in session. */
+      quotaSkip?: boolean;
+    }) => void;
     localTimeoutMs?: number;
   } = {},
 ): Promise<{ result: T; modelName: GeminiModelName }> {
@@ -230,19 +354,43 @@ export async function generateWithModelFallback<T>(
   const deadline = Date.now() + TOTAL_GENERATION_BUDGET_MS;
   let lastError: unknown;
 
-  for (const [index, step] of RETRY_STEPS.entries()) {
-    if (index > 0) {
+  // Ordem #5 — daily quota circuit breaker. Models marked as daily-quota
+  // exhausted in this session (module scope, with expiry) are skipped without a
+  // request and without the backoff delay. If every model is marked, the chain
+  // still gives the primary a single fresh attempt — the quota may have
+  // reset. Chain order and attempt timeouts are unchanged.
+  const activeSteps = RETRY_STEPS.filter((step) => !isDailyQuotaExhaustedModel(step.modelName));
+  const chain = activeSteps.length > 0 ? activeSteps : [RETRY_STEPS[0]];
+  const nextActiveStep = activeSteps[0];
+  if (nextActiveStep) {
+    for (const [skippedPos, skippedStep] of RETRY_STEPS.entries()) {
+      if (!isDailyQuotaExhaustedModel(skippedStep.modelName)) continue;
+      if (nextActiveStep.modelName === skippedStep.modelName) continue;
+      options.onRetry?.({
+        modelName: nextActiveStep.modelName,
+        status: 429,
+        attempt: skippedPos + 1,
+        quotaExhausted: skippedStep.modelName,
+        quotaSkip: true,
+      });
+    }
+  }
+
+  let skipNextDelay = false;
+
+  for (const [index, step] of chain.entries()) {
+    if (index > 0 && !skipNextDelay) {
       const delay = step.delayMs + Math.floor(Math.random() * step.jitterMs);
       const remaining = deadline - Date.now();
       if (remaining <= delay) break;
       await new Promise<void>((resolve) => setTimeout(resolve, delay));
     }
+    skipNextDelay = false;
 
-    const futureDelayBudget = RETRY_STEPS.slice(index + 1).reduce(
-      (total, nextStep) => total + nextStep.delayMs + nextStep.jitterMs,
-      0,
-    );
-    const remainingAttempts = RETRY_STEPS.length - index;
+    const futureDelayBudget = chain
+      .slice(index + 1)
+      .reduce((total, nextStep) => total + nextStep.delayMs + nextStep.jitterMs, 0);
+    const remainingAttempts = chain.length - index;
     const availableAttemptBudget = deadline - Date.now() - futureDelayBudget;
     const timeoutMs = Math.min(
       GENERATION_TIMEOUT_MS,
@@ -267,7 +415,25 @@ export async function generateWithModelFallback<T>(
       return { result, modelName: step.modelName };
     } catch (error) {
       lastError = error;
-      const nextStep = RETRY_STEPS[index + 1];
+      // Ordem #5 — daily quota 429: not retryable for this model. Mark it and
+      // advance to the next model in the chain immediately (no backoff delay).
+      if (isDailyQuotaExhaustedError(error)) {
+        markDailyQuotaExhausted(
+          step.modelName,
+          error instanceof Error ? parseRetryInDurationMs(error.message) : undefined,
+        );
+        const nextStep = chain[index + 1];
+        if (!nextStep) break;
+        options.onRetry?.({
+          modelName: nextStep.modelName,
+          status: 429,
+          attempt: index + 2,
+          quotaExhausted: step.modelName,
+        });
+        skipNextDelay = true;
+        continue;
+      }
+      const nextStep = chain[index + 1];
       if (!nextStep || !isRetryableFirebaseAiError(error)) break;
       const status = getFirebaseAiHttpStatus(error);
       options.onRetry?.({
@@ -278,6 +444,20 @@ export async function generateWithModelFallback<T>(
     } finally {
       if (timeoutId) clearTimeout(timeoutId);
     }
+  }
+
+  // Ordem #5 — the chain ended on a daily quota limit: user-facing message
+  // explaining the daily service limit was reached. No keys, tokens or raw
+  // error bodies are included.
+  if (lastError !== undefined && isDailyQuotaExhaustedError(lastError)) {
+    const detail = lastError instanceof Error ? lastError.message : "";
+    const retryAfterMs = parseRetryInDurationMs(detail);
+    const retryHint = retryAfterMs
+      ? ` The quota resets in about ${Math.max(1, Math.round(retryAfterMs / 60_000))} minutes.`
+      : "";
+    throw new Error(
+      `The Gemini daily quota is exhausted for every model in the fallback chain.${retryHint} Analysis is unavailable until the quota resets — please try again later.`,
+    );
   }
 
   if (isRetryableFirebaseAiError(lastError)) {

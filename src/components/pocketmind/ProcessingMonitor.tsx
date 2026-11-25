@@ -64,6 +64,11 @@ function eventMessage(event: MonitorEvent, t: ReturnType<typeof useT>) {
       return t("monitor_request_started", event);
     case "retry":
       return t("monitor_retry", { model: event.model, attempt: event.attempt });
+    case "quota-daily":
+      return t("monitor_quota_daily", {
+        exhaustedModel: event.exhaustedModel,
+        nextModel: event.nextModel,
+      });
     case "cloud-retry":
       return t("monitor_cloud_retry");
     case "local-retry":

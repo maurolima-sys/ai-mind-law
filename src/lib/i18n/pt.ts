@@ -26,6 +26,8 @@ export const pt: Translations = {
     "Inicialização local indisponível; a nuvem pode ser usada conforme sua política híbrida",
   monitor_request_started: "Solicitando análise da seção {{section}} de {{total}}",
   monitor_retry: "Tentando novamente com {{model}} (tentativa {{attempt}})",
+  monitor_quota_daily:
+    "Quota diária do modelo {{exhaustedModel}} esgotada; a mudar para {{nextModel}}",
   monitor_cloud_retry: "Solicitação falhou; tentando Cloud AI conforme sua política híbrida",
   monitor_local_retry: "O processamento na nuvem falhou; tentando neste dispositivo",
   monitor_response_cloud: "Firebase informou uma resposta de inferência na nuvem",

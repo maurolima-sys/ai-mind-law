@@ -24,6 +24,7 @@
     "On-device initialization unavailable; cloud may be used under your hybrid policy",
   monitor_request_started: "Requesting analysis of section {{section}} of {{total}}",
   monitor_retry: "Retrying with {{model}} (attempt {{attempt}})",
+  monitor_quota_daily: "Daily quota for {{exhaustedModel}} exhausted; switching to {{nextModel}}",
   monitor_cloud_retry: "Request failed; retrying with Cloud AI under your hybrid policy",
   monitor_local_retry: "Cloud processing failed; trying on this device",
   monitor_response_cloud: "Firebase reported a cloud inference response",

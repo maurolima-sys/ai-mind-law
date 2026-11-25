@@ -48,6 +48,7 @@ export type AnalysisProgressEvent =
   | { type: "model-unavailable" }
   | { type: "request-started"; section: number; total: number }
   | { type: "retry"; model: string; attempt: number; status: number | undefined }
+  | { type: "quota-daily"; exhaustedModel: string; nextModel: string }
   | { type: "cloud-retry" }
   | { type: "local-retry" }
   | { type: "response"; source: InferenceSource }
@@ -515,11 +516,32 @@ export async function analyzeTender(
         modelName: nextModel,
         status,
         attempt,
+        quotaExhausted,
+        quotaSkip,
       }: {
         modelName: GeminiModelName;
         status?: number;
         attempt: number;
+        quotaExhausted?: GeminiModelName;
+        quotaSkip?: boolean;
       }) => {
+        // Ordem #5 — daily quota line: no keys, tokens or raw error bodies.
+        if (quotaExhausted) {
+          if (!quotaSkip) sectionAttempts++;
+          const exhaustedLabel = geminiModelLabel(quotaExhausted);
+          options.onEvent?.({
+            type: "quota-daily",
+            exhaustedModel: exhaustedLabel,
+            nextModel: geminiModelLabel(nextModel),
+          });
+          onProgress({
+            phase: "analyzing",
+            completed: index,
+            total: chunks.length,
+            detail: `Daily quota for ${exhaustedLabel} exhausted. Switching to ${geminiModelLabel(nextModel)}.`,
+          });
+          return;
+        }
         sectionAttempts++;
         options.onEvent?.({
           type: "retry",
