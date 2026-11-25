@@ -378,26 +378,43 @@ export function ProcessingMonitor({
         )}
         {counts && (
           <div className="pm-monitor-results">
-            {/* Completion banner */}
-            <div className="pm-monitor-completion-banner">
-              <CheckCircle2 size={18} className="pm-monitor-completion-icon" aria-hidden="true" />
-              <span>
-                {t("monitor_findings", {
-                  count: counts.reduce((total, item) => total + item.count, 0),
-                })}
-                {inferenceSourceLabel ? ` · ${inferenceSourceLabel}` : ""}
-              </span>
+            <div className="pm-monitor-hero">
+              {/* Success header */}
+              <div className="pm-monitor-hero-header">
+                <div className="pm-monitor-hero-icon" aria-hidden="true">
+                  <CheckCircle2 size={22} />
+                </div>
+                <div>
+                  <p className="pm-monitor-hero-title">
+                    {t("monitor_findings", {
+                      count: counts.reduce((total, item) => total + item.count, 0),
+                    })}
+                  </p>
+                  <p className="pm-monitor-hero-sub">
+                    {inferenceSourceLabel ?? t("monitor_completed")}
+                  </p>
+                </div>
+              </div>
+
+              {/* Stats grid */}
+              <div className="pm-monitor-stats">
+                {counts
+                  .filter((item) => item.count > 0)
+                  .map((item) => (
+                    <div key={item.label} className="pm-monitor-stat">
+                      <strong>{item.count}</strong>
+                      <span>{item.label}</span>
+                    </div>
+                  ))}
+              </div>
+
+              {/* Primary CTA */}
+              <button type="button" className="pm-monitor-cta" onClick={onOpenResults}>
+                <span>{t("monitor_view_results")}</span>
+                <ArrowRight size={18} aria-hidden="true" className="pm-monitor-cta-arrow" />
+              </button>
             </div>
-            <ul>
-              {counts.map((item) => (
-                <li key={item.label}>
-                  <strong>{item.count}</strong> {item.label}
-                </li>
-              ))}
-            </ul>
-            <button type="button" className="pm-button pm-monitor-cta" onClick={onOpenResults}>
-              {t("monitor_view_results")} <ArrowRight size={16} aria-hidden="true" />
-            </button>
+
             <div className="pm-monitor-next-steps">
               <strong>{t("monitor_next_steps_title")}</strong>
               <ol>
