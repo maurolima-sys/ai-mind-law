@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { AlertTriangle, CheckCircle2, Cloud, Laptop, Loader2, ArrowRight } from "lucide-react";
 
 import { useT } from "@/lib/i18n";
 import type { AnalysisProgressEvent } from "@/lib/services/tenderAnalysis";
@@ -31,6 +32,32 @@ export type MonitorState = {
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+type EventTone = "success" | "warning" | "active" | "neutral";
+
+function eventTone(event: MonitorEvent): EventTone {
+  switch (event.type) {
+    case "output-validated":
+    case "text-completed":
+    case "ocr-completed":
+    case "response":
+    case "checking-evidence":
+      return "success";
+    case "retry":
+    case "quota-daily":
+    case "cloud-retry":
+    case "local-retry":
+    case "model-unavailable":
+      return "warning";
+    case "request-started":
+    case "initializing":
+    case "model-download":
+    case "model-ready":
+      return "active";
+    default:
+      return "neutral";
+  }
+}
 
 function eventMessage(event: MonitorEvent, t: ReturnType<typeof useT>) {
   switch (event.type) {
@@ -179,6 +206,45 @@ export function ProcessingMonitor({
     if (el) el.scrollTop = el.scrollHeight;
   }, [monitor.events.length]);
 
+  // Deterministic progress: 0–20 text, 20–40 init, 40–95 sections, 95–100 evidence
+  const sectionEvent = [...monitor.events].reverse().find((e) => e.type === "output-validated") as
+    Extract<MonitorEvent, { type: "output-validated" }> | undefined;
+  const totalSections = sectionEvent?.total ?? 0;
+  const completedSections = sectionEvent?.section ?? 0;
+  const hasText = monitor.events.some(
+    (e) => e.type === "text-completed" || e.type === "text-reused",
+  );
+  const hasInit = monitor.events.some(
+    (e) => e.type === "model-ready" || e.type === "cloud-retry" || e.type === "request-started",
+  );
+  const hasEvidence = monitor.events.some((e) => e.type === "checking-evidence");
+  const determinedPct =
+    monitor.status === "completed"
+      ? 100
+      : hasEvidence
+        ? 97
+        : totalSections > 0
+          ? 40 + Math.round((completedSections / totalSections) * 55)
+          : hasInit
+            ? 35
+            : hasText
+              ? 20
+              : 5;
+
+  // Current inference source label for radar badge
+  const lastResponse = [...monitor.events].reverse().find((e) => e.type === "response") as
+    Extract<MonitorEvent, { type: "response" }> | undefined;
+  const inferenceSourceLabel =
+    lastResponse?.source === "ON_DEVICE"
+      ? "On-device"
+      : lastResponse?.source === "IN_CLOUD"
+        ? "Cloud"
+        : monitor.events.some((e) => e.type === "cloud-retry" || e.type === "quota-daily")
+          ? "Cloud fallback"
+          : monitor.events.some((e) => e.type === "initializing" || e.type === "model-ready")
+            ? "On-device"
+            : null;
+
   const progress =
     latest?.type === "text-page" && latest.total > 0
       ? { value: latest.completed, max: latest.total }
@@ -218,6 +284,16 @@ export function ProcessingMonitor({
           <div className="pm-monitor-sweep" />
           <div className="pm-monitor-center" />
         </div>
+        {inferenceSourceLabel && (
+          <div className="pm-monitor-source-badge">
+            {inferenceSourceLabel === "On-device" ? (
+              <Laptop size={12} aria-hidden="true" />
+            ) : (
+              <Cloud size={12} aria-hidden="true" />
+            )}
+            {inferenceSourceLabel}
+          </div>
+        )}
         {monitor.status === "running" && (
           <button type="button" className="pm-monitor-motion" onClick={() => setPaused(!paused)}>
             {t(paused ? "monitor_resume_motion" : "monitor_pause_motion")}
@@ -243,6 +319,14 @@ export function ProcessingMonitor({
             ) : null}
           </div>
         </div>
+
+        {/* Deterministic progress bar */}
+        <div className="pm-monitor-det-bar" aria-hidden="true">
+          <div
+            className={`pm-monitor-det-fill${monitor.status === "running" ? " is-active" : ""}`}
+            style={{ width: `${determinedPct}%` }}
+          />
+        </div>
         <h2>{t("monitor_activity")}</h2>
         <ol
           ref={listRef}
@@ -251,12 +335,20 @@ export function ProcessingMonitor({
           aria-live="polite"
           aria-atomic="false"
         >
-          {monitor.events.map((event, index) => (
-            <li key={index} className={index === monitor.events.length - 1 ? "is-latest" : ""}>
-              <span className="pm-monitor-dot" aria-hidden="true" />
-              <span>{eventMessage(event, t)}</span>
-            </li>
-          ))}
+          {monitor.events.map((event, index) => {
+            const isLatest = index === monitor.events.length - 1;
+            const tone = eventTone(event);
+            return (
+              <li key={index} className={`${isLatest ? "is-latest" : ""} tone-${tone}`}>
+                <span className={`pm-monitor-dot pm-monitor-dot--${tone}`} aria-hidden="true">
+                  {tone === "success" && <CheckCircle2 size={10} />}
+                  {tone === "warning" && <AlertTriangle size={10} />}
+                  {tone === "active" && isLatest && <Loader2 size={10} className="pm-spin" />}
+                </span>
+                <span>{eventMessage(event, t)}</span>
+              </li>
+            );
+          })}
         </ol>
         <p className="pm-monitor-announcement pm-visually-hidden" role="status">
           {statusLabel}
@@ -279,18 +371,23 @@ export function ProcessingMonitor({
         )}
         {monitor.status === "running" && onCancel && (
           <div className="pm-monitor-actions">
-            <button type="button" className="pm-button pm-button--outline" onClick={onCancel}>
+            <button type="button" className="pm-button pm-button--ghost-cancel" onClick={onCancel}>
               {t("monitor_cancel")}
             </button>
           </div>
         )}
         {counts && (
           <div className="pm-monitor-results">
-            <p>
-              {t("monitor_findings", {
-                count: counts.reduce((total, item) => total + item.count, 0),
-              })}
-            </p>
+            {/* Completion banner */}
+            <div className="pm-monitor-completion-banner">
+              <CheckCircle2 size={18} className="pm-monitor-completion-icon" aria-hidden="true" />
+              <span>
+                {t("monitor_findings", {
+                  count: counts.reduce((total, item) => total + item.count, 0),
+                })}
+                {inferenceSourceLabel ? ` · ${inferenceSourceLabel}` : ""}
+              </span>
+            </div>
             <ul>
               {counts.map((item) => (
                 <li key={item.label}>
@@ -298,8 +395,8 @@ export function ProcessingMonitor({
                 </li>
               ))}
             </ul>
-            <button type="button" className="pm-button" onClick={onOpenResults}>
-              {t("monitor_view_results")}
+            <button type="button" className="pm-button pm-monitor-cta" onClick={onOpenResults}>
+              {t("monitor_view_results")} <ArrowRight size={16} aria-hidden="true" />
             </button>
             <div className="pm-monitor-next-steps">
               <strong>{t("monitor_next_steps_title")}</strong>
@@ -314,7 +411,11 @@ export function ProcessingMonitor({
         )}
         {canClose && !counts && (
           <div className="pm-monitor-actions">
-            <button type="button" className="pm-button pm-button--outline" onClick={onOpenResults}>
+            <button
+              type="button"
+              className="pm-button pm-button--ghost-cancel"
+              onClick={onOpenResults}
+            >
               {t("monitor_back_to_processing")}
             </button>
           </div>
