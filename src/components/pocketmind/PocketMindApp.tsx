@@ -439,6 +439,7 @@ export function PocketMindApp() {
   const [tourRequestedByUser, setTourRequestedByUser] = useState(false);
   const tourButtonRef = useRef<HTMLButtonElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const pendingNavRef = useRef<{ docId: string; screen: string } | null>(null);
 
   useEffect(() => {
     try {
@@ -538,15 +539,25 @@ export function PocketMindApp() {
     setTourActive(true);
   }, [workspaceReady]);
 
-  // Navigate to analysis screen when returning from /processing/run
+  // Navigate to analysis screen when returning from /processing/run.
+  // Read URL params on mount (before workspace loads); apply when ready.
   useEffect(() => {
-    if (!workspaceReady || typeof window === "undefined") return;
+    if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const docParam = params.get("doc");
     const screenParam = params.get("screen");
     if (!docParam) return;
-    setSelectedDocumentId(docParam);
-    if (screenParam === "analysis") setScreen("analysis");
+    window.history.replaceState(null, "", "/");
+    pendingNavRef.current = { docId: docParam, screen: screenParam ?? "" };
+  }, []); // run once on mount — URL is set by run.tsx before navigate
+
+  useEffect(() => {
+    if (!workspaceReady) return;
+    const pending = pendingNavRef.current;
+    if (!pending) return;
+    pendingNavRef.current = null;
+    setSelectedDocumentId(pending.docId);
+    if (pending.screen === "analysis") setScreen("analysis");
   }, [workspaceReady]);
 
   const selectedDocument =
