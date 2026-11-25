@@ -1,0 +1,166 @@
+- generic [ref=e2]:
+  - complementary [ref=e3]:
+    - generic [ref=e18]:
+      - generic [ref=e19]: PocketMind AI
+      - generic [ref=e20]: Tender intelligence
+    - generic [ref=e21]: Workspace
+    - navigation "Main navigation" [ref=e22]:
+      - button "Dashboard" [ref=e23]
+      - button "Documents" [ref=e30]
+      - button "Analysis" [ref=e34]
+      - button "Compliance matrix" [ref=e39]
+      - button "Processing" [ref=e43]
+      - button "Risks" [ref=e48]
+      - button "Projects" [ref=e52]
+      - button "Team Coming soon" [disabled]:
+        - generic: Team
+        - generic: Coming soon
+      - button "Integrations" [ref=e56]
+      - button "Settings" [ref=e70]
+    - generic [ref=e75]:
+      - strong [ref=e79]: Upgrade to Pro
+      - paragraph [ref=e80]: Unlock advanced analysis and team collaboration.
+      - button "View plans" [ref=e81] [cursor=pointer]
+    - generic [ref=e82] [cursor=pointer]:
+      - generic [aria-hidden] [ref=e83]: SS
+      - generic [ref=e84]:
+        - strong [ref=e85]: Sample Studio
+        - generic [ref=e86]: Workspace
+    - generic [ref=e93]:
+      - strong [ref=e94]: Privacy by choice
+      - generic [ref=e95]: Cloud use is always explicit.
+    - link "What's new" [ref=e96] [cursor=pointer]:
+      - /url: /changelog
+    - button "Take a tour" [ref=e101] [cursor=pointer]
+    - generic [ref=e106]:
+      - generic [aria-hidden] [ref=e107]: PM
+      - generic [ref=e108]:
+        - strong [ref=e109]: Procurement workspace
+        - generic [ref=e110]: Local browser workspace
+    - generic [ref=e113]:
+      - link "GitHub ↗" [ref=e114] [cursor=pointer]:
+        - /url: https://github.com/maurolima-sys/ai-mind-law
+      - generic [aria-hidden] [ref=e115]: ·
+      - generic [ref=e116]: v0.4.0 · 9768d4e · 2026-11-25 13:21 UTC
+  - generic [ref=e117]:
+    - banner [ref=e118]:
+      - button "Collapse menu" [expanded] [ref=e119] [cursor=pointer]
+      - generic [ref=e123]:
+        - textbox "Search current workspace" [ref=e127]:
+          - /placeholder: Search documents, requirements, risks...
+        - generic: ⌘K
+      - generic [ref=e128]:
+        - generic [ref=e129] [cursor=pointer]:
+          - generic [ref=e130]: Interface language
+          - generic: 🇬🇧
+          - combobox "Interface language" [ref=e131]:
+            - option "🇬🇧 English" [selected]
+            - option "🇵🇹 Português"
+            - option "🇪🇸 Español"
+        - generic [ref=e132]: Firebase configured · not yet verified
+        - button "Notifications" [ref=e134] [cursor=pointer]
+        - generic [ref=e139]:
+          - generic [ref=e140]: P
+          - generic [ref=e141]:
+            - strong [ref=e142]: Jordan Diaz
+            - generic [ref=e143]: Procurement Team
+    - main [ref=e144]:
+      - generic [ref=e145]:
+        - generic [ref=e146]:
+          - heading "Your document intelligence workspace" [level=1] [ref=e147]
+          - paragraph [ref=e148]: Turn complex tenders into reviewable findings, with source evidence attached.
+        - button "Add a document" [ref=e149] [cursor=pointer]
+      - note [ref=e153]:
+        - generic [ref=e157]:
+          - strong [ref=e158]: Illustrative sample
+          - generic [ref=e159]: DEMO DATA — Illustrative analysis, not extracted from a real procurement document.
+        - button "Open processing options" [ref=e160] [cursor=pointer]
+      - generic [ref=e163]:
+        - generic [ref=e164]:
+          - generic [ref=e165]:
+            - generic [ref=e166]: Welcome back
+            - heading "Your document intelligence workspace" [level=1] [ref=e167]
+            - paragraph [ref=e168]: Turn complex tenders into reviewable findings, with source evidence attached.
+          - generic [ref=e169]:
+            - time [ref=e170]: Wed, 25 Nov 2026
+            - text: Good to see you again.
+        - region "Quick start" [ref=e171]:
+          - generic [ref=e172]:
+            - heading "Try a live document analysis" [level=2] [ref=e173]
+            - paragraph [ref=e174]: Analyse a real 3-page procurement RFP and see how PocketMind AI identifies requirements, deadlines, specifications and risks.
+            - generic [ref=e175]:
+              - generic [ref=e176]: PDF
+              - generic [ref=e177]: Request for Proposal · 3 pages · 245 KB
+          - generic [ref=e178]:
+            - button "Analyse the sample document" [ref=e179] [cursor=pointer]
+            - button "Upload your own document" [ref=e183] [cursor=pointer]
+        - region "Smart Document Discovery" [ref=e187]:
+          - button "Smart Document Discovery BETA" [ref=e188] [cursor=pointer]:
+            - generic [ref=e189]:
+              - generic [ref=e193]: Smart Document Discovery
+              - generic [ref=e194]: BETA
+        - region "Workspace summary" [ref=e197]:
+          - generic [ref=e198]:
+            - generic [ref=e199]: Uploaded documents
+            - generic [ref=e205]: "0"
+            - generic [ref=e207]: Saved in this browser workspace
+            - generic [ref=e208]: "Demo sample: 1"
+          - generic [ref=e209]:
+            - generic [ref=e210]: Uploaded requirements
+            - generic [ref=e217]: "0"
+            - generic [ref=e219]: Across uploaded document analyses
+            - generic [ref=e220]: "Demo sample: 11"
+          - generic [ref=e221]:
+            - generic [ref=e222]: Critical risks in uploads
+            - generic [ref=e227]: "0"
+            - generic [ref=e229]: From uploaded document analyses
+            - generic [ref=e230]: "Demo sample: 1"
+          - generic [ref=e231]:
+            - generic [ref=e232]: Pending upload reviews
+            - generic [ref=e238]: "0"
+            - generic [ref=e240]: Uploaded requirements awaiting a decision
+            - generic [ref=e241]: "Demo sample: 11"
+        - generic [ref=e242]:
+          - generic [ref=e243]:
+            - generic [ref=e244]:
+              - generic [ref=e245]:
+                - heading "Recent tender documents" [level=2] [ref=e246]
+                - paragraph [ref=e247]: Files saved in this browser workspace.
+              - button "View all" [ref=e248] [cursor=pointer]
+            - table [ref=e252]:
+              - rowgroup [ref=e253]:
+                - row [ref=e254]:
+                  - columnheader "Document" [ref=e255]
+                  - columnheader "Project" [ref=e256]
+                  - columnheader "Analysed on" [ref=e257]
+                  - columnheader "Status" [ref=e258]
+                  - columnheader "Actions" [ref=e259]
+              - rowgroup [ref=e260]:
+                - row [ref=e261] [cursor=pointer]:
+                  - cell "PDF Riverside Civic Centre - Construction Tender.pdf Demo 6 pages · 8.4 MB" [ref=e262]:
+                    - generic [ref=e263]:
+                      - generic [ref=e264]: PDF
+                      - generic [ref=e265]:
+                        - strong [ref=e266]: Riverside Civic Centre - Construction Tender.pdf
+                        - generic [ref=e267]: Demo
+                        - generic [ref=e268]: 6 pages · 8.4 MB
+                  - cell "Riverside City Council" [ref=e269]
+                  - cell "—" [ref=e270]
+                  - cell "Prepared sample" [ref=e271]
+                  - cell [ref=e274]:
+                    - button "Open Riverside Civic Centre - Construction Tender.pdf" [ref=e275]
+            - generic [ref=e280]:
+              - generic [ref=e281]: Showing 1 of 1 documents
+              - button "Open current analysis" [ref=e282] [cursor=pointer]
+          - complementary [ref=e283]:
+            - generic [ref=e284]:
+              - heading "Upload a tender" [level=3] [ref=e289]
+              - paragraph [ref=e290]: Extract PDF, DOCX, and XLSX text locally; scanned PDFs may use optional external OCR.
+              - button "Choose processing mode" [ref=e291] [cursor=pointer]
+              - generic [ref=e292]: Supports PDF, DOCX, XLSX (max 50 MB)
+            - generic [ref=e293]:
+              - generic [ref=e294]:
+                - heading "Recent activity" [level=3] [ref=e295]
+                - button "View all" [ref=e296] [cursor=pointer]
+              - list [ref=e297]:
+                - listitem [ref=e298]: Uploaded document activity will appear here.

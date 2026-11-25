@@ -102,7 +102,7 @@ describe("processing provenance", () => {
     renderApp();
     const navigation = await screen.findByRole("navigation", { name: "Main navigation" });
     fireEvent.click(within(navigation).getByRole("button", { name: "Analysis" }));
-    fireEvent.click(screen.getByRole("button", { name: "Qa" }));
+    fireEvent.click(screen.getByRole("button", { name: "Q&A" }));
     const question = screen.getByRole("textbox", { name: "Ask a question about this document" });
     fireEvent.change(question, { target: { value: "A draft question" } });
 
@@ -164,7 +164,7 @@ describe("processing provenance", () => {
     fireEvent.click(screen.getByRole("button", { name: "Processing" }));
     const status = screen.getByRole("region", { name: "Firebase AI Logic status" });
     expect(within(status).getByText("Fictional sample document")).toBeInTheDocument();
-    expect(within(status).getByText("On-device (ON_DEVICE)")).toBeInTheDocument();
+    expect(within(status).getByText("On-device")).toBeInTheDocument();
     expect(within(status).getByText("Completed")).toBeInTheDocument();
     expect(within(status).queryByText("Demo mode")).not.toBeInTheDocument();
   }, 15_000);
@@ -276,7 +276,7 @@ describe("processing provenance", () => {
     expect(within(status).getByText("document.pdf")).toBeInTheDocument();
     expect(within(status).getByText("Uploaded document")).toBeInTheDocument();
     expect(within(status).getByText("External OCR \u00b7 LlamaParse")).toBeInTheDocument();
-    expect(within(status).getByText("Cloud (IN_CLOUD)")).toBeInTheDocument();
+    expect(within(status).getByText("Cloud AI")).toBeInTheDocument();
     expect(
       within(status).getByText("Failed \u00b7 displayed analysis is from an earlier run"),
     ).toBeInTheDocument();

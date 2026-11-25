@@ -4,7 +4,6 @@ import {
   ArrowDownToLine,
   ArrowRight,
   BadgeCheck,
-  Bell,
   BrainCircuit,
   Calendar,
   Check,
@@ -17,7 +16,6 @@ import {
   Cloud,
   Compass,
   Copy,
-  Crown,
   ExternalLink,
   FileCheck2,
   FilePlus2,
@@ -414,6 +412,7 @@ export function PocketMindApp() {
   >({});
   const [cloudResponseReceived, setCloudResponseReceived] = useState(false);
   const [progressDetail, setProgressDetail] = useState("");
+  const [firebasePopoverOpen, setFirebasePopoverOpen] = useState(false);
   const screenRef = useRef(screen);
   const selectedDocumentIdRef = useRef(selectedDocumentId);
   screenRef.current = screen;
@@ -1572,17 +1571,6 @@ export function PocketMindApp() {
           </button>
         </nav>
 
-        <div className="pm-pro-card">
-          <div className="pm-pro-card-header">
-            <Crown size={16} className="pm-crown-icon" aria-hidden="true" />
-            <strong className="pm-collapse-label">{t("sidebar_upgrade_title")}</strong>
-          </div>
-          <p className="pm-collapse-label">{t("sidebar_upgrade_desc")}</p>
-          <button type="button" className="pm-pro-btn" data-tooltip={t("sidebar_view_plans")}>
-            <span className="pm-collapse-label">{t("sidebar_view_plans")}</span>
-          </button>
-        </div>
-
         <div className="pm-workspace-switcher" data-tooltip={t("sidebar_workspace_name")}>
           <div className="pm-avatar-ss" aria-hidden="true">
             SS
@@ -1686,19 +1674,84 @@ export function PocketMindApp() {
           </label>
           <div className="pm-topbar-right">
             <LanguageSelector />
-            <Badge tone={firebaseStatusTone}>
-              <span className="pm-status-dot" />
-              {firebaseStatusLabel}
-            </Badge>
-            <button type="button" className="pm-icon-badge-btn" aria-label="Notifications">
-              <Bell size={18} />
-              <span className="pm-notif-dot" />
-            </button>
+            <div className="pm-firebase-popover-anchor">
+              <button
+                type="button"
+                className={`pm-firebase-badge-btn pm-firebase-badge-btn--${firebaseStatusTone}`}
+                aria-expanded={firebasePopoverOpen}
+                aria-haspopup="true"
+                onClick={() => setFirebasePopoverOpen((o) => !o)}
+              >
+                <span className="pm-status-dot" />
+                {firebaseStatusLabel}
+              </button>
+              {firebasePopoverOpen && (
+                <div
+                  className="pm-firebase-popover"
+                  role="dialog"
+                  aria-label="Firebase AI Logic status"
+                >
+                  <div className="pm-firebase-popover-head">
+                    <strong>Firebase AI Logic</strong>
+                    <button
+                      type="button"
+                      className="pm-icon-button"
+                      aria-label={t("error_dismiss")}
+                      onClick={() => setFirebasePopoverOpen(false)}
+                    >
+                      <X size={13} />
+                    </button>
+                  </div>
+                  <p>
+                    {!firebaseConfigured
+                      ? t("firebase_setup_desc")
+                      : cloudResponseReceived
+                        ? t("firebase_cloud_response_received")
+                        : t("firebase_configured")}
+                  </p>
+                  <div className="pm-firebase-popover-actions">
+                    {!firebaseConfigured ? (
+                      <button
+                        type="button"
+                        className="pm-firebase-action-btn pm-firebase-action-btn--primary"
+                        onClick={() => {
+                          setFirebasePopoverOpen(false);
+                          setScreen("integrations");
+                        }}
+                      >
+                        <Settings size={13} /> {t("sidebar_nav_integrations")}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="pm-firebase-action-btn pm-firebase-action-btn--primary"
+                        onClick={() => {
+                          setFirebasePopoverOpen(false);
+                          setScreen("processing");
+                        }}
+                      >
+                        <ShieldCheck size={13} /> {t("nav_processing")}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="pm-firebase-action-btn"
+                      onClick={() => {
+                        setFirebasePopoverOpen(false);
+                        setScreen("integrations");
+                      }}
+                    >
+                      <BrainCircuit size={13} /> {t("sidebar_nav_integrations")}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
             <div className="pm-user-pill">
-              <div className="pm-avatar pm-avatar--small">P</div>
+              <div className="pm-avatar pm-avatar--small">PM</div>
               <div className="pm-user-text">
-                <strong>Jordan Diaz</strong>
-                <small>Procurement Team</small>
+                <strong>{t("sidebar_user_workspace")}</strong>
+                <small>{t("sidebar_user_session")}</small>
               </div>
             </div>
           </div>
@@ -2535,6 +2588,8 @@ function AnalysisScreen({
 }) {
   const t = useT();
   const [activeTab, setActiveTab] = useState<"analysis" | "summary" | "qa" | "compare">("analysis");
+  const [summaryExpanded, setSummaryExpanded] = useState(false);
+  const [mobileTab, setMobileTab] = useState<"pdf" | "findings">("findings");
   const [analysisPanelOpen, setAnalysisPanelOpen] = useState(true);
   const [zoom, setZoom] = useState(100);
   const format = document.format ?? "pdf";
@@ -2723,14 +2778,23 @@ function AnalysisScreen({
         </div>
       )}
 
-      {/* Summary strip */}
+      {/* Summary strip — collapsible */}
       <section className="pm-summary-strip">
         <div className="pm-summary-icon">
           <Sparkles size={18} />
         </div>
-        <div>
+        <div className="pm-summary-body">
           <strong>{t("summary_title")}</strong>
-          <p>{analysis.summary}</p>
+          <p className={summaryExpanded ? "" : "pm-summary-clamp"}>{analysis.summary}</p>
+          {analysis.summary && analysis.summary.length > 160 && (
+            <button
+              type="button"
+              className="pm-summary-toggle"
+              onClick={() => setSummaryExpanded((v) => !v)}
+            >
+              {summaryExpanded ? t("summary_show_less") : t("summary_show_more")}
+            </button>
+          )}
         </div>
         <div className="pm-summary-meta">
           <span>{analysis.engine}</span>
@@ -2738,11 +2802,35 @@ function AnalysisScreen({
         </div>
       </section>
 
+      {/* Mobile tab switcher (< 900 px) */}
+      <div className="pm-analysis-mobile-tabs" role="tablist" aria-label="Analysis panels">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mobileTab === "pdf"}
+          className={`pm-analysis-mobile-tab${mobileTab === "pdf" ? " is-active" : ""}`}
+          onClick={() => setMobileTab("pdf")}
+        >
+          <FileText size={14} /> PDF
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mobileTab === "findings"}
+          className={`pm-analysis-mobile-tab${mobileTab === "findings" ? " is-active" : ""}`}
+          onClick={() => setMobileTab("findings")}
+        >
+          <ScrollText size={14} /> {t("filter_all")}
+        </button>
+      </div>
+
       {/* Split-screen layout */}
       {panelToggle}
-      <div className={`pm-analysis-layout${analysisPanelOpen ? "" : " is-panel-collapsed"}`}>
+      <div
+        className={`pm-analysis-layout${analysisPanelOpen ? "" : " is-panel-collapsed"} pm-analysis-layout--mobile-${mobileTab}`}
+      >
         {/* Left: source viewer */}
-        <section className="pm-panel pm-source-panel">
+        <section className="pm-panel pm-source-panel pm-analysis-mobile-panel--pdf">
           {/* Viewer toolbar */}
           <div className="pm-viewer-toolbar">
             <div className="pm-toolbar-group">
@@ -2835,32 +2923,42 @@ function AnalysisScreen({
         {/* Right: tabbed analysis panel */}
         <section
           id="pm-analysis-side-panel"
-          className="pm-findings-panel"
+          className="pm-findings-panel pm-analysis-mobile-panel--findings"
           hidden={!analysisPanelOpen}
         >
           {/* Tabs */}
           <div className="pm-analysis-tabs-header">
-            {(["analysis", "summary", "qa", "compare"] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                className={`pm-analysis-tab-btn${activeTab === tab ? " is-active" : ""}`}
-                onClick={() => setActiveTab(tab)}
-              >
-                {tab === "analysis" && <ScrollText size={14} />}
-                {tab === "summary" && <Sparkles size={14} />}
-                {tab === "qa" && <CircleHelp size={14} />}
-                {tab === "compare" && <Table2 size={14} />}
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
-              </button>
-            ))}
+            {(["analysis", "summary", "qa", "compare"] as const).map((tab) => {
+              const tabLabel =
+                tab === "analysis"
+                  ? "Analysis"
+                  : tab === "summary"
+                    ? "Summary"
+                    : tab === "qa"
+                      ? "Q&A"
+                      : "Compare";
+              return (
+                <button
+                  key={tab}
+                  type="button"
+                  className={`pm-analysis-tab-btn${activeTab === tab ? " is-active" : ""}`}
+                  onClick={() => setActiveTab(tab)}
+                >
+                  {tab === "analysis" && <ScrollText size={14} />}
+                  {tab === "summary" && <Sparkles size={14} />}
+                  {tab === "qa" && <CircleHelp size={14} />}
+                  {tab === "compare" && <Table2 size={14} />}
+                  {tabLabel}
+                </button>
+              );
+            })}
           </div>
 
           {activeTab === "analysis" && (
             <>
               {/* Filter chips */}
               <div
-                className="pm-filter-row"
+                className="pm-filter-row pm-filter-row--wrap"
                 aria-label="Filter findings"
                 style={{ padding: "10px 12px 0" }}
               >
@@ -3209,6 +3307,44 @@ function DeleteDocumentDialog({
       </aside>
     </div>,
     window.document.body,
+  );
+}
+
+function AnalysisProgressBar({ detail }: { detail: string }) {
+  const STEPS = ["Extracting text", "Preparing model", "Analyzing sections", "Verifying evidence"];
+  const stepIndex = detail.toLowerCase().includes("extract")
+    ? 0
+    : detail.toLowerCase().includes("prepar") || detail.toLowerCase().includes("download")
+      ? 1
+      : detail.toLowerCase().includes("analyz") || detail.toLowerCase().includes("section")
+        ? 2
+        : detail.toLowerCase().includes("verif")
+          ? 3
+          : 1;
+  const pct = Math.round(((stepIndex + 0.5) / STEPS.length) * 100);
+  return (
+    <div className="pm-progress-bar-wrap" role="status" aria-live="polite">
+      <div className="pm-progress-bar-label">
+        <span>
+          <LoaderCircle size={14} className="pm-spin" />
+          {detail}
+        </span>
+        <span>{pct}%</span>
+      </div>
+      <div className="pm-progress-bar-track">
+        <div className="pm-progress-bar-fill" style={{ width: `${pct}%` }} />
+      </div>
+      <div className="pm-progress-steps">
+        {STEPS.map((_, i) => (
+          <div
+            key={i}
+            className={`pm-progress-step${
+              i < stepIndex ? " is-done" : i === stepIndex ? " is-active" : ""
+            }`}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -4170,10 +4306,7 @@ export function ProcessingScreen({
       )}
 
       {isAnalyzing && !monitor && (
-        <div className="pm-progress-status" role="status">
-          <LoaderCircle size={17} className="pm-spin" />
-          <span>{progressDetail || t("progress_default")}</span>
-        </div>
+        <AnalysisProgressBar detail={progressDetail || t("progress_default")} />
       )}
 
       <div className="pm-flow-footer-card">

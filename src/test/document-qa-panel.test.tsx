@@ -102,7 +102,7 @@ describe("DocumentQaPanel", () => {
     expect(screen.getByRole("log", { name: "Answer" })).toHaveTextContent(
       "The document requires a valid contractor licence.",
     );
-    expect(screen.getByRole("log", { name: "Answer" }).textContent).toContain("ON_DEVICE");
+    expect(screen.getByRole("log", { name: "Answer" }).textContent).toContain("On-device");
   });
 
   it("hides voice controls when disabled in preferences", () => {

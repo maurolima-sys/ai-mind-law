@@ -50,8 +50,8 @@ describe("EvidenceComparisonPanel", () => {
         />
       </LocaleProvider>,
     );
-    expect(screen.getByText(/Cloud \(IN_CLOUD; hybrid selected\)/).textContent).toContain(
-      "IN_CLOUD",
+    expect(screen.getByText(/Cloud AI \(hybrid fallback\)/).textContent).toContain(
+      "hybrid fallback",
     );
   });
 });

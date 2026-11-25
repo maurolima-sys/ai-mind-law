@@ -1,0 +1,36 @@
+- generic [ref=e536]:
+  - banner [ref=e537]:
+    - link "PocketMind AI" [ref=e538] [cursor=pointer]:
+      - /url: /
+    - generic [aria-hidden] [ref=e539]: ·
+    - link "Back to Processing" [ref=e540] [cursor=pointer]:
+      - /url: /
+      - text: ← Back to Processing
+  - main [ref=e541]:
+    - region "Processing intelligence monitor" [ref=e542]:
+      - button "Pause animation" [ref=e547] [cursor=pointer]
+      - generic [ref=e548]:
+        - generic [ref=e549]:
+          - generic [ref=e550]:
+            - heading "Processing intelligence monitor" [active] [level=1] [ref=e551]
+            - paragraph [ref=e552]: Riverside Civic Centre - Construction Tender.pdf
+          - generic [ref=e553]:
+            - text: Processing
+            - paragraph [ref=e554]: 00:00
+        - heading "Live processing activity" [level=2] [ref=e555]
+        - list "Live processing activity" [ref=e556]:
+          - listitem [ref=e557]:
+            - generic [ref=e559]: Document selected
+          - listitem [ref=e560]:
+            - generic [ref=e562]: Using fictional sample text
+          - listitem [ref=e563]:
+            - generic [ref=e565]: Preparing Firebase AI Logic
+          - listitem [ref=e566]:
+            - generic [ref=e568]: On-device initialization unavailable; cloud may be used under your hybrid policy
+          - listitem [ref=e569]:
+            - generic [ref=e571]: Request failed; retrying with Cloud AI under your hybrid policy
+          - listitem [ref=e572]:
+            - generic [ref=e574]: Requesting analysis of section 1 of 2
+        - status [ref=e575]: Processing · Requesting analysis of section 1 of 2
+        - progressbar "Processing" [ref=e577]
+        - button "Cancel analysis" [ref=e579] [cursor=pointer]

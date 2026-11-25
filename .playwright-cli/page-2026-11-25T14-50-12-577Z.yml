@@ -1,0 +1,183 @@
+- generic [ref=e2]:
+  - complementary [ref=e3]:
+    - generic [ref=e18]:
+      - generic [ref=e19]: PocketMind AI
+      - generic [ref=e20]: Tender intelligence
+    - generic [ref=e21]: Workspace
+    - navigation "Main navigation" [ref=e22]:
+      - button "Dashboard" [ref=e23]
+      - button "Documents" [ref=e30]
+      - button "Analysis" [ref=e34]
+      - button "Compliance matrix" [ref=e39]
+      - button "Processing" [ref=e43]
+      - button "Risks" [ref=e48]
+      - button "Projects" [ref=e52]
+      - button "Team Coming soon" [disabled]:
+        - generic: Team
+        - generic: Coming soon
+      - button "Integrations" [ref=e56]
+      - button "Settings" [ref=e70]
+    - generic [ref=e75]:
+      - strong [ref=e79]: Upgrade to Pro
+      - paragraph [ref=e80]: Unlock advanced analysis and team collaboration.
+      - button "View plans" [ref=e81] [cursor=pointer]
+    - generic [ref=e82] [cursor=pointer]:
+      - generic [aria-hidden] [ref=e83]: SS
+      - generic [ref=e84]:
+        - strong [ref=e85]: Sample Studio
+        - generic [ref=e86]: Workspace
+    - generic [ref=e93]:
+      - strong [ref=e94]: Privacy by choice
+      - generic [ref=e95]: Cloud use is always explicit.
+    - link "What's new" [ref=e96] [cursor=pointer]:
+      - /url: /changelog
+    - button "Take a tour" [ref=e101] [cursor=pointer]
+    - generic [ref=e106]:
+      - generic [aria-hidden] [ref=e107]: PM
+      - generic [ref=e108]:
+        - strong [ref=e109]: Procurement workspace
+        - generic [ref=e110]: Local browser workspace
+    - generic [ref=e113]:
+      - link "GitHub ↗" [ref=e114] [cursor=pointer]:
+        - /url: https://github.com/maurolima-sys/ai-mind-law
+      - generic [aria-hidden] [ref=e115]: ·
+      - generic [ref=e116]: v0.4.0 · 9768d4e · 2026-11-25 13:21 UTC
+  - generic [ref=e117]:
+    - banner [ref=e118]:
+      - button "Collapse menu" [expanded] [ref=e119] [cursor=pointer]
+      - generic [ref=e123]:
+        - textbox "Search current workspace" [ref=e127]:
+          - /placeholder: Search documents, requirements, risks...
+        - generic: ⌘K
+      - generic [ref=e128]:
+        - generic [ref=e129] [cursor=pointer]:
+          - generic [ref=e130]: Interface language
+          - generic: 🇬🇧
+          - combobox "Interface language" [ref=e131]:
+            - option "🇬🇧 English" [selected]
+            - option "🇵🇹 Português"
+            - option "🇪🇸 Español"
+        - generic [ref=e132]: Firebase configured · not yet verified
+        - button "Notifications" [ref=e134] [cursor=pointer]
+        - generic [ref=e139]:
+          - generic [ref=e140]: P
+          - generic [ref=e141]:
+            - strong [ref=e142]: Jordan Diaz
+            - generic [ref=e143]: Procurement Team
+    - main [ref=e144]:
+      - generic [ref=e475]:
+        - generic [ref=e476]:
+          - generic [ref=e477]: DOCUMENT ANALYSIS SETUP
+          - heading "Choose how your document is processed" [level=1] [ref=e478]
+          - paragraph [ref=e479]: PocketMind AI gives you flexible processing options. You control your data, every step of the way.
+        - generic [ref=e480]:
+          - button "Local processing RECOMMENDED Supported operations stay on your device. Your document is processed locally in your browser or device. No content leaves your device for supported operations. Private by default Works offline Ideal for sensitive documents" [ref=e481] [cursor=pointer]:
+            - generic [ref=e482]:
+              - generic [ref=e483]: Local processing
+              - generic [ref=e486]: RECOMMENDED
+            - heading "Supported operations stay on your device." [level=4] [ref=e494]
+            - paragraph [ref=e495]: Your document is processed locally in your browser or device. No content leaves your device for supported operations.
+            - list [ref=e496]:
+              - listitem [ref=e497]:
+                - generic [ref=e501]: Private by default
+              - listitem [ref=e502]:
+                - generic [ref=e506]: Works offline
+              - listitem [ref=e507]:
+                - generic [ref=e511]: Ideal for sensitive documents
+          - button "Hybrid · on-device first, cloud fallback POWERFUL I explicitly consent to send my document to a cloud service Your document content may be sent to a cloud service for AI processing. Only enable this if you are comfortable sharing your data. Access to advanced AI models Higher accuracy for complex documents Requires explicit consent" [ref=e512] [cursor=pointer]:
+            - generic [ref=e513]:
+              - generic [ref=e514]: Hybrid · on-device first, cloud fallback
+              - generic [ref=e518]: POWERFUL
+            - generic [ref=e526]:
+              - checkbox "I explicitly consent to send my document to a cloud service" [checked] [active] [ref=e527]
+              - generic [ref=e530]: I explicitly consent to send my document to a cloud service
+            - generic [ref=e531]: Your document content may be sent to a cloud service for AI processing. Only enable this if you are comfortable sharing your data.
+            - list [ref=e535]:
+              - listitem [ref=e536]:
+                - generic [ref=e540]: Access to advanced AI models
+              - listitem [ref=e541]:
+                - generic [ref=e545]: Higher accuracy for complex documents
+              - listitem [ref=e546]:
+                - generic [ref=e550]: Requires explicit consent
+          - button "Demo mode TRY IT Explore with sample data. Use simulated documents to experience PocketMind AI. No real data is processed in this mode. No personal data required Great for evaluation See example insights" [ref=e551] [cursor=pointer]:
+            - generic [ref=e552]:
+              - generic [ref=e553]: Demo mode
+              - generic [ref=e556]: TRY IT
+            - heading "Explore with sample data." [level=4] [ref=e565]
+            - paragraph [ref=e566]: Use simulated documents to experience PocketMind AI. No real data is processed in this mode.
+            - list [ref=e567]:
+              - listitem [ref=e568]:
+                - generic [ref=e572]: No personal data required
+              - listitem [ref=e573]:
+                - generic [ref=e577]: Great for evaluation
+              - listitem [ref=e578]:
+                - generic [ref=e582]: See example insights
+        - generic [ref=e583]:
+          - button "Choose a PDF, DOCX, or XLSX document" [ref=e584]
+          - generic [ref=e585]:
+            - strong [ref=e590]: Drop a tender PDF, DOCX, or XLSX here
+            - generic [ref=e591]: or select a file from your device
+            - button "Choose document" [ref=e592] [cursor=pointer]
+            - generic [ref=e595]: PDF, DOCX, or XLSX · maximum 50 MB · scanned PDFs may use optional external OCR
+        - generic [ref=e596]:
+          - generic [ref=e597]:
+            - generic [ref=e598]: Mode for next analysis
+            - generic [ref=e599]: Hybrid · on-device first, cloud fallback
+          - generic [ref=e603]:
+            - generic [ref=e604]: Inference policy for next analysis
+            - generic [ref=e605]:
+              - generic [ref=e609]: Cloud processing
+              - generic [ref=e610]: On-device first; cloud inference may be used with your consent.
+          - generic [ref=e611]:
+            - button "Confirm and continue →" [ref=e612] [cursor=pointer]
+            - generic [ref=e613]: You can change this later in Settings.
+        - generic [ref=e614]:
+          - generic [ref=e615]:
+            - heading "From document to reviewable findings" [level=4] [ref=e616]
+            - paragraph [ref=e617]: Every finding links back to a source excerpt so a person can verify it.
+            - generic [ref=e618]:
+              - generic [ref=e624]:
+                - strong [ref=e625]: 1. Add document
+                - text: Upload or select a file
+              - generic [ref=e642]:
+                - strong [ref=e643]: 2. Process
+                - text: Using your chosen mode
+              - generic [ref=e652]:
+                - strong [ref=e653]: 3. Extract & structure
+                - text: Information organized with confidence scores
+              - generic [ref=e661]:
+                - strong [ref=e662]: 4. Verified insights
+                - text: Review structured results
+          - generic [ref=e663]:
+            - generic [ref=e664]: Sample output
+            - generic [ref=e665]:
+              - generic [ref=e666]: Invoice number
+              - generic [ref=e667]: Verified
+            - generic [ref=e668]:
+              - generic [ref=e669]: Date
+              - generic [ref=e670]: Verified
+            - generic [ref=e671]:
+              - generic [ref=e672]: Total amount
+              - generic [ref=e673]: Uncertain
+            - generic [ref=e674]:
+              - generic [ref=e675]: Vendor
+              - generic [ref=e676]: Verified
+        - region "Firebase AI Logic status" [ref=e677]:
+          - generic [ref=e678]:
+            - text: Firebase AI Logic
+            - strong [ref=e679]: Configured · no live response yet
+          - generic [ref=e680]:
+            - text: Selected document
+            - strong [ref=e681]: Riverside Civic Centre - Construction Tender.pdf
+          - generic [ref=e682]:
+            - text: Document content
+            - strong [ref=e683]: Fictional sample document
+          - generic [ref=e684]:
+            - text: Text origin
+            - strong [ref=e685]: Prepared sample text · no extraction
+          - generic [ref=e686]:
+            - text: Source of the displayed analysis
+            - strong [ref=e687]: Demo mode
+          - generic [ref=e688]:
+            - text: Latest AI analysis attempt · this session
+            - strong [ref=e689]: No AI analysis attempted this session

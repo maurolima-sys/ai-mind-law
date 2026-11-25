@@ -142,10 +142,10 @@
   risk_csv_origin: "Origin",
 
   // ── Processing mode labels ───────────────────────────────────────────────────
-  mode_on_device: "On-device (ON_DEVICE)",
-  mode_cloud: "Cloud (IN_CLOUD)",
-  mode_cloud_fallback: "Cloud (IN_CLOUD; hybrid selected)",
-  mode_hybrid: "On-device (ON_DEVICE) + cloud (IN_CLOUD)",
+  mode_on_device: "On-device",
+  mode_cloud: "Cloud AI",
+  mode_cloud_fallback: "Cloud AI (hybrid fallback)",
+  mode_hybrid: "Hybrid · on-device + cloud",
   mode_demo: "Demo mode",
   mode_not_analyzed: "Not analyzed",
   mode_source_unknown: "Inference source not recorded",
@@ -333,6 +333,8 @@
 
   // ── Analysis — summary ───────────────────────────────────────────────────────
   summary_title: "Document summary",
+  summary_show_more: "Show more",
+  summary_show_less: "Show less",
 
   // ── Analysis — finding cards ─────────────────────────────────────────────────
   finding_date_not_specified: "Date not specified",

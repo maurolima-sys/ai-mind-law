@@ -143,10 +143,10 @@ export const pt: Translations = {
   risk_csv_source: "Localização de origem",
   risk_csv_origin: "Origem",
 
-  mode_on_device: "No dispositivo (ON_DEVICE)",
-  mode_cloud: "Nuvem (IN_CLOUD)",
-  mode_cloud_fallback: "Nuvem (IN_CLOUD; modo híbrido)",
-  mode_hybrid: "Dispositivo (ON_DEVICE) + nuvem (IN_CLOUD)",
+  mode_on_device: "No dispositivo",
+  mode_cloud: "Cloud AI",
+  mode_cloud_fallback: "Cloud AI (fallback híbrido)",
+  mode_hybrid: "Híbrido · dispositivo + nuvem",
   mode_demo: "Modo demonstração",
   mode_not_analyzed: "Não analisado",
   mode_source_unknown: "Origem da inferência não registada",
@@ -323,6 +323,8 @@ export const pt: Translations = {
   inference_no: "Não",
 
   summary_title: "Resumo do documento",
+  summary_show_more: "Ver mais",
+  summary_show_less: "Ver menos",
 
   finding_date_not_specified: "Data não especificada",
   finding_no_source_page: "Sem página de origem",
