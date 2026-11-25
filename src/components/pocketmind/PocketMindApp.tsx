@@ -3270,8 +3270,8 @@ function DeleteDocumentDialog({
         if (e.target === e.currentTarget) onCancel();
       }}
     >
-      <aside className="pm-source-drawer" style={{ maxWidth: 420, gap: 16 }}>
-        <div className="pm-source-drawer-head">
+      <div className="pm-delete-doc-modal">
+        <div className="pm-delete-doc-modal-head">
           <h3 id="pm-delete-doc-title">{t("doc_delete_dialog_title")}</h3>
           <button
             type="button"
@@ -3282,29 +3282,28 @@ function DeleteDocumentDialog({
             <X size={15} />
           </button>
         </div>
-        <p style={{ fontSize: "0.875rem", color: "var(--pm-ink-soft)" }}>
+        <p className="pm-delete-doc-modal-body">
           {t("doc_delete_dialog_body", { name: document.name })}
         </p>
         {projectLinkCount > 0 && (
-          <p style={{ fontSize: "0.8rem", color: "var(--pm-amber, #b45309)" }}>
-            <AlertTriangle size={13} style={{ display: "inline", marginRight: 4 }} />
+          <p className="pm-delete-doc-modal-warn">
+            <AlertTriangle size={13} aria-hidden="true" />
             {t("doc_delete_dialog_projects", { count: projectLinkCount })}
           </p>
         )}
-        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 8 }}>
+        <div className="pm-delete-doc-modal-actions">
           <button type="button" className="pm-button pm-button--outline" onClick={onCancel}>
             {t("doc_delete_cancel")}
           </button>
           <button
             type="button"
-            className="pm-button pm-button--primary"
-            style={{ background: "var(--pm-red, #dc2626)" }}
+            className="pm-button pm-button--primary pm-delete-doc-modal-confirm"
             onClick={onConfirm}
           >
-            <Trash2 size={15} /> {t("doc_delete_confirm")}
+            <Trash2 size={15} aria-hidden="true" /> {t("doc_delete_confirm")}
           </button>
         </div>
-      </aside>
+      </div>
     </div>,
     window.document.body,
   );

@@ -8038,3 +8038,51 @@
   backdrop-filter: blur(4px);
   padding: 1rem;
 }
+
+/* ── Delete document modal ───────────────────────────────────────────────────── */
+.pm-delete-doc-modal {
+  background: #fff;
+  border: 1px solid var(--pm-line, #e2e8f0);
+  border-radius: 14px;
+  padding: 1.5rem;
+  width: min(440px, calc(100vw - 2rem));
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.pm-delete-doc-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.pm-delete-doc-modal-head h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--pm-ink, #1e293b);
+}
+.pm-delete-doc-modal-body {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--pm-ink-soft, #64748b);
+  line-height: 1.5;
+}
+.pm-delete-doc-modal-warn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--pm-amber, #b45309);
+}
+.pm-delete-doc-modal-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 0.25rem;
+}
+.pm-delete-doc-modal-confirm {
+  background: var(--pm-red, #dc2626) !important;
+}
