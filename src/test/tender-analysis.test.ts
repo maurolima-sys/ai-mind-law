@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  buildAnalysisPrompt,
   chunkTenderText,
   parseTenderResponse,
   requireInferenceSource,
@@ -184,6 +185,23 @@ describe("parseTenderResponse", () => {
     expect(chunks.flatMap((chunk) => chunk.pages.map((page) => page.text)).join("")).toBe(text);
     expect(chunks[1]?.pages.map((page) => page.text).join("")).not.toContain("SECTION 2");
     expect(chunks[2]?.pages.map((page) => page.text).join("")).not.toContain("SECTION 1");
+  });
+});
+
+describe("analysis prompt language", () => {
+  it.each([
+    ["pt", "Portuguese"],
+    ["es", "Spanish"],
+    ["en", "English"],
+  ] as const)("instructs the model to write findings in %s (%s)", (locale, language) => {
+    const prompt = buildAnalysisPrompt(
+      [{ sourceIndex: 1, location: "Page 1", text: "Submit a signed proposal." }],
+      "cloud",
+      locale,
+    );
+
+    expect(prompt).toContain(`in ${language}.`);
+    expect(prompt).toContain("Preserve source excerpts exactly as written");
   });
 });
 

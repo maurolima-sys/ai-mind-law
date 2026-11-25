@@ -31,6 +31,7 @@ import {
 } from "@/lib/services/firebaseAi";
 import { scoreConfidence } from "@/lib/services/evidence";
 import type { InferenceSource } from "@/lib/services/inferenceSource";
+import type { PreferenceLocale } from "@/lib/preferences";
 
 type Chunk = {
   pages: Array<{ sourceIndex: number; location: string; text: string }>;
@@ -172,7 +173,22 @@ function splitOversizedChunk(chunk: Chunk): [Chunk, Chunk] | undefined {
   return first.pages.length && second.pages.length ? [first, second] : undefined;
 }
 
-function buildPrompt(chunk: Chunk, preference: InferencePreference) {
+const ANALYSIS_LANGUAGE_NAMES: Record<PreferenceLocale, string> = {
+  en: "English",
+  pt: "Portuguese",
+  es: "Spanish",
+};
+
+export function buildAnalysisPrompt(
+  pages: Chunk["pages"],
+  preference: InferencePreference,
+  locale: PreferenceLocale = "en",
+) {
+  const chunk = { pages };
+  return buildPrompt(chunk, preference, locale);
+}
+
+function buildPrompt(chunk: Chunk, preference: InferencePreference, locale: PreferenceLocale) {
   const source = chunk.pages
     .map(
       ({ sourceIndex, location, text }) =>
@@ -196,6 +212,7 @@ Never return null for required text fields or evidence excerpts. Use null only f
 `;
 
   return `${instructions}
+OUTPUT LANGUAGE: Write all analysis text (including the summary, descriptions, explanations, notes, missing information, and inconsistencies) in ${ANALYSIS_LANGUAGE_NAMES[locale]}. Keep JSON field names and enum values in their required schema form. Preserve source excerpts exactly as written in the document; do not translate, paraphrase, or alter them.
 SOURCE TEXT:
 ${headingContext}${source}`;
 }
@@ -421,6 +438,7 @@ export async function analyzeTender(
     documentId?: string;
     onEvent?: (event: AnalysisProgressEvent) => void;
     aiProvider?: import("@/lib/preferences").AiProvider;
+    locale?: PreferenceLocale;
   } = {},
 ): Promise<Analysis> {
   const format = options.format ?? "pdf";
@@ -555,7 +573,11 @@ export async function analyzeTender(
       }
       options.onEvent?.({ type: "request-started", section: index + 1, total: chunks.length });
       return currentModel.generateContent(
-        buildPrompt(chunk, forcedCloudFallback ? "cloud" : initialPreference),
+        buildPrompt(
+          chunk,
+          forcedCloudFallback ? "cloud" : initialPreference,
+          options.locale ?? "en",
+        ),
         signal ? { signal } : undefined,
       );
     };
@@ -762,7 +784,7 @@ export async function analyzeTender(
                   { ...page, text: page.text.slice(offset, offset + ON_DEVICE_CHUNK_CHARACTERS) },
                 ],
               };
-              const localPrompt = buildPrompt(localChunk, "local");
+              const localPrompt = buildPrompt(localChunk, "local", options.locale ?? "en");
               const localResult = await generateWithModelFallback("local", (_candidate, signal) => {
                 options.onEvent?.({
                   type: "request-started",

@@ -1270,6 +1270,7 @@ export function PocketMindApp({
           documentId,
           onEvent: (event) => appendMonitor(documentId, event),
           aiProvider: preferences.aiProvider,
+          locale,
         },
       );
     } catch (error) {
