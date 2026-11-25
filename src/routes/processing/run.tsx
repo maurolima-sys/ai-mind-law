@@ -46,7 +46,10 @@ function ProcessingRunPage() {
   }
 
   function handleOpenResults() {
+    const docId = run!.documentId;
     clearRun();
+    const url = `/?doc=${encodeURIComponent(docId)}&screen=analysis`;
+    window.history.replaceState(null, "", url);
     void navigate({ to: "/" });
   }
 

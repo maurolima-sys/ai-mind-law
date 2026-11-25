@@ -538,6 +538,17 @@ export function PocketMindApp() {
     setTourActive(true);
   }, [workspaceReady]);
 
+  // Navigate to analysis screen when returning from /processing/run
+  useEffect(() => {
+    if (!workspaceReady || typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const docParam = params.get("doc");
+    const screenParam = params.get("screen");
+    if (!docParam) return;
+    setSelectedDocumentId(docParam);
+    if (screenParam === "analysis") setScreen("analysis");
+  }, [workspaceReady]);
+
   const selectedDocument =
     documents.find((document) => document.id === selectedDocumentId) ?? documents[0];
   const file = filesByDocumentId[selectedDocumentId] ?? null;
