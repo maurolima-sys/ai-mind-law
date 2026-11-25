@@ -564,7 +564,14 @@ export async function analyzeTender(
     };
     const recordResponse = ({ result, modelName }: Generated, localOnly = false) => {
       sectionAttempts++;
-      const source = requireInferenceSource(result.response.inferenceSource);
+      const explicitSource = result.response.inferenceSource;
+      // Explicitly local requests already know their source — a missing
+      // inferenceSource tag must not discard a successful on-device response.
+      // Cloud responses keep the strict assertion (source stays unverified).
+      const source =
+        explicitSource === undefined && localOnly
+          ? "ON_DEVICE"
+          : requireInferenceSource(explicitSource);
       if (localOnly && source !== "ON_DEVICE") {
         throw new Error("The local fallback returned a response from an unexpected source.");
       }

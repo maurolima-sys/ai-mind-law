@@ -300,9 +300,9 @@ export function isRetryableFirebaseAiError(error: unknown): boolean {
 export function geminiModelLabel(modelName: string): string {
   switch (modelName) {
     case PRIMARY_GEMINI_MODEL:
-      return "Gemini 3.5 Flash";
-    case SECONDARY_GEMINI_MODEL:
       return "Gemini 3.8 Flash";
+    case SECONDARY_GEMINI_MODEL:
+      return "Gemini 3.6 Flash";
     case TERTIARY_GEMINI_MODEL:
       return "Gemini 3.5 Flash-Lite";
     default:

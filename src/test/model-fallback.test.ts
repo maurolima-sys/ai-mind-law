@@ -7,6 +7,7 @@ import {
   getFirebaseAiHttpStatus,
   isInvalidFirebaseAppCheckTokenError,
   isRetryableFirebaseAiError,
+  geminiModelLabel,
   isDailyQuotaExhaustedError,
   isDailyQuotaExhaustedSession,
   markDailyQuotaExhausted,
@@ -47,6 +48,12 @@ describe("Firebase AI retry policy", () => {
     expect(isInvalidFirebaseAppCheckTokenError(new Error("[401] Unauthorized"))).toBe(false);
   });
 
+  it("labels each chain model with its real version", () => {
+    expect(geminiModelLabel(PRIMARY_GEMINI_MODEL)).toBe("Gemini 3.8 Flash");
+    expect(geminiModelLabel(SECONDARY_GEMINI_MODEL)).toBe("Gemini 3.6 Flash");
+    expect(geminiModelLabel(TERTIARY_GEMINI_MODEL)).toBe("Gemini 3.5 Flash-Lite");
+  });
+
   it("walks the documented fallback chain after retryable failures", async () => {
     vi.useFakeTimers();
     const calls: string[] = [];
@@ -74,7 +81,7 @@ describe("Firebase AI retry policy", () => {
     expect([...new Set(calls)]).toEqual([...GEMINI_MODEL_FALLBACK_CHAIN]);
   });
 
-  it("starts with Gemini 3.5 Flash and switches models after a retryable failure", async () => {
+  it("starts with Gemini 3.8 Flash and switches models after a retryable failure", async () => {
     vi.useFakeTimers();
     const calls: string[] = [];
     const request = generateWithModelFallback("cloud", async (modelName) => {
