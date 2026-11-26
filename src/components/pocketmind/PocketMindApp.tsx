@@ -797,14 +797,16 @@ export function PocketMindApp({
 
   async function addDocumentFromUrl(url: string, docId: string, fileName: string) {
     if (documents.some((d) => d.id === docId)) {
-      // Already loaded — just navigate to it
+      // Already loaded — navigate to analysis if it has results, otherwise processing
+      const existing = documents.find((d) => d.id === docId);
       setSelectedDocumentId(docId);
+      selectedDocumentIdRef.current = docId;
       setCloudConsent(false);
       setEvidenceCloudConsent(false);
       setSelectedRequirementId(null);
       setActiveExcerpt(null);
       setActivePage(1);
-      setScreen("processing");
+      setScreen(existing?.analysis ? "analysis" : "processing");
       return;
     }
     if (!workspaceReady || workspaceError) {
