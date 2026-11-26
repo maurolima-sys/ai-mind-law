@@ -20,6 +20,7 @@ import { Route as ProcessingRouteImport } from './routes/processing'
 import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as RisksRouteImport } from './routes/risks'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as AnalysisIndexRouteImport } from './routes/analysis/index'
 import { Route as AnalysisDocIdRouteImport } from './routes/analysis/$docId'
 import { Route as ProcessingRunRouteImport } from './routes/processing/run'
 
@@ -78,6 +79,11 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AnalysisIndexRoute = AnalysisIndexRouteImport.update({
+  id: '/analysis/',
+  path: '/analysis/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AnalysisDocIdRoute = AnalysisDocIdRouteImport.update({
   id: '/analysis/$docId',
   path: '/analysis/$docId',
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/analysis/$docId': typeof AnalysisDocIdRoute
   '/processing/run': typeof ProcessingRunRoute
+  '/analysis/': typeof AnalysisIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -118,6 +125,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/analysis/$docId': typeof AnalysisDocIdRoute
   '/processing/run': typeof ProcessingRunRoute
+  '/analysis': typeof AnalysisIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -134,6 +142,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/analysis/$docId': typeof AnalysisDocIdRoute
   '/processing/run': typeof ProcessingRunRoute
+  '/analysis/': typeof AnalysisIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -151,6 +160,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/analysis/$docId'
     | '/processing/run'
+    | '/analysis/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -166,6 +176,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/analysis/$docId'
     | '/processing/run'
+    | '/analysis'
   id:
     | '__root__'
     | '/'
@@ -181,6 +192,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/analysis/$docId'
     | '/processing/run'
+    | '/analysis/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -196,6 +208,7 @@ export interface RootRouteChildren {
   RisksRoute: typeof RisksRoute
   SettingsRoute: typeof SettingsRoute
   AnalysisDocIdRoute: typeof AnalysisDocIdRoute
+  AnalysisIndexRoute: typeof AnalysisIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -277,6 +290,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/analysis/': {
+      id: '/analysis/'
+      path: '/analysis'
+      fullPath: '/analysis/'
+      preLoaderRoute: typeof AnalysisIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/analysis/$docId': {
       id: '/analysis/$docId'
       path: '/analysis/$docId'
@@ -319,6 +339,7 @@ const rootRouteChildren: RootRouteChildren = {
   RisksRoute: RisksRoute,
   SettingsRoute: SettingsRoute,
   AnalysisDocIdRoute: AnalysisDocIdRoute,
+  AnalysisIndexRoute: AnalysisIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
