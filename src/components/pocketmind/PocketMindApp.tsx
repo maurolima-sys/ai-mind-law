@@ -413,12 +413,18 @@ export function PocketMindApp({
   const location = useLocation();
   const screen = pathToScreen(location.pathname);
   // setScreen navigates to the corresponding route.
-  // For "analysis", always navigate to /analysis/$docId using the current selectedDocumentId.
+  // For "analysis", navigate to /analysis/$docId.
+  // For "processing", pass ?doc= so the mounted instance knows which document to use.
   function setScreen(s: Screen) {
     if (s === "analysis") {
       void navigate({
         to: "/analysis/$docId",
         params: { docId: selectedDocumentIdRef.current },
+      });
+    } else if (s === "processing") {
+      void navigate({
+        to: "/processing",
+        search: { doc: selectedDocumentIdRef.current },
       });
     } else {
       void navigate({ to: SCREEN_PATHS[s] });
@@ -1959,6 +1965,7 @@ export function PocketMindApp({
               }
               onSelectDocument={(id) => {
                 setSelectedDocumentId(id);
+                selectedDocumentIdRef.current = id;
                 setCloudConsent(false);
                 setEvidenceCloudConsent(false);
                 setSelectedEvidenceId("");
@@ -1981,6 +1988,7 @@ export function PocketMindApp({
               onAddDocument={() => setUploadModalOpen(true)}
               onOpenDocument={(id) => {
                 setSelectedDocumentId(id);
+                selectedDocumentIdRef.current = id;
                 setCloudConsent(false);
                 setEvidenceCloudConsent(false);
                 setSelectedEvidenceId("");
@@ -2012,6 +2020,7 @@ export function PocketMindApp({
               onRemoveLink={removeProjectDocument}
               onOpenDocument={(id) => {
                 setSelectedDocumentId(id);
+                selectedDocumentIdRef.current = id;
                 setCloudConsent(false);
                 setEvidenceCloudConsent(false);
                 setSelectedEvidenceId("");
@@ -2107,6 +2116,7 @@ export function PocketMindApp({
               onOpenProcessing={() => setScreen("processing")}
               onOpenSource={(documentId, sourceIndex, excerpt) => {
                 setSelectedDocumentId(documentId);
+                selectedDocumentIdRef.current = documentId;
                 setCloudConsent(false);
                 setEvidenceCloudConsent(false);
                 setSelectedEvidenceId("");
