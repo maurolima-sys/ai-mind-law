@@ -368,9 +368,15 @@ describe("analysis activity events", () => {
     }));
 
     const events: AnalysisProgressEvent[] = [];
-    const outcome = await analyzeTender(["x".repeat(6000)], "hybrid", () => {}, () => {}, {
-      onEvent: (event) => events.push(event),
-    }).then(
+    const outcome = await analyzeTender(
+      ["x".repeat(6000)],
+      "hybrid",
+      () => {},
+      () => {},
+      {
+        onEvent: (event) => events.push(event),
+      },
+    ).then(
       (result) => ({ ok: true as const, result }),
       (error: unknown) => ({ ok: false as const, error }),
     );

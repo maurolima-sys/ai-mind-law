@@ -787,9 +787,7 @@ export async function analyzeTender(
               let succeeded = false;
               while (subSize >= MIN_ON_DEVICE_SPLIT_CHARACTERS) {
                 const localChunk = {
-                  pages: [
-                    { ...page, text: page.text.slice(offset, offset + subSize) },
-                  ],
+                  pages: [{ ...page, text: page.text.slice(offset, offset + subSize) }],
                 };
                 const localPrompt = buildPrompt(localChunk, "local", options.locale ?? "en");
                 try {
