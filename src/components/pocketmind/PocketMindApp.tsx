@@ -1397,7 +1397,7 @@ export function PocketMindApp({
     setIsAnalyzing(true);
     setErrorMessage("");
     startMonitor(selectedDocument);
-    void navigate({ to: "/processing/run" });
+    void navigate({ to: "/monitor" });
     try {
       let pages: string[];
       let locations: string[];
@@ -1508,7 +1508,7 @@ export function PocketMindApp({
     setIsAnalyzing(true);
     setErrorMessage("");
     startMonitor(selectedDocument);
-    void navigate({ to: "/processing/run" });
+    void navigate({ to: "/monitor" });
     appendMonitor(selectedDocument.id, { type: "text-reused" });
     try {
       setProgressDetail("Analyzing the text extracted in this browser");
@@ -1554,7 +1554,7 @@ export function PocketMindApp({
     setIsAnalyzing(true);
     setErrorMessage("");
     startMonitor(selectedDocument);
-    void navigate({ to: "/processing/run" });
+    void navigate({ to: "/monitor" });
     try {
       setProgressDetail(
         `Sending the PDF to LlamaParse to process ${targetPages.length} sparse pages`,

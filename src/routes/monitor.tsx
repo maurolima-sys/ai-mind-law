@@ -6,7 +6,7 @@ import { useAnalysisRun } from "@/lib/analysisRunContext";
 import { useT } from "@/lib/i18n";
 import { loadPreferences } from "@/lib/preferences";
 
-export const Route = createFileRoute("/processing/run")({
+export const Route = createFileRoute("/monitor")({
   head: () => ({
     meta: [{ title: "Processing — PocketMind AI" }],
   }),

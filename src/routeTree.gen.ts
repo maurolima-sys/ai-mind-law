@@ -16,13 +16,13 @@ import { Route as DocumentsRouteImport } from './routes/documents'
 import { Route as EvaluationRouteImport } from './routes/evaluation'
 import { Route as IntegrationsRouteImport } from './routes/integrations'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as MonitorRouteImport } from './routes/monitor'
 import { Route as ProcessingRouteImport } from './routes/processing'
 import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as RisksRouteImport } from './routes/risks'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as AnalysisIndexRouteImport } from './routes/analysis/index'
 import { Route as AnalysisDocIdRouteImport } from './routes/analysis/$docId'
-import { Route as ProcessingRunRouteImport } from './routes/processing/run'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -59,6 +59,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MonitorRoute = MonitorRouteImport.update({
+  id: '/monitor',
+  path: '/monitor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProcessingRoute = ProcessingRouteImport.update({
   id: '/processing',
   path: '/processing',
@@ -89,11 +94,6 @@ const AnalysisDocIdRoute = AnalysisDocIdRouteImport.update({
   path: '/analysis/$docId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProcessingRunRoute = ProcessingRunRouteImport.update({
-  id: '/run',
-  path: '/run',
-  getParentRoute: () => ProcessingRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -103,12 +103,12 @@ export interface FileRoutesByFullPath {
   '/evaluation': typeof EvaluationRoute
   '/integrations': typeof IntegrationsRoute
   '/login': typeof LoginRoute
-  '/processing': typeof ProcessingRouteWithChildren
+  '/monitor': typeof MonitorRoute
+  '/processing': typeof ProcessingRoute
   '/projects': typeof ProjectsRoute
   '/risks': typeof RisksRoute
   '/settings': typeof SettingsRoute
   '/analysis/$docId': typeof AnalysisDocIdRoute
-  '/processing/run': typeof ProcessingRunRoute
   '/analysis/': typeof AnalysisIndexRoute
 }
 export interface FileRoutesByTo {
@@ -119,12 +119,12 @@ export interface FileRoutesByTo {
   '/evaluation': typeof EvaluationRoute
   '/integrations': typeof IntegrationsRoute
   '/login': typeof LoginRoute
-  '/processing': typeof ProcessingRouteWithChildren
+  '/monitor': typeof MonitorRoute
+  '/processing': typeof ProcessingRoute
   '/projects': typeof ProjectsRoute
   '/risks': typeof RisksRoute
   '/settings': typeof SettingsRoute
   '/analysis/$docId': typeof AnalysisDocIdRoute
-  '/processing/run': typeof ProcessingRunRoute
   '/analysis': typeof AnalysisIndexRoute
 }
 export interface FileRoutesById {
@@ -136,12 +136,12 @@ export interface FileRoutesById {
   '/evaluation': typeof EvaluationRoute
   '/integrations': typeof IntegrationsRoute
   '/login': typeof LoginRoute
-  '/processing': typeof ProcessingRouteWithChildren
+  '/monitor': typeof MonitorRoute
+  '/processing': typeof ProcessingRoute
   '/projects': typeof ProjectsRoute
   '/risks': typeof RisksRoute
   '/settings': typeof SettingsRoute
   '/analysis/$docId': typeof AnalysisDocIdRoute
-  '/processing/run': typeof ProcessingRunRoute
   '/analysis/': typeof AnalysisIndexRoute
 }
 export interface FileRouteTypes {
@@ -154,12 +154,12 @@ export interface FileRouteTypes {
     | '/evaluation'
     | '/integrations'
     | '/login'
+    | '/monitor'
     | '/processing'
     | '/projects'
     | '/risks'
     | '/settings'
     | '/analysis/$docId'
-    | '/processing/run'
     | '/analysis/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -170,12 +170,12 @@ export interface FileRouteTypes {
     | '/evaluation'
     | '/integrations'
     | '/login'
+    | '/monitor'
     | '/processing'
     | '/projects'
     | '/risks'
     | '/settings'
     | '/analysis/$docId'
-    | '/processing/run'
     | '/analysis'
   id:
     | '__root__'
@@ -186,12 +186,12 @@ export interface FileRouteTypes {
     | '/evaluation'
     | '/integrations'
     | '/login'
+    | '/monitor'
     | '/processing'
     | '/projects'
     | '/risks'
     | '/settings'
     | '/analysis/$docId'
-    | '/processing/run'
     | '/analysis/'
   fileRoutesById: FileRoutesById
 }
@@ -203,7 +203,8 @@ export interface RootRouteChildren {
   EvaluationRoute: typeof EvaluationRoute
   IntegrationsRoute: typeof IntegrationsRoute
   LoginRoute: typeof LoginRoute
-  ProcessingRoute: typeof ProcessingRouteWithChildren
+  MonitorRoute: typeof MonitorRoute
+  ProcessingRoute: typeof ProcessingRoute
   ProjectsRoute: typeof ProjectsRoute
   RisksRoute: typeof RisksRoute
   SettingsRoute: typeof SettingsRoute
@@ -262,6 +263,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/monitor': {
+      id: '/monitor'
+      path: '/monitor'
+      fullPath: '/monitor'
+      preLoaderRoute: typeof MonitorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/processing': {
       id: '/processing'
       path: '/processing'
@@ -304,27 +312,8 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnalysisDocIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/processing/run': {
-      id: '/processing/run'
-      path: '/run'
-      fullPath: '/processing/run'
-      preLoaderRoute: typeof ProcessingRunRouteImport
-      parentRoute: typeof ProcessingRoute
-    }
   }
 }
-
-interface ProcessingRouteChildren {
-  ProcessingRunRoute: typeof ProcessingRunRoute
-}
-
-const ProcessingRouteChildren: ProcessingRouteChildren = {
-  ProcessingRunRoute: ProcessingRunRoute,
-}
-
-const ProcessingRouteWithChildren = ProcessingRoute._addFileChildren(
-  ProcessingRouteChildren,
-)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -334,7 +323,8 @@ const rootRouteChildren: RootRouteChildren = {
   EvaluationRoute: EvaluationRoute,
   IntegrationsRoute: IntegrationsRoute,
   LoginRoute: LoginRoute,
-  ProcessingRoute: ProcessingRouteWithChildren,
+  MonitorRoute: MonitorRoute,
+  ProcessingRoute: ProcessingRoute,
   ProjectsRoute: ProjectsRoute,
   RisksRoute: RisksRoute,
   SettingsRoute: SettingsRoute,

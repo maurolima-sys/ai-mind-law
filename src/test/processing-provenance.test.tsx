@@ -3,6 +3,7 @@ import { act, cleanup, fireEvent, render, screen, within } from "@testing-librar
 import {
   createMemoryHistory,
   createRootRoute,
+  createRoute,
   createRouter,
   RouterProvider,
 } from "@tanstack/react-router";
@@ -55,7 +56,17 @@ function renderApp() {
       </LocaleProvider>
     ),
   });
-  const router = createRouter({ routeTree: root, history: createMemoryHistory() });
+  // Stub /monitor so navigate({ to: "/monitor" }) doesn't unmount PocketMindApp
+  const monitorRoute = createRoute({
+    getParentRoute: () => root,
+    path: "/monitor",
+    component: () => null,
+  });
+  const router = createRouter({
+    routeTree: root.addChildren([monitorRoute]),
+    history: createMemoryHistory(),
+    defaultNotFoundComponent: () => null,
+  });
   render(<RouterProvider router={router} />);
 }
 
@@ -132,12 +143,22 @@ describe("processing provenance", () => {
     const navigation = await screen.findByRole("navigation", { name: "Main navigation" });
     // "Add a document" now opens an upload modal; reach processing via the nav.
     fireEvent.click(within(navigation).getByRole("button", { name: "Processing" }));
+    {
+      const status = screen.getByRole("region", { name: "Firebase AI Logic status" });
+      expect(within(status).getByText("Fictional sample document")).toBeInTheDocument();
+      expect(within(status).getByText("Demo mode")).toBeInTheDocument();
+      expect(within(status).getByText("No AI analysis attempted this session")).toBeInTheDocument();
+    }
+
+    fireEvent.click(screen.getByRole("button", { name: /confirm and continue/i }));
+    // Analysis fails; navigate back to processing to see the status
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Processing" }));
     const status = screen.getByRole("region", { name: "Firebase AI Logic status" });
     expect(within(status).getByText("Fictional sample document")).toBeInTheDocument();
     expect(within(status).getByText("Demo mode")).toBeInTheDocument();
-    expect(within(status).getByText("No AI analysis attempted this session")).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: /confirm and continue/i }));
     expect(
       await within(status).findByText("Failed \u00b7 displayed analysis is from an earlier run"),
     ).toBeInTheDocument();
@@ -164,7 +185,9 @@ describe("processing provenance", () => {
     fireEvent.click(within(navigation).getByRole("button", { name: "Processing" }));
     fireEvent.click(screen.getByRole("button", { name: /confirm and continue/i }));
     // After analysis completes the run state is set; navigate back to processing to see status
-    await screen.findByText("Completed");
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
     fireEvent.click(screen.getByRole("button", { name: "Processing" }));
     const status = screen.getByRole("region", { name: "Firebase AI Logic status" });
     expect(within(status).getByText("Fictional sample document")).toBeInTheDocument();
@@ -187,7 +210,9 @@ describe("processing provenance", () => {
     fireEvent.click(within(navigation).getByRole("button", { name: "Processing" }));
     fireEvent.click(screen.getByRole("button", { name: /confirm and continue/i }));
     // Analysis completes; run state is updated
-    await screen.findByText("Completed");
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
     // Navigate to analysis screen via sidebar
     fireEvent.click(screen.getByRole("button", { name: "Analysis" }));
     expect(
