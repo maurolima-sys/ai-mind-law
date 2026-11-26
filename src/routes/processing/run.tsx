@@ -21,11 +21,14 @@ function ProcessingRunPage() {
   const cancelTriggerRef = useRef<HTMLButtonElement>(null);
   const sectionSoundEnabled = loadPreferences().sectionSoundEnabled;
 
-  // Redirect to / if there is no run
+  // Redirect to / if there is no run — defer one tick so React can flush
+  // the startRun state update before this effect evaluates.
   useEffect(() => {
-    if (!run) {
+    if (run) return;
+    const id = setTimeout(() => {
       void navigate({ to: "/" });
-    }
+    }, 50);
+    return () => clearTimeout(id);
   }, [run, navigate]);
 
   if (!run) return null;

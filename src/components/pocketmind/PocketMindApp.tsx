@@ -1397,6 +1397,7 @@ export function PocketMindApp({
     setIsAnalyzing(true);
     setErrorMessage("");
     startMonitor(selectedDocument);
+    void navigate({ to: "/processing/run" });
     try {
       let pages: string[];
       let locations: string[];
@@ -1462,7 +1463,6 @@ export function PocketMindApp({
         // Stay on the Processing screen so the user can choose OCR or proceed with extracted text
         return;
       }
-      void navigate({ to: "/processing/run" });
       if (selectedDocument.source === "upload") {
         const updatedDocument: DocumentRecord = {
           ...selectedDocument,
