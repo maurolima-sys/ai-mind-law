@@ -1,0 +1,156 @@
+{
+  "document": "request_for_proposal.pdf",
+  "analysis": {
+    "mode": "cloud",
+    "processingSource": "cloud-fallback",
+    "engine": "Firebase AI Logic · cloud",
+    "model": "Gemini 3.6 Flash",
+    "summary": "The Town of Lebanon, Maine is requesting proposals from qualified Design Build firms to provide design and construction services for a new approximately 25,000 SF public safety facility, tentatively located at Merchant's Row.",
+    "requirements": [
+      {
+        "id": "upload-1795630654570-rh9a2f-ai-r1-1",
+        "description": "Submit a Design Build proposal and completed Proposal Form.",
+        "category": "Documentation",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 1,
+          "excerpt": "Interested Design Build firms should submit a Design Build proposal and the completed Proposal Form",
+          "verified": true,
+          "sourceIndex": 1,
+          "sourceLocation": "Page 1"
+        }
+      },
+      {
+        "id": "upload-1795630654570-rh9a2f-ai-r1-2",
+        "description": "Provide design services for architectural, geotechnical (including clearing and grubbing site for Geotech work), civil, and structural engineering as required by code.",
+        "category": "Technical",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 1,
+          "excerpt": "Design Builder will include design services for all architectural design, geotechnical (inclusive of the cost to clear and grub site necessary to perform Geotech work), civil, and structural engineering as required by code",
+          "verified": true,
+          "sourceIndex": 1,
+          "sourceLocation": "Page 1"
+        }
+      },
+      {
+        "id": "upload-1795630654570-rh9a2f-ai-r1-3",
+        "description": "Participate in preconstruction phase by providing programming advice, options, market knowledge, construction methods, and constructability expertise.",
+        "category": "Technical",
+        "mandatory": true,
+        "confidence": 0.95,
+        "evidence": {
+          "page": 1,
+          "excerpt": "The Design Build team will be expected to participate in the preconstruction phase of the work by providing strong market knowledge and experience, advising on practical construction means and methods",
+          "verified": true,
+          "sourceIndex": 1,
+          "sourceLocation": "Page 1"
+        }
+      }
+    ],
+    "deadlines": [
+      {
+        "id": "upload-1795630654570-rh9a2f-ai-d1-1",
+        "description": "RFP Issuance Date",
+        "date": "2023-05-11",
+        "relatedRequirement": null,
+        "evidence": {
+          "page": 1,
+          "excerpt": "Date: May 11, 2023",
+          "verified": true,
+          "sourceIndex": 1,
+          "sourceLocation": "Page 1"
+        }
+      }
+    ],
+    "specifications": [
+      {
+        "id": "upload-1795630654570-rh9a2f-ai-s1-1",
+        "item": "New Public Safety Facility",
+        "quantity": "25000",
+        "unit": "SF",
+        "details": "Includes dormitory space, support administration spaces, site improvements, and required serving systems.",
+        "notes": "Assume Merchant's Row location for proposal, subject to pre-construction engineering analysis.",
+        "evidence": {
+          "page": 1,
+          "excerpt": "an approximately 25,000 SF new facility, dormitory space, a 2,700 SF municipal multi-purpose meeting room with an option for temporary partition, support administration spaces, site improvements and all systems required to serve the newly constructed space.",
+          "verified": true,
+          "sourceIndex": 1,
+          "sourceLocation": "Page 1"
+        }
+      },
+      {
+        "id": "upload-1795630654570-rh9a2f-ai-s1-2",
+        "item": "Municipal Multi-Purpose Meeting Room",
+        "quantity": "2700",
+        "unit": "SF",
+        "details": "Includes an option for a temporary partition.",
+        "notes": "",
+        "evidence": {
+          "page": 1,
+          "excerpt": "a 2,700 SF municipal multi-purpose meeting room with an option for temporary partition",
+          "verified": true,
+          "sourceIndex": 1,
+          "sourceLocation": "Page 1"
+        }
+      }
+    ],
+    "risks": [
+      {
+        "id": "upload-1795630654570-rh9a2f-ai-k1-1",
+        "title": "Site Suitability Uncertainty",
+        "severity": "Medium",
+        "kind": "detected",
+        "explanation": "The primary site at Merchant's Row is not guaranteed to be suitable and requires engineering analysis during pre-construction services to confirm.",
+        "evidence": {
+          "page": 1,
+          "excerpt": "it is expected that the engineering analysis slated to take place during the scope of pre-construction services will disclose whether this location is suitable for the new facility.",
+          "verified": true,
+          "sourceIndex": 1,
+          "sourceLocation": "Page 1"
+        }
+      },
+      {
+        "id": "upload-1795630654570-rh9a2f-ai-k1-2",
+        "title": "Unfinalized Scope of Work",
+        "severity": "Medium",
+        "kind": "detected",
+        "explanation": "The full scope of work is currently unfinalized, which could lead to scope changes or cost adjustments.",
+        "evidence": {
+          "page": 1,
+          "excerpt": "The full scope of work remains to be finalized",
+          "verified": true,
+          "sourceIndex": 1,
+          "sourceLocation": "Page 1"
+        }
+      }
+    ],
+    "missing": [
+      "Proposal submission deadline date and time",
+      "Project budget or estimated financial limit",
+      "Evaluation criteria and scoring weighting for proposals"
+    ],
+    "inconsistencies": [],
+    "generatedAt": "2026-11-25T18:19:19.932Z",
+    "executionReport": {
+      "totalSections": 1,
+      "completedSections": 1,
+      "onDeviceSections": 0,
+      "cloudSections": 0,
+      "cloudFallbackSections": 1,
+      "totalDurationMs": 99246,
+      "sections": [
+        {
+          "section": 1,
+          "total": 1,
+          "source": "CLOUD_FALLBACK",
+          "attempts": 2,
+          "durationMs": 99246,
+          "timedOut": false
+        }
+      ]
+    }
+  }
+}

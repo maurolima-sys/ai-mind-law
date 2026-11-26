@@ -77,6 +77,8 @@ import { buildLabel } from "@/lib/buildInfo";
 import { DocumentQaPanel } from "@/components/pocketmind/DocumentQaPanel";
 import { EvidenceComparisonPanel } from "@/components/pocketmind/EvidenceComparisonPanel";
 import { GuidedTour, hasSeenTour } from "@/components/pocketmind/GuidedTour";
+import { GuidePointer } from "@/components/pocketmind/GuidePointer";
+import { UploadDocumentModal } from "@/components/pocketmind/UploadDocumentModal";
 import { SmartDiscoveryPanel } from "@/components/pocketmind/SmartDiscoveryPanel";
 import { IntegrationsScreen } from "@/components/pocketmind/IntegrationsScreen";
 import { LanguageSelector } from "@/components/pocketmind/LanguageSelector";
@@ -162,7 +164,7 @@ import {
   saveSidebarExpanded,
 } from "@/lib/layoutPreferences";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
   CATEGORIES,
@@ -192,6 +194,30 @@ type Screen =
   | "settings"
   | "integrations"
   | "projects";
+
+const SCREEN_PATHS: Record<Screen, string> = {
+  overview: "/",
+  library: "/documents",
+  analysis: "/analysis",
+  compliance: "/compliance",
+  processing: "/processing",
+  risks: "/risks",
+  settings: "/settings",
+  integrations: "/integrations",
+  projects: "/projects",
+};
+
+function pathToScreen(pathname: string): Screen {
+  if (pathname.startsWith("/analysis")) return "analysis";
+  if (pathname.startsWith("/compliance")) return "compliance";
+  if (pathname.startsWith("/processing")) return "processing";
+  if (pathname.startsWith("/risks")) return "risks";
+  if (pathname.startsWith("/settings")) return "settings";
+  if (pathname.startsWith("/integrations")) return "integrations";
+  if (pathname.startsWith("/projects")) return "projects";
+  if (pathname.startsWith("/documents")) return "library";
+  return "overview";
+}
 type ProcessingChoice = "demo" | InferencePreference;
 type ExternalOcrAvailability = "checking" | "enabled" | "disabled" | "error";
 type FindingKind = "Requirement" | "Deadline" | "Specification" | "Risk" | "Missing information";
@@ -383,7 +409,12 @@ export function PocketMindApp({
   );
   const [documents, setDocuments] = useState<DocumentRecord[]>(() => [buildDemoDocument()]);
   const [selectedDocumentId, setSelectedDocumentId] = useState(initialDocumentId);
-  const [screen, setScreen] = useState<Screen>(initialScreen);
+  const location = useLocation();
+  const screen = pathToScreen(location.pathname);
+  // setScreen navigates to the corresponding route
+  function setScreen(s: Screen) {
+    void navigate({ to: SCREEN_PATHS[s] });
+  }
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [search, setSearch] = useState("");
   const [questionDraftsByDocumentId, setQuestionDraftsByDocumentId] = useState<
@@ -450,6 +481,7 @@ export function PocketMindApp({
       }
     : null;
   const [errorMessage, setErrorMessage] = useState("");
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [activePage, setActivePage] = useState(1);
   const [activeExcerpt, setActiveExcerpt] = useState<string | null>(null);
   const [activeFinding, setActiveFinding] = useState("all");
@@ -458,7 +490,6 @@ export function PocketMindApp({
   const [tourRequestedByUser, setTourRequestedByUser] = useState(false);
   const tourButtonRef = useRef<HTMLButtonElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const pendingNavRef = useRef<{ docId: string; screen: string } | null>(null);
 
   useEffect(() => {
     try {
@@ -558,30 +589,32 @@ export function PocketMindApp({
     setTourActive(true);
   }, [workspaceReady]);
 
-  // Navigate to analysis screen when returning from /processing/run.
-  // Read URL params on mount (before workspace loads); apply when ready.
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    const docParam = params.get("doc");
-    const screenParam = params.get("screen");
-    if (!docParam) return;
-    window.history.replaceState(null, "", "/");
-    pendingNavRef.current = { docId: docParam, screen: screenParam ?? "" };
-  }, []); // run once on mount — URL is set by run.tsx before navigate
-
-  useEffect(() => {
-    if (!workspaceReady) return;
-    const pending = pendingNavRef.current;
-    if (!pending) return;
-    pendingNavRef.current = null;
-    setSelectedDocumentId(pending.docId);
-    if (pending.screen === "analysis") setScreen("analysis");
-  }, [workspaceReady]);
-
   const selectedDocument =
     documents.find((document) => document.id === selectedDocumentId) ?? documents[0];
   const file = filesByDocumentId[selectedDocumentId] ?? null;
+
+  // Guided action pointer: highlight the next button in the document flow.
+  // The choose-file target is handled inside UploadDocumentModal (it must be
+  // rendered in the dialog's top layer).
+  const headingButtonVisible =
+    screen !== "processing" &&
+    screen !== "settings" &&
+    screen !== "integrations" &&
+    screen !== "projects";
+  const guideTarget = tourActive
+    ? null
+    : uploadModalOpen
+      ? null
+      : screen === "processing"
+        ? selectedDocument &&
+          !isAnalyzing &&
+          !selectedDocument.analysis &&
+          (file || processingChoice === "demo")
+          ? "[data-guide='confirm-processing']"
+          : null
+        : headingButtonVisible
+          ? "[data-guide='add-document']"
+          : null;
 
   function startMonitor(document: DocumentRecord) {
     startAnalysisRun(document.id, document.name);
@@ -684,23 +717,23 @@ export function PocketMindApp({
   }
 
   async function addDocument(selectedFile: File | undefined) {
-    if (!selectedFile) return;
+    if (!selectedFile) return false;
     if (!workspaceReady || workspaceError) {
       setErrorMessage(
         workspaceError || "Local workspace storage is still loading. Try again shortly.",
       );
-      return;
+      return false;
     }
     const validationError = validateDocumentFile(selectedFile);
     if (validationError) {
       setErrorMessage(t(`file_error_${validationError}`));
-      return;
+      return false;
     }
 
     const format = getDocumentFormat(selectedFile.name);
     if (!format) {
       setErrorMessage(t("file_error_invalid_format"));
-      return;
+      return false;
     }
     const id = `upload-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const newDocument: DocumentRecord = {
@@ -719,7 +752,7 @@ export function PocketMindApp({
       const detail =
         error instanceof Error ? error.message : "The file could not be saved locally.";
       setErrorMessage(`The document was not added to the workspace. ${detail}`);
-      return;
+      return false;
     }
     setDocuments((current) => [newDocument, ...current.filter((document) => document.id !== id)]);
     setSelectedDocumentId(id);
@@ -737,11 +770,20 @@ export function PocketMindApp({
     setErrorMessage("");
     setScreen("processing");
     recordActivity("document-added", id);
+    return true;
   }
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     void addDocument(event.currentTarget.files?.[0]);
     event.currentTarget.value = "";
+  }
+
+  // The modal stays open until the file is accepted; validation and save
+  // failures set errorMessage, which the modal displays inline.
+  function handleUploadModalFile(file: File) {
+    void addDocument(file).then((accepted) => {
+      if (accepted) setUploadModalOpen(false);
+    });
   }
 
   async function addDocumentFromUrl(url: string, docId: string, fileName: string) {
@@ -1844,9 +1886,10 @@ export function PocketMindApp({
               </div>
               {screen !== "settings" && screen !== "integrations" && screen !== "projects" && (
                 <button
-                  className="pm-button pm-button--primary"
+                  className="pm-button pm-button--primary pm-next-action"
                   type="button"
-                  onClick={() => setScreen("processing")}
+                  data-guide="add-document"
+                  onClick={() => setUploadModalOpen(true)}
                 >
                   <Upload size={16} /> {t("btn_add_document")}
                 </button>
@@ -1893,6 +1936,7 @@ export function PocketMindApp({
               search={search}
               onOpenAnalysis={() => setScreen("analysis")}
               onOpenProcessing={() => setScreen("processing")}
+              onAddDocument={() => setUploadModalOpen(true)}
               onLoadSampleRfp={() =>
                 void addDocumentFromUrl(DEMO_RFP_URL, DEMO_RFP_DOC_ID, "request_for_proposal.pdf")
               }
@@ -1917,7 +1961,7 @@ export function PocketMindApp({
               documents={documents}
               evidenceDocuments={evidenceDocuments}
               storageError={workspaceError}
-              onAddDocument={() => setScreen("processing")}
+              onAddDocument={() => setUploadModalOpen(true)}
               onOpenDocument={(id) => {
                 setSelectedDocumentId(id);
                 setCloudConsent(false);
@@ -2174,6 +2218,16 @@ export function PocketMindApp({
         }}
         returnFocusRef={tourButtonRef}
       />
+      <GuidePointer targetSelector={guideTarget} />
+      <UploadDocumentModal
+        open={uploadModalOpen}
+        error={errorMessage}
+        onClose={() => {
+          setUploadModalOpen(false);
+          setErrorMessage("");
+        }}
+        onFile={handleUploadModalFile}
+      />
       {deleteDocumentPending && (
         <DeleteDocumentDialog
           document={deleteDocumentPending}
@@ -2196,6 +2250,7 @@ function OverviewScreen({
   search,
   onOpenAnalysis,
   onOpenProcessing,
+  onAddDocument,
   onLoadSampleRfp,
   onLoadDiscoveredDocument,
   onSelectDocument,
@@ -2207,6 +2262,7 @@ function OverviewScreen({
   search: string;
   onOpenAnalysis: () => void;
   onOpenProcessing: () => void;
+  onAddDocument: () => void;
   onLoadSampleRfp: () => void;
   onLoadDiscoveredDocument: (url: string, docId: string, fileName: string) => Promise<void>;
   onSelectDocument: (id: string) => void;
@@ -2275,12 +2331,12 @@ function OverviewScreen({
         <div className="pm-hero-cta-actions">
           <button
             type="button"
-            className="pm-button pm-button--primary pm-hero-primary-btn"
+            className="pm-button pm-button--primary pm-hero-primary-btn pm-next-action"
             onClick={onLoadSampleRfp}
           >
             <Sparkles size={16} /> {t("hero_rfp_cta")}
           </button>
-          <button type="button" className="pm-button pm-button--outline" onClick={onOpenProcessing}>
+          <button type="button" className="pm-button pm-button--outline" onClick={onAddDocument}>
             <Upload size={16} /> {t("hero_upload_cta")}
           </button>
         </div>
@@ -2512,7 +2568,7 @@ function OverviewScreen({
             </div>
             <h3>{t("upload_tile_title")}</h3>
             <p>{t("upload_tile_detail")}</p>
-            <button className="pm-upload-btn-main" type="button" onClick={onOpenProcessing}>
+            <button className="pm-upload-btn-main" type="button" onClick={onAddDocument}>
               {t("upload_tile_cta")}
             </button>
             <span className="pm-quick-upload-footer">{t("upload_supports")}</span>
@@ -4259,7 +4315,8 @@ export function ProcessingScreen({
           <button
             ref={confirmButtonRef}
             type="button"
-            className="pm-confirm-cta-btn"
+            className="pm-confirm-cta-btn pm-next-action"
+            data-guide="confirm-processing"
             onClick={() => {
               if ((choice === "cloud" || choice === "hybrid") && !cloudConsent) {
                 toast.warning(t("proc_consent_required"));

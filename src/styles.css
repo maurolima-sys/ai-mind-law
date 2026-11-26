@@ -5105,6 +5105,148 @@
   }
 }
 
+/* ===== Guided action pointer & upload modal ===== */
+.pm-guide-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 8500;
+  pointer-events: none;
+}
+
+.pm-guide-ring {
+  position: fixed;
+  border: 2px solid var(--primary);
+  border-radius: calc(var(--radius) + 4px);
+  animation: pm-guide-pulse 1.5s ease-in-out infinite;
+  will-change: left, top, width, height;
+}
+@keyframes pm-guide-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(1.03);
+  }
+}
+
+.pm-guide-cursor {
+  position: fixed;
+  color: var(--primary);
+  filter: drop-shadow(0 2px 6px oklch(0.2 0.05 268 / 0.45));
+  animation: pm-guide-bob 1.5s ease-in-out infinite;
+}
+.pm-guide-cursor svg {
+  display: block;
+}
+@keyframes pm-guide-bob {
+  0%,
+  100% {
+    transform: translate(-35%, -35%) scale(1);
+  }
+  50% {
+    transform: translate(-35%, -35%) scale(1.15);
+  }
+}
+
+.pm-guide-cursor-hint {
+  position: absolute;
+  left: 20%;
+  bottom: calc(100% + 6px);
+  white-space: nowrap;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 5px 9px;
+  border-radius: 999px;
+}
+.pm-guide-cursor.is-hint-below .pm-guide-cursor-hint {
+  bottom: auto;
+  top: calc(100% + 6px);
+  left: auto;
+  right: 20%;
+}
+
+.pm-upload-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  height: fit-content;
+  max-height: calc(100dvh - 48px);
+  width: min(460px, calc(100vw - 32px));
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 2px);
+  background: var(--card);
+  color: var(--foreground);
+  padding: 20px;
+  box-shadow:
+    0 24px 60px -16px oklch(0.18 0.05 268 / 0.5),
+    0 8px 18px -10px oklch(0.18 0.05 268 / 0.34);
+  overscroll-behavior: contain;
+}
+.pm-upload-dialog::backdrop {
+  background: oklch(0.16 0.04 268 / 0.55);
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+.pm-upload-dialog-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.pm-upload-dialog-head .pm-source-drawer-close {
+  margin-left: auto;
+}
+.pm-upload-dialog-heading h3 {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 700;
+}
+.pm-upload-dialog-heading p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+.pm-upload-dialog-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  margin-top: 16px;
+  padding: 22px 16px;
+  border: 1.5px dashed var(--border);
+  border-radius: calc(var(--radius) + 2px);
+}
+.pm-upload-dialog-dropzone strong {
+  font-family: var(--font-sans);
+  font-size: 14px;
+}
+.pm-upload-dialog-dropzone small {
+  opacity: 0.7;
+  font-size: 12px;
+  max-inline-size: 340px;
+}
+.pm-upload-dialog-error {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #b42318;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pm-guide-ring,
+  .pm-guide-cursor {
+    animation: none;
+  }
+}
+
 /* ===== Guided tour ===== */
 .pm-tour-overlay {
   position: fixed;
@@ -8247,4 +8389,32 @@
 .pm-nav-item:hover,
 .pm-pm-mode-card:hover {
   background: var(--pm-surface-3);
+}
+
+/* ─── Next-action cursor guide ─────────────────────────────────────────────── */
+.pm-next-action {
+  cursor: cell;
+  position: relative;
+}
+
+.pm-next-action::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  border: 2px solid currentColor;
+  opacity: 0;
+  animation: pm-next-action-pulse 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes pm-next-action-pulse {
+  0%   { opacity: 0;    transform: scale(1); }
+  40%  { opacity: 0.45; transform: scale(1.04); }
+  70%  { opacity: 0.2;  transform: scale(1.07); }
+  100% { opacity: 0;    transform: scale(1.1); }
+}
+
+.pm-next-action:disabled::after {
+  display: none;
 }

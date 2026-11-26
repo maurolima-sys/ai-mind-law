@@ -4,8 +4,8 @@
     "mode": "cloud",
     "processingSource": "cloud-fallback",
     "engine": "Firebase AI Logic · cloud",
-    "model": "Gemini 3.5 Flash-Lite",
-    "summary": "The City of Northbridge is inviting tenders for the supply, installation, and maintenance of smart LED street lighting across the Eastgate and Riverside districts under tender NB-2026-114.",
+    "model": "Gemini 3.5 Flash",
+    "summary": "Invitation to Tender NB-2026-114 issued by the City of Northbridge for the supply, installation, and maintenance of 1,250 smart LED street lights, 1,250 control nodes, and 40 replacement poles across the Eastgate and Riverside districts over a 36-month contract term with an optional 24-month maintenance extension.",
     "requirements": [
       {
         "id": "demo-tender-ai-r1-1",
@@ -51,10 +51,10 @@
       },
       {
         "id": "demo-tender-ai-r1-4",
-        "description": "Minimum annual turnover of 2.5 million is required.",
+        "description": "Demonstrate a minimum annual turnover of 2.5 million.",
         "category": "Financial",
         "mandatory": true,
-        "confidence": 1,
+        "confidence": 0.95,
         "evidence": {
           "page": 2,
           "excerpt": "Minimum annual turnover of 2.5 million is required.",
@@ -66,7 +66,7 @@
       {
         "id": "demo-tender-ai-r1-5",
         "description": "Provide a traffic management plan prior to any works on arterial roads.",
-        "category": "Technical",
+        "category": "Documentation",
         "mandatory": true,
         "confidence": 1,
         "evidence": {
@@ -79,21 +79,35 @@
       },
       {
         "id": "demo-tender-ai-r1-6",
-        "description": "Luminaires shall be warranted for a minimum of 10 years.",
-        "category": "Technical",
+        "description": "Submit proof of public liability insurance of not less than 10 million.",
+        "category": "Financial",
         "mandatory": true,
         "confidence": 1,
         "evidence": {
-          "page": 4,
-          "excerpt": "Warranty: luminaires shall be warranted for a minimum of 10 years.",
+          "page": 5,
+          "excerpt": "Proof of public liability insurance of not less than 10 million must be included.",
           "verified": true,
-          "sourceIndex": 4,
-          "sourceLocation": "Page 4"
+          "sourceIndex": 5,
+          "sourceLocation": "Page 5"
         }
       },
       {
         "id": "demo-tender-ai-r1-7",
-        "description": "Attend a mandatory site briefing held on 8 January 2027.",
+        "description": "Provide performance security equal to 5% of the contract value upon award.",
+        "category": "Financial",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 6,
+          "excerpt": "Performance security equal to 5% of the contract value is required upon award.",
+          "verified": true,
+          "sourceIndex": 6,
+          "sourceLocation": "Page 6"
+        }
+      },
+      {
+        "id": "demo-tender-ai-r1-8",
+        "description": "Attend the mandatory site briefing on 8 January 2027.",
         "category": "Administrative",
         "mandatory": true,
         "confidence": 1,
@@ -106,7 +120,7 @@
         }
       },
       {
-        "id": "demo-tender-ai-r1-8",
+        "id": "demo-tender-ai-r1-9",
         "description": "Submit a completed Schedule of Rates (Form F-3).",
         "category": "Documentation",
         "mandatory": true,
@@ -120,53 +134,40 @@
         }
       },
       {
-        "id": "demo-tender-ai-r1-9",
-        "description": "Include proof of public liability insurance of not less than 10 million.",
-        "category": "Financial",
+        "id": "demo-tender-ai-r1-10",
+        "description": "Submit tenders electronically via the Northbridge eProcurement Portal.",
+        "category": "Administrative",
         "mandatory": true,
         "confidence": 1,
         "evidence": {
-          "page": 5,
-          "excerpt": "Proof of public liability insurance of not less than 10 million must be included.",
+          "page": 1,
+          "excerpt": "All tenders must be submitted electronically via the Northbridge eProcurement Portal.",
           "verified": true,
-          "sourceIndex": 5,
-          "sourceLocation": "Page 5"
+          "sourceIndex": 1,
+          "sourceLocation": "Page 1"
         }
       },
       {
-        "id": "demo-tender-ai-r1-10",
-        "description": "Provide performance security equal to 5% of the contract value upon award.",
-        "category": "Financial",
+        "id": "demo-tender-ai-r1-11",
+        "description": "Luminaires must be warranted for a minimum of 10 years.",
+        "category": "Technical",
         "mandatory": true,
         "confidence": 1,
         "evidence": {
-          "page": 6,
-          "excerpt": "Performance security equal to 5% of the contract value is required upon award.",
+          "page": 4,
+          "excerpt": "Warranty: luminaires shall be warranted for a minimum of 10 years.",
           "verified": true,
-          "sourceIndex": 6,
-          "sourceLocation": "Page 6"
+          "sourceIndex": 4,
+          "sourceLocation": "Page 4"
         }
       }
     ],
     "deadlines": [
       {
         "id": "demo-tender-ai-d1-1",
-        "description": "Clarification questions submission deadline",
-        "date": "2027-01-12",
-        "relatedRequirement": "Clarification questions must be submitted by 12 January 2027, 17:00 local time.",
-        "evidence": {
-          "page": 5,
-          "excerpt": "Clarification questions must be submitted by 12 January 2027, 17:00 local time.",
-          "verified": true,
-          "sourceIndex": 5,
-          "sourceLocation": "Page 5"
-        }
-      },
-      {
-        "id": "demo-tender-ai-d1-2",
-        "description": "Mandatory site briefing date",
+        "description": "Mandatory site briefing",
         "date": "2027-01-08",
-        "relatedRequirement": "A mandatory site briefing will be held on 8 January 2027.",
+        "relatedRequirement": "Attend the mandatory site briefing on 8 January 2027.",
         "evidence": {
           "page": 5,
           "excerpt": "A mandatory site briefing will be held on 8 January 2027.",
@@ -176,10 +177,23 @@
         }
       },
       {
+        "id": "demo-tender-ai-d1-2",
+        "description": "Deadline for clarification questions",
+        "date": "2027-01-12",
+        "relatedRequirement": null,
+        "evidence": {
+          "page": 5,
+          "excerpt": "Clarification questions must be submitted by 12 January 2027, 17:00 local time.",
+          "verified": true,
+          "sourceIndex": 5,
+          "sourceLocation": "Page 5"
+        }
+      },
+      {
         "id": "demo-tender-ai-d1-3",
         "description": "Tender closing date",
         "date": "2027-02-02",
-        "relatedRequirement": "Tender closing date: 2 February 2027 at 14:00 local time.",
+        "relatedRequirement": null,
         "evidence": {
           "page": 5,
           "excerpt": "Tender closing date: 2 February 2027 at 14:00 local time.",
@@ -190,9 +204,9 @@
       },
       {
         "id": "demo-tender-ai-d1-4",
-        "description": "Installation deadline for the first 400 luminaires",
+        "description": "Installation of first 400 luminaires",
         "date": null,
-        "relatedRequirement": "Installation of the first 400 luminaires must be completed within 90 days of contract award.",
+        "relatedRequirement": null,
         "evidence": {
           "page": 4,
           "excerpt": "Installation of the first 400 luminaires must be completed within 90 days of contract award.",
@@ -205,7 +219,7 @@
         "id": "demo-tender-ai-d1-5",
         "description": "Full installation completion deadline",
         "date": "2027-06-30",
-        "relatedRequirement": "Full installation shall be completed no later than 30 June 2027.",
+        "relatedRequirement": null,
         "evidence": {
           "page": 4,
           "excerpt": "Full installation shall be completed no later than 30 June 2027.",
@@ -218,10 +232,10 @@
     "specifications": [
       {
         "id": "demo-tender-ai-s1-1",
-        "item": "LED luminaires",
-        "quantity": "1,250",
+        "item": "LED Luminaires",
+        "quantity": "1250",
         "unit": "units",
-        "details": "Rated between 40W and 120W, minimum efficacy of 150 lumens per watt, IP66 ingress protection rating, colour temperature not exceeding 3000K in residential zones",
+        "details": "Rated between 40W and 120W with a minimum efficacy of 150 lumens per watt, IP66 ingress protection rating, and colour temperature not exceeding 3000K in residential zones.",
         "notes": "",
         "evidence": {
           "page": 3,
@@ -234,9 +248,9 @@
       {
         "id": "demo-tender-ai-s1-2",
         "item": "Networked lighting control nodes",
-        "quantity": "1,250",
+        "quantity": "1250",
         "unit": "units",
-        "details": "Compatible with the City's central management system, comply with the City's data protection policy",
+        "details": "Compatible with the City's central management system and compliant with data protection policy.",
         "notes": "",
         "evidence": {
           "page": 3,
@@ -251,7 +265,7 @@
         "item": "Replacement poles",
         "quantity": "40",
         "unit": "units",
-        "details": "8 m height in the Riverside district",
+        "details": "8 m height located in the Riverside district.",
         "notes": "",
         "evidence": {
           "page": 3,
@@ -265,10 +279,10 @@
     "risks": [
       {
         "id": "demo-tender-ai-k1-1",
-        "title": "Estimated Contract Value Unconfirmed",
+        "title": "Unconfirmed Estimated Contract Value",
         "severity": "Medium",
         "kind": "detected",
-        "explanation": "The estimated contract value is to be confirmed by the Finance Committee, which introduces financial uncertainty during tender preparation.",
+        "explanation": "The estimated contract value is pending confirmation by the Finance Committee, creating commercial uncertainty for tenderers.",
         "evidence": {
           "page": 1,
           "excerpt": "Estimated contract value: to be confirmed by the Finance Committee.",
@@ -276,13 +290,44 @@
           "sourceIndex": 1,
           "sourceLocation": "Page 1"
         }
+      },
+      {
+        "id": "demo-tender-ai-k1-2",
+        "title": "Missing Annex D for Joint Ventures",
+        "severity": "Medium",
+        "kind": "detected",
+        "explanation": "Clause 2.5 conditions joint venture participation on Annex D, but Annex D is missing from the list of annexes.",
+        "evidence": {
+          "page": 2,
+          "excerpt": "Joint ventures are permitted subject to conditions described in Annex D.",
+          "verified": true,
+          "sourceIndex": 2,
+          "sourceLocation": "Page 2"
+        }
+      },
+      {
+        "id": "demo-tender-ai-k1-3",
+        "title": "Unspecified Currency in Financial Criteria",
+        "severity": "Low",
+        "kind": "suggestion",
+        "explanation": "Financial requirements for turnover (2.5 million) and public liability insurance (10 million) do not state the currency unit.",
+        "evidence": {
+          "page": 2,
+          "excerpt": "Minimum annual turnover of 2.5 million is required.",
+          "verified": true,
+          "sourceIndex": 2,
+          "sourceLocation": "Page 2"
+        }
       }
     ],
     "missing": [
-      "Annex D conditions regarding joint ventures",
-      "Schedule 4 details on liquidated damages"
+      "Confirmed estimated contract value",
+      "Currency denomination for minimum turnover and public liability insurance",
+      "Annex D containing joint venture conditions"
     ],
-    "inconsistencies": [],
-    "generatedAt": "2026-11-19T21:45:50.132Z"
+    "inconsistencies": [
+      "Section 2.5 states joint ventures are subject to Annex D, but Annex D is not listed in Section 6 annexes."
+    ],
+    "generatedAt": "2026-11-20T16:59:33.546Z"
   }
 }

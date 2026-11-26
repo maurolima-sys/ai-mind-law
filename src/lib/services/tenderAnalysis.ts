@@ -60,7 +60,7 @@ export type AnalysisProgressEvent =
   | { type: "checking-evidence" };
 
 export const MAX_CHUNK_CHARACTERS = 16_000;
-export const ON_DEVICE_CHUNK_CHARACTERS = 2_000;
+export const ON_DEVICE_CHUNK_CHARACTERS = 4_000;
 const MIN_ON_DEVICE_SPLIT_CHARACTERS = 128;
 
 function detectHeading(line: string): boolean {
@@ -716,8 +716,9 @@ export async function analyzeTender(
       const isAppCheck = isAppCheckError(error);
       forcedCloudFallback = true;
       sectionSource = "CLOUD_FALLBACK";
-      // Re-chunk the remaining sections with cloud-sized chunks so the fallback
-      // path sends 16 000-char batches instead of the 2 000-char on-device ones.
+      // Re-chunk ALL remaining sections with cloud-sized chunks so the fallback
+      // path sends 16 000-char batches instead of the 4 000-char on-device ones.
+      // Re-chunking from the current index keeps already-completed sections intact.
       const remainingPages = [
         ...new Set(chunks.slice(index).flatMap((c) => c.pages.map((p) => p.sourceIndex))),
       ];
@@ -737,6 +738,8 @@ export async function analyzeTender(
             p.sourceIndex = remainingPages[p.sourceIndex - 1] ?? p.sourceIndex;
           }),
         );
+        // Replace ALL remaining on-device chunks with the cloud-sized ones in one
+        // splice so the total section count stabilises immediately.
         chunks.splice(index, chunks.length - index, ...largeChunks);
       }
       options.onEvent?.({ type: "cloud-retry" });

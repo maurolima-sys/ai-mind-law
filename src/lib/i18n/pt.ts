@@ -497,6 +497,9 @@ export const pt: Translations = {
   drop_note:
     "PDF, DOCX ou XLSX · máximo 50 MB · PDFs digitalizados podem usar OCR externo opcional",
 
+  guide_next_step: "Clique aqui a seguir",
+  upload_close: "Fechar janela de upload",
+
   ocr_sparse_title: "{{count}} páginas têm pouco ou nenhum texto selecionável.",
   ocr_sparse_desc:
     "Pode enviar este PDF ao LlamaParse para aplicar OCR às páginas assinaladas. O ficheiro PDF completo é transferido; o Firebase AI Logic analisará o texto combinado em seguida.",

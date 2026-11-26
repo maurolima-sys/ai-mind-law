@@ -1,0 +1,774 @@
+{
+  "document": "request_for_proposal.pdf",
+  "analysis": {
+    "mode": "hybrid",
+    "processingSource": "hybrid",
+    "engine": "Firebase AI Logic · on-device + cloud",
+    "model": "Chrome on-device model + Gemini 3.8 Flash",
+    "summary": "Request for Proposals issued by the Town of Lebanon, Maine for design-build services for a new public safety facility of approximately 25,000 SF, including a 2,700 SF meeting room, dormitory space, administrative space, and related site improvements. The Town of Lebanon is issuing an RFP for Public Safety preconstruction services. The Design Builder is required to provide mechanical and electrical system narratives for subcontractors, manage the planning board approval process, and submit six paper copies of the RFP response to the specified address. Request for Proposals (RFP) cover letter for a new design-build public safety facility of approximately 25,000 SF for the Town of Lebanon, Maine, outlining facility requirements, space specifications, and submission deadlines. Overview of Phase 1 pre-construction requirements, including geotechnical work, permit applications, schematic plan development, a mandatory Guaranteed Maximum Price (GMP) submission deadline of April 12, 2024, and voter approval contingency. This text is a cover letter for a Design Build Request for Proposals (RFP), outlining the anticipated schedule from issue date through construction start in Summer 2024, contract and bonding requirements, submission instructions, scoring criteria, and voter approval contingency. The text outlines the evaluation process for selecting a Design Builder based on proposal completeness and team experience, notes the possibility of an interview round if no consensus is reached, and lists three application documents.",
+    "requirements": [
+      {
+        "id": "upload-1795609793003-5dooki-ai-r1-1",
+        "description": "Submit a Design Build proposal along with the completed Proposal Form.",
+        "category": "Documentation",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 1,
+          "excerpt": "Interested Design Build firms should submit a Design Build proposal and the completed Proposal Form",
+          "verified": true,
+          "sourceIndex": 1,
+          "sourceLocation": "Page 1"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-r1-2",
+        "description": "Provide design services for all architectural design, geotechnical (including site clearing/grubbing for geotech work), civil, and structural engineering required by code.",
+        "category": "Technical",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 1,
+          "excerpt": "Design Builder will include design services for all architectural design, geotechnical (inclusive of the cost to clear and grub site necessary to perform Geotech work), civil, and structural engineering as required by code",
+          "verified": true,
+          "sourceIndex": 1,
+          "sourceLocation": "Page 1"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-r2-1",
+        "description": "Provide mechanical and electrical engineering system narratives for DB subcontractors to use during construction.",
+        "category": "Technical",
+        "mandatory": true,
+        "confidence": 0.95,
+        "evidence": {
+          "page": 1,
+          "excerpt": "Mechanical and electrical engineers to provide system narratives as necessary suitable for DB subs to utilize and carry out in the construction phase.",
+          "verified": true,
+          "sourceIndex": 1,
+          "sourceLocation": "Page 1"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-r2-2",
+        "description": "Manage the planning board approval process for the project.",
+        "category": "Administrative",
+        "mandatory": true,
+        "confidence": 0.9,
+        "evidence": {
+          "page": 1,
+          "excerpt": "The Design Builder should assume the project will require planning board approval and will be relied on for managing that process.",
+          "verified": true,
+          "sourceIndex": 1,
+          "sourceLocation": "Page 1"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-r2-3",
+        "description": "Deliver six paper copies of the RFP response in an envelope addressed to the Town of Lebanon.",
+        "category": "Documentation",
+        "mandatory": true,
+        "confidence": 0.95,
+        "evidence": {
+          "page": 1,
+          "excerpt": "Six paper copies of this RFP response are to be delivered in an envelope addressed as follows: Town of Lebanon Public Safety RFP 15 Upper Guinea Rd Lebanon, ME 04027",
+          "verified": true,
+          "sourceIndex": 1,
+          "sourceLocation": "Page 1"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-r3-1",
+        "description": "Submissions must display the firm's name and address on the envelope and include a digital copy on a thumb drive.",
+        "category": "Documentation",
+        "mandatory": true,
+        "confidence": 0.95,
+        "evidence": {
+          "page": 2,
+          "excerpt": "Each submission must have the firm’s name and address on the envelope and the submission must be accompanied with a digital submission copy via thumb drive.",
+          "verified": true,
+          "sourceIndex": 2,
+          "sourceLocation": "Page 2"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-r3-2",
+        "description": "Interested design-build firms must email the Owner contact by May 26, 2023, to ensure inclusion in addenda distributions.",
+        "category": "Administrative",
+        "mandatory": true,
+        "confidence": 0.95,
+        "evidence": {
+          "page": 2,
+          "excerpt": "It is a requirement that all interested Design Build Firms email the afore-mentioned Owner contact no later than Friday, May 26 , 2023 to ensure the firm is included in any project addenda distribution.",
+          "verified": true,
+          "sourceIndex": 2,
+          "sourceLocation": "Page 2"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-r3-3",
+        "description": "Questions regarding the RFP must be submitted in writing to selectmen@lebanonmaine.org by May 26, 2023.",
+        "category": "Administrative",
+        "mandatory": true,
+        "confidence": 0.9,
+        "evidence": {
+          "page": 2,
+          "excerpt": "Questions from Design Build firms regarding this RFP are due by Friday, May 26, 2023 and shall be in writing and submitted to the Owner at: selectmen@lebanonmaine.org",
+          "verified": true,
+          "sourceIndex": 2,
+          "sourceLocation": "Page 2"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-r4-1",
+        "description": "A Final, Guaranteed Maximum Price (GMP) is required at completion of Construction Documents and Municipal approvals.",
+        "category": "Financial",
+        "mandatory": true,
+        "confidence": 0.95,
+        "evidence": {
+          "page": 2,
+          "excerpt": "A Final, Guaranteed Maximum Price (GMP) is required at completion of Construction Documents and Municipal approvals.",
+          "verified": true,
+          "sourceIndex": 2,
+          "sourceLocation": "Page 2"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-r4-2",
+        "description": "Preparation of drawings ready for state fire marshal permit application and local building permit application, along with planning board approval.",
+        "category": "Documentation",
+        "mandatory": true,
+        "confidence": 0.9,
+        "evidence": {
+          "page": 2,
+          "excerpt": "state fire marshal permit application and local building permit application ready drawings. Planning board approval.",
+          "verified": true,
+          "sourceIndex": 2,
+          "sourceLocation": "Page 2"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-r5-1",
+        "description": "Attend mandatory site visit on May 19, 2023 at 9:00 a.m.",
+        "category": "Eligibility",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 3,
+          "excerpt": "Mandatory Site Visit – Friday, May 19, 2023 at 9am",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-r5-2",
+        "description": "Provide required bonds with premiums included in the Guaranteed Maximum Price (GMP).",
+        "category": "Financial",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 3,
+          "excerpt": "Bonds will be required and premium must be carried in the GMP.",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-r5-3",
+        "description": "Submit Design Build Team & Team Value section including staff names and resumes, firm approach, past similar project examples, and Value Engineering methodology.",
+        "category": "Technical",
+        "mandatory": true,
+        "confidence": 0.95,
+        "evidence": {
+          "page": 3,
+          "excerpt": "Names and resumes demonstrating experience of proposed staff. Description of the firm’s approach to managing and providing design build value from pre-construction through construction services.",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-r5-4",
+        "description": "Provide relevant project experience including Public Safety and/or Design Build, plus experience with Federally funded construction grants.",
+        "category": "Eligibility",
+        "mandatory": true,
+        "confidence": 0.95,
+        "evidence": {
+          "page": 3,
+          "excerpt": "Description of relevant project experience including relevant experience with Public Safety and/or Design Build construction as well as experience in Federally funded construction grants.",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-r5-5",
+        "description": "Provide references for relevant Design Build projects and financial references from company bonding agency.",
+        "category": "Documentation",
+        "mandatory": true,
+        "confidence": 0.95,
+        "evidence": {
+          "page": 3,
+          "excerpt": "List of references for relevant DB projects & Financial References : Company bonding agency reference(s).",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-r5-6",
+        "description": "Submit completed RFP Proposal Form.",
+        "category": "Documentation",
+        "mandatory": true,
+        "confidence": 0.95,
+        "evidence": {
+          "page": 3,
+          "excerpt": "Completed RFP Proposal Form (see attached for details)",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-r6-1",
+        "description": "Proposals are evaluated on completeness and the demonstrated value and experience of the team as explained in section 4 of the RFP.",
+        "category": "Documentation",
+        "mandatory": true,
+        "confidence": 0.95,
+        "evidence": {
+          "page": 3,
+          "excerpt": "sed on completeness of proposal and demonstrated value and experience of the team as explained in section 4 of this RFP.",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      }
+    ],
+    "deadlines": [
+      {
+        "id": "upload-1795609793003-5dooki-ai-d3-1",
+        "description": "Proposal submission deadline",
+        "date": "2023-06-08",
+        "relatedRequirement": null,
+        "evidence": {
+          "page": 2,
+          "excerpt": "Submission is due no later than Thursday, June 8, 2023, by 4pm EST.",
+          "verified": true,
+          "sourceIndex": 2,
+          "sourceLocation": "Page 2"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-d3-2",
+        "description": "RFP question submission and registration deadline",
+        "date": "2023-05-26",
+        "relatedRequirement": null,
+        "evidence": {
+          "page": 2,
+          "excerpt": "Questions from Design Build firms regarding this RFP are due by Friday, May 26, 2023",
+          "verified": true,
+          "sourceIndex": 2,
+          "sourceLocation": "Page 2"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-d3-3",
+        "description": "Owner response to questions via addendum deadline",
+        "date": "2023-05-31",
+        "relatedRequirement": null,
+        "evidence": {
+          "page": 2,
+          "excerpt": "All questions will be answered by Wednesday, May 31, 2023 via addendum.",
+          "verified": true,
+          "sourceIndex": 2,
+          "sourceLocation": "Page 2"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-d4-1",
+        "description": "GMP Presentation deadline",
+        "date": "2024-04-12",
+        "relatedRequirement": null,
+        "evidence": {
+          "page": 2,
+          "excerpt": "The GMP Presentation is required no later than April 12, 2024",
+          "verified": true,
+          "sourceIndex": 2,
+          "sourceLocation": "Page 2"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-d4-2",
+        "description": "Public vote date",
+        "date": "2024-06-11",
+        "relatedRequirement": null,
+        "evidence": {
+          "page": 2,
+          "excerpt": "June 11, 2024 public vote",
+          "verified": true,
+          "sourceIndex": 2,
+          "sourceLocation": "Page 2"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-d5-1",
+        "description": "RFP Issued",
+        "date": "2023-05-12",
+        "relatedRequirement": null,
+        "evidence": {
+          "page": 3,
+          "excerpt": "RFP Issued – by Friday, May 12, 2023",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-d5-2",
+        "description": "Mandatory Site Visit",
+        "date": "2023-05-19",
+        "relatedRequirement": "Attend mandatory site visit on May 19, 2023 at 9:00 a.m.",
+        "evidence": {
+          "page": 3,
+          "excerpt": "Mandatory Site Visit – Friday, May 19, 2023 at 9am",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-d5-3",
+        "description": "Close for RFI/Questions",
+        "date": "2023-05-31",
+        "relatedRequirement": null,
+        "evidence": {
+          "page": 3,
+          "excerpt": "Close for RFI/Questions – Wednesday, May 31, 2023",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-d5-4",
+        "description": "Design Build Proposals Due",
+        "date": "2023-06-08",
+        "relatedRequirement": null,
+        "evidence": {
+          "page": 3,
+          "excerpt": "Design Build Proposals Due – Thursday, June 8, 2023 by 4:00 p.m.",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-d5-5",
+        "description": "Design Build Pre-Construction Award",
+        "date": "2023-06-14",
+        "relatedRequirement": null,
+        "evidence": {
+          "page": 3,
+          "excerpt": "Design Build Pre-Construction Award – by Wednesday, June 14, 2023*",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-d5-6",
+        "description": "Construction commencement expected for Phase 2",
+        "date": null,
+        "relatedRequirement": null,
+        "evidence": {
+          "page": 3,
+          "excerpt": "Phase 2 – Construction: construction is expected to commence in Summer 2024.",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      }
+    ],
+    "specifications": [
+      {
+        "id": "upload-1795609793003-5dooki-ai-s1-1",
+        "item": "New Public Safety Facility",
+        "quantity": "25000",
+        "unit": "SF",
+        "details": "New facility including dormitory space, support administration spaces, site improvements, and all required serving systems.",
+        "notes": "Approximate area; full scope of work remains to be finalized.",
+        "evidence": {
+          "page": 1,
+          "excerpt": "an approximately 25,000 SF new facility, dormitory space, a 2,700 SF municipal multi-purpose meeting room with an option for temporary partition, support administration spaces, site improvements and all systems required to serve the newly constructed space.",
+          "verified": true,
+          "sourceIndex": 1,
+          "sourceLocation": "Page 1"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-s1-2",
+        "item": "Municipal Multi-Purpose Meeting Room",
+        "quantity": "2700",
+        "unit": "SF",
+        "details": "Municipal multi-purpose meeting room featuring an option for a temporary partition.",
+        "notes": "",
+        "evidence": {
+          "page": 1,
+          "excerpt": "a 2,700 SF municipal multi-purpose meeting room with an option for temporary partition",
+          "verified": true,
+          "sourceIndex": 1,
+          "sourceLocation": "Page 1"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-s2-1",
+        "item": "Preconstruction Mechanical and Electrical System Narratives",
+        "quantity": null,
+        "unit": null,
+        "details": "Engineers to provide system narratives suitable for DB subcontractors for the construction phase as part of preconstruction services lump sum.",
+        "notes": "Scope required within preconstruction services lump sum per Proposal Form.",
+        "evidence": {
+          "page": 1,
+          "excerpt": "Mechanical and electrical engineers to provide system narratives as necessary suitable for DB subs to utilize and carry out in the construction phase. Please see the Proposal Form for scope required within preconstruction services lump sum.",
+          "verified": true,
+          "sourceIndex": 1,
+          "sourceLocation": "Page 1"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-s2-2",
+        "item": "RFP Response Submissions",
+        "quantity": "6",
+        "unit": "paper copies",
+        "details": "Delivered in a sealed envelope addressed to Town of Lebanon Public Safety RFP, 15 Upper Guinea Rd, Lebanon, ME 04027.",
+        "notes": "",
+        "evidence": {
+          "page": 1,
+          "excerpt": "Six paper copies of this RFP response are to be delivered in an envelope addressed as follows: Town of Lebanon Public Safety RFP 15 Upper Guinea Rd Lebanon, ME 04027",
+          "verified": true,
+          "sourceIndex": 1,
+          "sourceLocation": "Page 1"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-s3-1",
+        "item": "Design build public safety facility",
+        "quantity": "25000",
+        "unit": "SF",
+        "details": "Proposed overall size for the facility, with a goal of having 4-5 bays.",
+        "notes": "Civil Engineering will confirm exact allowable dimensions.",
+        "evidence": {
+          "page": 2,
+          "excerpt": "It is imagined that the building will be approximately 25,000 SF in size (with a goal of having 4-5 bays), though Civil Engineering will confirm the exact allowable dimensions.",
+          "verified": true,
+          "sourceIndex": 2,
+          "sourceLocation": "Page 2"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-s3-2",
+        "item": "Multi-purpose municipal meeting/training space",
+        "quantity": "2700",
+        "unit": "SF",
+        "details": "One space with an option to divide into two spaces if needed.",
+        "notes": "",
+        "evidence": {
+          "page": 2,
+          "excerpt": "One 2,700 SF multi-purpose municipal meeting/training space with an option to divide the space into two if needed.",
+          "verified": true,
+          "sourceIndex": 2,
+          "sourceLocation": "Page 2"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-s3-3",
+        "item": "Offices",
+        "quantity": "4",
+        "unit": null,
+        "details": "4 administrative offices",
+        "notes": "",
+        "evidence": {
+          "page": 2,
+          "excerpt": "4 offices",
+          "verified": true,
+          "sourceIndex": 2,
+          "sourceLocation": "Page 2"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-s3-4",
+        "item": "Board room",
+        "quantity": "1000",
+        "unit": "SF",
+        "details": "Approx. 1000 SF board room",
+        "notes": "",
+        "evidence": {
+          "page": 2,
+          "excerpt": "One board room (approx. 1000 SF)",
+          "verified": true,
+          "sourceIndex": 2,
+          "sourceLocation": "Page 2"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-s3-5",
+        "item": "Watch room",
+        "quantity": "675",
+        "unit": "SF",
+        "details": "Watch room for daily operations (approx. 675 SF)",
+        "notes": "",
+        "evidence": {
+          "page": 2,
+          "excerpt": "A watch room for daily operations (approx.675 SF)",
+          "verified": true,
+          "sourceIndex": 2,
+          "sourceLocation": "Page 2"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-s4-1",
+        "item": "Phase 1 - Pre-construction",
+        "quantity": null,
+        "unit": null,
+        "details": "Site clearing, geotechnical work, conceptual and schematic plan development, design development, construction documents, progress estimates, permit drawings, and planning board approval.",
+        "notes": "",
+        "evidence": {
+          "page": 2,
+          "excerpt": "Phase 1- Pre-construction : site clearing, geotechnical, conceptual and schematic plan development with a progress estimate based on schematic design.",
+          "verified": true,
+          "sourceIndex": 2,
+          "sourceLocation": "Page 2"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-s5-1",
+        "item": "Owner/Design-Builder Agreement Contract",
+        "quantity": null,
+        "unit": null,
+        "details": "Proposed form of contract to be AIA Document A141 – 2014 or equivalent ConsensusDocs Contract.",
+        "notes": "",
+        "evidence": {
+          "page": 3,
+          "excerpt": "AIA Document A141 – 2014 (Owner/Design-Builder Agreement) or the equivalent ConsensusDocs Contract",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-s6-1",
+        "item": "DB RFP Cover Letter",
+        "quantity": null,
+        "unit": null,
+        "details": "Document included in the Design Build application package.",
+        "notes": "",
+        "evidence": {
+          "page": 3,
+          "excerpt": "1. DB RFP Cover Letter",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-s6-2",
+        "item": "DB Proposal Form",
+        "quantity": null,
+        "unit": null,
+        "details": "Document included in the Design Build application package.",
+        "notes": "",
+        "evidence": {
+          "page": 3,
+          "excerpt": "2. DB Proposal Form",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-s6-3",
+        "item": "GIS Site Map",
+        "quantity": null,
+        "unit": null,
+        "details": "Document included in the Design Build application package.",
+        "notes": "",
+        "evidence": {
+          "page": 3,
+          "excerpt": "3. GIS Site Map",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      }
+    ],
+    "risks": [
+      {
+        "id": "upload-1795609793003-5dooki-ai-k1-1",
+        "title": "Primary Site Suitability Uncertainty",
+        "severity": "Medium",
+        "kind": "detected",
+        "explanation": "The preferred location at Merchant's Row may prove unsuitable upon pre-construction engineering analysis, requiring a potential location change to a secondary site.",
+        "evidence": {
+          "page": 1,
+          "excerpt": "it is expected that the engineering analysis slated to take place during the scope of pre-construction services will disclose whether this location is suitable for the new facility.",
+          "verified": true,
+          "sourceIndex": 1,
+          "sourceLocation": "Page 1"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-k2-1",
+        "title": "Uncertainty regarding Maine DEP SLODA Permit Requirement",
+        "severity": "Medium",
+        "kind": "suggestion",
+        "explanation": "The RFP assumes site scope will not trigger Maine DEP SLODA permitting; if actual development scope exceeds thresholds, additional permitting and project delays may occur.",
+        "evidence": {
+          "page": 1,
+          "excerpt": "We assume the size of the building and site development scope will not trigger the Maine Department of Environmental Protections SLODA permit requirement.",
+          "verified": true,
+          "sourceIndex": 1,
+          "sourceLocation": "Page 1"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-k3-1",
+        "title": "Uncertain exact project programming and allowable dimensions",
+        "severity": "Medium",
+        "kind": "suggestion",
+        "explanation": "The precise program and allowable building dimensions are left to pre-construction and Civil Engineering confirmation, which creates potential risk of scope changes or design modifications later.",
+        "evidence": {
+          "page": 2,
+          "excerpt": "What that program entails exactly remains a task for pre-construction. It is imagined that the building will be approximately 25,000 SF in size (with a goal of having 4-5 bays), though Civil Engineering will confirm the exact allowable dimensions.",
+          "verified": false,
+          "sourceIndex": 2,
+          "sourceLocation": "Page 2"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-k4-1",
+        "title": "Voter Approval Risk for Phase 2",
+        "severity": "High",
+        "kind": "detected",
+        "explanation": "Proceeding into Phase 2 is dependent on voter approval in the June 2024 vote, introducing project continuation risk.",
+        "evidence": {
+          "page": 2,
+          "excerpt": "Entering into Phase 2 (see below) is contingent upon voters’ approval in the June 2024 vote.",
+          "verified": true,
+          "sourceIndex": 2,
+          "sourceLocation": "Page 2"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-k5-1",
+        "title": "Award Contingent on Voter Expenditure Approval",
+        "severity": "High",
+        "kind": "detected",
+        "explanation": "The Design Build award is contingent upon voters approving expenditure for Phase 1 in June 2023, creating a risk that the project award may be canceled or delayed if vote fails.",
+        "evidence": {
+          "page": 3,
+          "excerpt": "Design Build award is contingent upon voters’ June 2023 approval of expenditure for Phase 1.",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      },
+      {
+        "id": "upload-1795609793003-5dooki-ai-k6-1",
+        "title": "Conditional Interview Process",
+        "severity": "Low",
+        "kind": "detected",
+        "explanation": "If the selection team does not reach a collective decision upon initial review, an additional interview round may be introduced, potentially extending the decision timeline.",
+        "evidence": {
+          "page": 3,
+          "excerpt": "if the selection team does not collectively choose a respondent as their Design Builder, the selection team may decide to interview selected candidate(s)",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      }
+    ],
+    "missing": [
+      "Submission deadline date and submission instructions",
+      "Identification and details regarding the second-choice location option",
+      "Finalized full scope of work details",
+      "Submission deadline date and time",
+      "Proposal Form attachment or detailed lump sum pricing structure",
+      "Project construction timeline and completion milestones",
+      "Evaluation and selection criteria for proposals.",
+      "Project budget or estimated construction cost.",
+      "Bonding, insurance, and licensing requirements.",
+      "Details regarding Phase 2 scope and contract conditions.",
+      "Submission guidelines and evaluation criteria for the proposal.",
+      "Attached RFP Proposal Form and fee schedule details.",
+      "GIS Site Map attachment details.",
+      "Detailed project technical specifications and scope of work for Phase 1 and Phase 2.",
+      "Proposal submission deadline and schedule for interviews",
+      "Detailed requirements of section 4 referenced in the text",
+      "Submission instructions and contact details"
+    ],
+    "inconsistencies": [
+      "The source document text is truncated at the start ('sed on completeness of proposal...')."
+    ],
+    "generatedAt": "2026-11-25T12:44:54.233Z",
+    "executionReport": {
+      "totalSections": 6,
+      "completedSections": 6,
+      "onDeviceSections": 0,
+      "cloudSections": 0,
+      "cloudFallbackSections": 6,
+      "totalDurationMs": 894286,
+      "sections": [
+        {
+          "section": 1,
+          "total": 6,
+          "source": "CLOUD_FALLBACK",
+          "attempts": 3,
+          "durationMs": 142387,
+          "timedOut": false
+        },
+        {
+          "section": 2,
+          "total": 6,
+          "source": "CLOUD_FALLBACK",
+          "attempts": 3,
+          "durationMs": 130135,
+          "timedOut": false
+        },
+        {
+          "section": 3,
+          "total": 6,
+          "source": "CLOUD_FALLBACK",
+          "attempts": 2,
+          "durationMs": 207265,
+          "timedOut": false
+        },
+        {
+          "section": 4,
+          "total": 6,
+          "source": "CLOUD_FALLBACK",
+          "attempts": 3,
+          "durationMs": 133114,
+          "timedOut": false
+        },
+        {
+          "section": 5,
+          "total": 6,
+          "source": "CLOUD_FALLBACK",
+          "attempts": 3,
+          "durationMs": 213205,
+          "timedOut": false
+        },
+        {
+          "section": 6,
+          "total": 6,
+          "source": "CLOUD_FALLBACK",
+          "attempts": 3,
+          "durationMs": 68176,
+          "timedOut": false
+        }
+      ]
+    }
+  }
+}

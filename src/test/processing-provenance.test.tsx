@@ -129,7 +129,9 @@ describe("processing provenance", () => {
     );
     renderApp();
 
-    fireEvent.click(await screen.findByRole("button", { name: /add a document/i }));
+    const navigation = await screen.findByRole("navigation", { name: "Main navigation" });
+    // "Add a document" now opens an upload modal; reach processing via the nav.
+    fireEvent.click(within(navigation).getByRole("button", { name: "Processing" }));
     const status = screen.getByRole("region", { name: "Firebase AI Logic status" });
     expect(within(status).getByText("Fictional sample document")).toBeInTheDocument();
     expect(within(status).getByText("Demo mode")).toBeInTheDocument();
@@ -157,7 +159,9 @@ describe("processing provenance", () => {
       processingSource: "on-device",
     });
     renderApp();
-    fireEvent.click(await screen.findByRole("button", { name: /add a document/i }));
+    const navigation = await screen.findByRole("navigation", { name: "Main navigation" });
+    // "Add a document" now opens an upload modal; reach processing via the nav.
+    fireEvent.click(within(navigation).getByRole("button", { name: "Processing" }));
     fireEvent.click(screen.getByRole("button", { name: /confirm and continue/i }));
     // After analysis completes the run state is set; navigate back to processing to see status
     await screen.findByText("Completed");
@@ -178,7 +182,9 @@ describe("processing provenance", () => {
       processingSource: "on-device",
     });
     renderApp();
-    fireEvent.click(await screen.findByRole("button", { name: /add a document/i }));
+    const navigation = await screen.findByRole("navigation", { name: "Main navigation" });
+    // "Add a document" now opens an upload modal; reach processing via the nav.
+    fireEvent.click(within(navigation).getByRole("button", { name: "Processing" }));
     fireEvent.click(screen.getByRole("button", { name: /confirm and continue/i }));
     // Analysis completes; run state is updated
     await screen.findByText("Completed");
@@ -203,7 +209,9 @@ describe("processing provenance", () => {
         }),
     );
     renderApp();
-    fireEvent.click(await screen.findByRole("button", { name: /add a document/i }));
+    const navigation = await screen.findByRole("navigation", { name: "Main navigation" });
+    // "Add a document" now opens an upload modal; reach processing via the nav.
+    fireEvent.click(within(navigation).getByRole("button", { name: "Processing" }));
     fireEvent.click(screen.getByRole("button", { name: /confirm and continue/i }));
     // Analysis is running; navigate away
     fireEvent.click(screen.getByRole("button", { name: "Dashboard" }));

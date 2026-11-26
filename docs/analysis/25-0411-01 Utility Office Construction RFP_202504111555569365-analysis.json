@@ -1,0 +1,1353 @@
+{
+  "document": "25-0411-01 Utility Office Construction RFP_202504111555569365.pdf",
+  "analysis": {
+    "mode": "hybrid",
+    "processingSource": "hybrid",
+    "engine": "Firebase AI Logic · on-device + cloud",
+    "model": "Chrome on-device model + Gemini 3.5 Flash-Lite + Gemini 3.5 Flash",
+    "summary": "Request for Proposal (RFP) issued by Rockingham County for the construction of a Utility Office. The procurement is governed by the Virginia Public Procurement Act. Contact person is Trish Davidson, Deputy County Administrator. The provided procurement tender document outlines the table of contents and sections covering purpose, background, scope of services, proposal preparation, evaluation and award criteria, general terms and conditions, and various administrative and legal clauses. The County of Rockingham, Virginia is seeking design-build proposals from pre-qualified firms (Harman Construction and Legacy Building Company) for the construction of a new Utility Office and garage bay extensions located at 955 Pleasant Valley Road, Harrisonburg, Virginia. The RFP (Request for Proposal) is for the County of Rockingham to construct a utility building. Offerors must submit a detailed proposal including project design, company history, compliance with the RFP's purpose and scope, and a total cost with cost breakdowns. Proposals must be submitted by June 27, 2025, at 2:00 PM. The provided text outlines the evaluation criteria, interview schedule, and award process for a county procurement project, including weighted scoring factors and negotiation procedures. The RFP process for a project is outlined, with key dates including RFP issuance (April 11, 2025), pre-proposal meeting (April 28, 2025), proposal cutoff (June 27, 2025), evaluation period (June 30 – July 2, 2025), interviews (July 3rd), RFP decision (July 16, 2025), Board of Supervisors consideration (July 23, 2025), and construction completion (December 31, 2025). The solicitation includes general terms and conditions, focusing on applicable laws (Commonwealth of Virginia), anti-discrimination (Federal Civil Rights Act, Virginia Fair Employment Contracting Act, Virginians With Disabilities Act, Americans With Disabilities Act, and § 2.2-4311 of the Virginia Public Procurement Act (VPPA)). The provided procurement text outlines standard terms and conditions for public contracting with Rockingham County, including subcontracting clauses, ethics and anti-collusion certifications, compliance with the Immigration Reform and Control Act, antitrust assignments, clarification procedures, progress payment terms, and vendor qualification investigations. The County outlines its rights regarding inspection, changes to the contract, defaults, and tax exemptions for this procurement. Section 7.13 outlines the mandatory insurance requirements for the awarded offeror, including statutory Workers' Compensation, Employer's Liability, Commercial General Liability, Automobile Liability, Umbrella Liability Coverage, and Professional (E&O) Liability Insurance, along with specific endorsement and waiver of subrogation requirements naming the County of Rockingham. This document outlines the insurance requirements for a County contract, including carrier ratings, policy types, additional insured endorsements, proof of insurance submission before performance, subcontractor coverage obligations, and waivers of subrogation. The County of Rockingham specifies insurance requirements for contractors, including umbrella/excess liability, professional liability, builder's risk, and notification requirements. The County retains the right to revise or reject insurance requirements. This document outlines terms and conditions for a county contract including insurance requirements, drug-free workplace obligations, nondiscrimination, audit rights, non-appropriation, and contract document definitions. The procurement text outlines rules regarding contract interpretation, compliance with Virginia laws and regulations, licensing/permitting requirements, and proposal submission procedures. This procurement text covers proposal receipt deadlines, confidentiality, proposal acceptance periods, termination by the county, and legal protections for proprietary information. This document outlines compliance requirements for bidders submitting proposals in response to a Request for Proposal (RFP). Requirements include debarment certification, bonding (labor & material payment and performance), and a signature sheet certifying compliance and prohibiting collusion. Additional information includes notification deadlines for bond execution.",
+    "requirements": [
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r2-1",
+        "description": "Offerors must provide proof of authority to transact business in Virginia",
+        "category": "Legal",
+        "mandatory": true,
+        "confidence": 0.95,
+        "evidence": {
+          "page": 2,
+          "excerpt": "7.21 PROOF OF AUTHORITY TO TRANSACT BUSINESS IN VIRGINIA",
+          "verified": true,
+          "sourceIndex": 2,
+          "sourceLocation": "Page 2"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r3-1",
+        "description": "Attend mandatory pre-proposal meeting",
+        "category": "Administrative",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 4,
+          "excerpt": "A mandatory pre-proposal meeting will be held at 955 Pleasant Valley Road, Harrisonburg VA 22801 on Monday April 28, 2025, at 10:00 AM.",
+          "verified": true,
+          "sourceIndex": 4,
+          "sourceLocation": "Page 4"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r3-2",
+        "description": "Provide a metal building addition matching existing building width, approx 70 feet and max length 100 feet",
+        "category": "Technical",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 4,
+          "excerpt": "Metal building addition to match existing building width, approximately 70 ’ and a max length of 100 ’ .",
+          "verified": true,
+          "sourceIndex": 4,
+          "sourceLocation": "Page 4"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r3-3",
+        "description": "Include minimum of 3 equipment bays with doors on both sides for pull-through access",
+        "category": "Technical",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 4,
+          "excerpt": "Minimum of 3 equipment bays with doors on both sides for pull-through access.",
+          "verified": true,
+          "sourceIndex": 4,
+          "sourceLocation": "Page 4"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r3-4",
+        "description": "Provide garage doors matching existing (14 feet high and 12 feet wide) with individual openers and 4 feet space between doors",
+        "category": "Technical",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 4,
+          "excerpt": "Garage doors to match existing (14 ’ high and 12 ’ wide) and include individual openers at each door. Doors to have 4 ’ space between doors.",
+          "verified": true,
+          "sourceIndex": 4,
+          "sourceLocation": "Page 4"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r3-5",
+        "description": "Use LED lighting throughout",
+        "category": "Technical",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 4,
+          "excerpt": "All lighting to be LED",
+          "verified": true,
+          "sourceIndex": 4,
+          "sourceLocation": "Page 4"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r3-6",
+        "description": "Provide employee area including 3 to 4 offices (10x10), assembly area with desks for 20 employees, and a kitchenette break room",
+        "category": "Technical",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 4,
+          "excerpt": "Employee area: \no 3 offices 10 ’ x 10 ’ (up to 4 if space allows) \no Assembly area to include desk areas for 20 employees. \no Break room set up as a kitchenette to include area for refrigerator and sink.",
+          "verified": true,
+          "sourceIndex": 4,
+          "sourceLocation": "Page 4"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r4-1",
+        "description": "2 bathrooms including showers",
+        "category": "Technical",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 5,
+          "excerpt": "o 2 bathrooms including showers.",
+          "verified": true,
+          "sourceIndex": 5,
+          "sourceLocation": "Page 5"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r4-2",
+        "description": "Locker area to accommodate 25 lockers.",
+        "category": "Technical",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 5,
+          "excerpt": "o Locker area to accommodate 25 lockers.",
+          "verified": true,
+          "sourceIndex": 5,
+          "sourceLocation": "Page 5"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r4-3",
+        "description": "Washer/dryer area.",
+        "category": "Technical",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 5,
+          "excerpt": "o Washer/dryer area.",
+          "verified": true,
+          "sourceIndex": 5,
+          "sourceLocation": "Page 5"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r4-4",
+        "description": "Office area flooring to be LVT.",
+        "category": "Technical",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 5,
+          "excerpt": "o Office area flooring to be LVT.",
+          "verified": true,
+          "sourceIndex": 5,
+          "sourceLocation": "Page 5"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r5-1",
+        "description": "Send questions to Trish Davidson in the Finance Department.",
+        "category": "Administrative",
+        "mandatory": true,
+        "confidence": 0.9,
+        "evidence": {
+          "page": 6,
+          "excerpt": "Questions should be sent to Trish Davidson in the Finance Department at e-mail address tdavidson@rockinghamcountyva.gov.",
+          "verified": true,
+          "sourceIndex": 6,
+          "sourceLocation": "Page 6"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r7-1",
+        "description": "Include provisions in every subcontract or purchase order over $10,000",
+        "category": "Legal",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 8,
+          "excerpt": "The contractor will include the provisions of 1 above in every subcontract or purchase order over $10,000, so that the provisions will be binding upon each subcontractor or vendor.",
+          "verified": true,
+          "sourceIndex": 8,
+          "sourceLocation": "Page 8"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r7-2",
+        "description": "Certify proposal is made without collusion or fraud and without kickbacks",
+        "category": "Administrative",
+        "mandatory": true,
+        "confidence": 0.3,
+        "evidence": {
+          "page": 8,
+          "excerpt": "By submitting their proposals, Offerors certify that their proposals are made without collusion or fraud and that they have not offered or received any kickbacks or inducements...",
+          "verified": false,
+          "sourceIndex": 8,
+          "sourceLocation": "Page 8"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r7-3",
+        "description": "Identify actual or potential conflicts of interest and propose resolution methods",
+        "category": "Administrative",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 8,
+          "excerpt": "The Offeror shall identify any actual or potential conflicts of interest that exist, or which may arise if the offeror is recommended for award and propose how such conflicts might be resolved.",
+          "verified": true,
+          "sourceIndex": 8,
+          "sourceLocation": "Page 8"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r7-4",
+        "description": "Certify compliance with the Immigration Reform and Control Act of 1986",
+        "category": "Eligibility",
+        "mandatory": true,
+        "confidence": 0.3,
+        "evidence": {
+          "page": 8,
+          "excerpt": "By submitting their proposals, Offerors certify that their proposals are made without collusion or fraud... By submitting their proposals, Offerors certify that they do not and will not during the performance of this contract employ illegal alien workers...",
+          "verified": false,
+          "sourceIndex": 8,
+          "sourceLocation": "Page 8"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r9-1",
+        "description": "Must purchase and maintain statutory Workers' Compensation insurance listing Virginia as a covered state with a waiver of subrogation in favor of the County of Rockingham.",
+        "category": "Financial",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 10,
+          "excerpt": "Workers ’ Compensation - Statutory requirements and benefits.",
+          "verified": true,
+          "sourceIndex": 10,
+          "sourceLocation": "Page 10"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r9-2",
+        "description": "Must maintain Employer's Liability insurance with limits of $1,000,000 each accident / $1,000,000 each disease-policy limit / $1,000,000 each disease each employee, specifically listing Virginia as a covered state.",
+        "category": "Financial",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 10,
+          "excerpt": "Employer ’ s Liability - $1,000,000 each accident/$1,000,000 each disease-policy limit/ $1,000,000 each disease each employee.",
+          "verified": true,
+          "sourceIndex": 10,
+          "sourceLocation": "Page 10"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r9-3",
+        "description": "Must maintain Commercial General Liability insurance of $1,000,000 per occurrence / $2,000,000 aggregate limit and $2,000,000 per project aggregate limit, naming the County of Rockingham as an additional insured on a primary and non-contributory basis with required endorsements.",
+        "category": "Financial",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 10,
+          "excerpt": "Commercial General Liability - $1,000,000 per occurrence/$2,000,000 aggregate limit, and a per project aggregate limit of $2,000,000.",
+          "verified": true,
+          "sourceIndex": 10,
+          "sourceLocation": "Page 10"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r9-4",
+        "description": "Must maintain Automobile Liability insurance of $1,000,000 per accident covering hired, owned, non-owned, temporary, and leased vehicles, naming the County as additional insured with a waiver of subrogation.",
+        "category": "Financial",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 10,
+          "excerpt": "Automobile Liability - $1,000,000 per accident.",
+          "verified": true,
+          "sourceIndex": 10,
+          "sourceLocation": "Page 10"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r9-5",
+        "description": "Must maintain Umbrella Liability Coverage of at least $1,000,000 on a follow-form basis naming the County of Rockingham as additional insured with a waiver of subrogation.",
+        "category": "Financial",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 10,
+          "excerpt": "Umbrella Liability Coverage - minimum coverage of $1,000,000 or greater;",
+          "verified": true,
+          "sourceIndex": 10,
+          "sourceLocation": "Page 10"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r9-6",
+        "description": "Must maintain Professional (E&O) Liability Insurance in an amount not less than $1,000,000.",
+        "category": "Financial",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 10,
+          "excerpt": "Professional (E&O) Liability Insurance - of an amount not less than $1,000,000.",
+          "verified": true,
+          "sourceIndex": 10,
+          "sourceLocation": "Page 10"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r10-1",
+        "description": "Insurance carrier must be authorized to do business in Virginia and rated A-VIII or better by A.M. Best Company or equivalent.",
+        "category": "Financial",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 11,
+          "excerpt": "shall be issued by an insurance carrier authorized to do business within the Commonwealth of Virginia and rated A – VIII or better, by A. M. Best Company or equivalent rating from an alternate recognized ratings agency",
+          "verified": true,
+          "sourceIndex": 11,
+          "sourceLocation": "Page 11"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r10-2",
+        "description": "Maintain insurance in force throughout performance of services.",
+        "category": "Legal",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 11,
+          "excerpt": "shall be kept in force throughout performance of services;",
+          "verified": true,
+          "sourceIndex": 11,
+          "sourceLocation": "Page 11"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r10-3",
+        "description": "Deliver certificates of insurance and endorsements naming the County as additional insured prior to performance.",
+        "category": "Documentation",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 11,
+          "excerpt": "Prior to performance of any services or delivery of goods, the Offeror shall (i) have all required insurance coverage in effect; (ii) deliver to the County certificates of insurance",
+          "verified": true,
+          "sourceIndex": 11,
+          "sourceLocation": "Page 11"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r11-1",
+        "description": "Umbrella or Excess Liability Coverage",
+        "category": "Legal",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 12,
+          "excerpt": "Umbrella or Excess Liability Coverage shall provide additional coverage limits over the underlying commercial general liability, commercial automobile, and employer ’ s liability insurance with the broadest coverage available between the umbrella or excess liability policy and the underlying policies.",
+          "verified": true,
+          "sourceIndex": 12,
+          "sourceLocation": "Page 12"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r11-2",
+        "description": "Professional Liability Insurance",
+        "category": "Legal",
+        "mandatory": true,
+        "confidence": 0.3,
+        "evidence": {
+          "page": 12,
+          "excerpt": "Professional Liability Insurance: At its sole expense, and prior to commencing any activities under this Agreement, Offeror shall secure professional liability insurance...",
+          "verified": false,
+          "sourceIndex": 12,
+          "sourceLocation": "Page 12"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r11-3",
+        "description": "Builder's Risk Insurance",
+        "category": "Legal",
+        "mandatory": true,
+        "confidence": 0.3,
+        "evidence": {
+          "page": 12,
+          "excerpt": "The Contractor, at his cost, shall obtain and maintain in the names of the County and the Contractor builder’s risk insurance...",
+          "verified": false,
+          "sourceIndex": 12,
+          "sourceLocation": "Page 12"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r12-1",
+        "description": "Provide a copy of the policy of insurance upon demand.",
+        "category": "Documentation",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 12,
+          "excerpt": "A copy of the policy of insurance shall be given to the County upon demand.",
+          "verified": true,
+          "sourceIndex": 12,
+          "sourceLocation": "Page 12"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r12-2",
+        "description": "Provide a drug-free workplace for contractor's employees during the contract performance.",
+        "category": "Technical",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 13,
+          "excerpt": "During the performance of this contract, the contractor agrees to (i) provide a drug-free workplace for the contractor's employees;",
+          "verified": true,
+          "sourceIndex": 13,
+          "sourceLocation": "Page 13"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r12-3",
+        "description": "Include drug-free workplace provisions in every subcontract or purchase order of over $10,000.",
+        "category": "Legal",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 13,
+          "excerpt": "include the provisions of the foregoing clauses in every subcontract or purchase order of over $10,000, so that the provisions will be binding upon each subcontractor or vendor.",
+          "verified": true,
+          "sourceIndex": 13,
+          "sourceLocation": "Page 13"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r12-4",
+        "description": "Retain all books, records, and other documents relative to this contract for five years after final payment or until audited.",
+        "category": "Administrative",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 13,
+          "excerpt": "The contractor shall retain all books, records, and other documents relative to this contract for five (5) years after final payment, or until audited by Rockingham County, whichever is sooner.",
+          "verified": true,
+          "sourceIndex": 13,
+          "sourceLocation": "Page 13"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r13-1",
+        "description": "Compliance with contract interpretation clause.",
+        "category": "Legal",
+        "mandatory": true,
+        "confidence": 0.9,
+        "evidence": {
+          "page": 14,
+          "excerpt": "Anything called for by one of the contract documents and not called for by the others shall be of like effect as if required or called for by all, except that a provision clearly designed to negate or alter a provision contained in one or more of the other contract documents shall have the intended effect.",
+          "verified": true,
+          "sourceIndex": 14,
+          "sourceLocation": "Page 14"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r13-2",
+        "description": "Compliance with Virginia labor laws.",
+        "category": "Legal",
+        "mandatory": true,
+        "confidence": 0.9,
+        "evidence": {
+          "page": 14,
+          "excerpt": "The contractor shall comply with all laws, ordinances, rules, regulations, and lawful orders of any public authority bearing on the performance of the work and shall give all notices required thereby. This contract and all other contracts and subcontracts are subject to the provisions of Articles 3 and 5, Chapter 4, Title 40.1, Code of Virginia, relating to labor unions and the “ right to work. ” The contractor and its subcontractors, whether residents or nonresidents of the Commonwealth of Virginia, who perform any work related to the project shall comply with all of the said provisions.",
+          "verified": true,
+          "sourceIndex": 14,
+          "sourceLocation": "Page 14"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r13-3",
+        "description": "Compliance with Virginia safety regulations.",
+        "category": "Technical",
+        "mandatory": true,
+        "confidence": 0.8,
+        "evidence": {
+          "page": 14,
+          "excerpt": "The provisions of all rules and regulations governing safety as adopted by the Safety Codes Commission of the Commonwealth of Virginia and as issued by the Department of Labor and Industry under Title 40.1 of the Code of Virginia shall apply to all work under this contract Inspectors from the Department of Labor and Industry shall be granted access to the work for inspection without first obtaining a search warrant from the court.",
+          "verified": true,
+          "sourceIndex": 14,
+          "sourceLocation": "Page 14"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r13-4",
+        "description": "Possession of necessary licenses and permits.",
+        "category": "Eligibility",
+        "mandatory": true,
+        "confidence": 0.8,
+        "evidence": {
+          "page": 14,
+          "excerpt": "Offeror represents that he possesses all necessary licenses and permits required to conduct its business and will acquire any additional licenses and permits necessary for performance of the contract prior to the initiation of work. All proposals submitted shall have included in their price the cost of any business and professional licenses, permits, or fees required by Rockingham County or the Commonwealth of Virginia.",
+          "verified": true,
+          "sourceIndex": 14,
+          "sourceLocation": "Page 14"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r13-5",
+        "description": "Proof of Virginia business authorization.",
+        "category": "Legal",
+        "mandatory": true,
+        "confidence": 0.8,
+        "evidence": {
+          "page": 14,
+          "excerpt": "An offeror organized or authorized to transact business in the Commonwealth pursuant to Title 13.1 or Title 50 of the Code of Virginia shall include in its proposal the identification number issued to it by the Virginia State Corporation Commission. Any offeror that is not required to be authorized to transact business in the Commonwealth as a foreign business entity under Title 13.1 or Title 50 of the Code of Virginia or as otherwise required by law shall include in its proposal a statement describing why the offeror is not required to be so authorized.",
+          "verified": true,
+          "sourceIndex": 14,
+          "sourceLocation": "Page 14"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r13-6",
+        "description": "Proper Proposal Submission.",
+        "category": "Administrative",
+        "mandatory": true,
+        "confidence": 0.9,
+        "evidence": {
+          "page": 14,
+          "excerpt": "Proposals must give the full business address of the Offeror and be signed by an agent authorized to bind the Offeror. Proposals by partnerships must furnish the full name of all partners and must be signed in the partnership name by one of the general partners or any authorized representative, followed by the designation of the person signing. Proposals by corporations must be signed with the legal name of the corporation followed by the name of the State in which it is incorporated and by the signature and designation of the president, secretary, or other person authorized to bind it in the matter. The name of each person signing shall also be typed or printed below the signature. A proposal by a person who affixes to the signature the word “ President, ” “ Secretary, ” “ Agent ” or other designation without disclosing the principal, may be held to be the proposal of the individual signing. When requested by the County, satisfactory evidence of the authority of the officer signing in behalf of the corporation shall be furnished.",
+          "verified": true,
+          "sourceIndex": 14,
+          "sourceLocation": "Page 14"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r14-1",
+        "description": "Proposals must be delivered to the designated place prior to the deadline.",
+        "category": "Administrative",
+        "mandatory": true,
+        "confidence": 0.95,
+        "evidence": {
+          "page": 15,
+          "excerpt": "It is the responsibility of each Offeror to assure that their proposal is delivered to the place designated for receipt of proposals and prior to the time set for receipt of proposals.",
+          "verified": true,
+          "sourceIndex": 15,
+          "sourceLocation": "Page 15"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r14-2",
+        "description": "Proposals received after the deadline will not be considered.",
+        "category": "Administrative",
+        "mandatory": true,
+        "confidence": 0.9,
+        "evidence": {
+          "page": 15,
+          "excerpt": "Proposals received after the time designated for receipt of proposals will not be considered.",
+          "verified": true,
+          "sourceIndex": 15,
+          "sourceLocation": "Page 15"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r14-3",
+        "description": "Offerors must invoke protections for proprietary information prior to submission.",
+        "category": "Legal",
+        "mandatory": true,
+        "confidence": 0.3,
+        "evidence": {
+          "page": 15,
+          "excerpt": "Section 2.2-4342-F of the Code of Virginia states: Trade secrets or proprietary information submitted by a Offeror, offeror, or contractor in connection with a procurement transaction...",
+          "verified": false,
+          "sourceIndex": 15,
+          "sourceLocation": "Page 15"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r15-1",
+        "description": "Offerors certify they are not debarred.",
+        "category": "Eligibility",
+        "mandatory": true,
+        "confidence": 0.8,
+        "evidence": {
+          "page": 16,
+          "excerpt": "By submitting their proposals, offerors certify that they are not currently debarred by the federal government, the Commonwealth of Virginia, or any local government or public authority, from submitting bids or proposals on contracts for the type of goods and/or services covered by this solicitation, nor are they an agent of any person or entity that is currently so debarred.",
+          "verified": true,
+          "sourceIndex": 16,
+          "sourceLocation": "Page 16"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r15-2",
+        "description": "Labor and Material Payment Bond requirement.",
+        "category": "Financial",
+        "mandatory": true,
+        "confidence": 0.9,
+        "evidence": {
+          "page": 16,
+          "excerpt": "A labor and material payment bond and a performance bond, each in the amount of 100% of the contract price, with a corporate surety authorized to do business in the Commonwealth of Virginia and otherwise acceptable in all respects to the County Attorney, or his designee will be required for the faithful performance of the contract for the following:",
+          "verified": true,
+          "sourceIndex": 16,
+          "sourceLocation": "Page 16"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r15-3",
+        "description": "Performance Bond requirement.",
+        "category": "Financial",
+        "mandatory": true,
+        "confidence": 0.9,
+        "evidence": {
+          "page": 16,
+          "excerpt": "• If the contract is for a construction project and the award amount is over $500,000\n• If the contract is for a transportation-related project and the cost is over $250,000",
+          "verified": true,
+          "sourceIndex": 16,
+          "sourceLocation": "Page 16"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-r15-4",
+        "description": "Bond execution deadline.",
+        "category": "Delivery",
+        "mandatory": true,
+        "confidence": 0.9,
+        "evidence": {
+          "page": 16,
+          "excerpt": "The party to whom the contract is awarded will be required to execute the contract and obtain the labor and material payment bond and the performance bond within fifteen calendar days from the date when the Notice of Award together with the contract is delivered to the contractor for execution.",
+          "verified": true,
+          "sourceIndex": 16,
+          "sourceLocation": "Page 16"
+        }
+      }
+    ],
+    "deadlines": [
+      {
+        "id": "upload-1795287327039-3a1o77-ai-d3-1",
+        "description": "Mandatory pre-proposal meeting",
+        "date": "2025-04-28",
+        "relatedRequirement": "Attend mandatory pre-proposal meeting",
+        "evidence": {
+          "page": 4,
+          "excerpt": "A mandatory pre-proposal meeting will be held at 955 Pleasant Valley Road, Harrisonburg VA 22801 on Monday April 28, 2025, at 10:00 AM.",
+          "verified": true,
+          "sourceIndex": 4,
+          "sourceLocation": "Page 4"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-d4-1",
+        "description": "Proposal Submission Deadline",
+        "date": "2025-06-27",
+        "relatedRequirement": null,
+        "evidence": {
+          "page": 5,
+          "excerpt": "Send one original and three copies of the clearly marked proposal “ RFP #25-0411-01 Utility Building Construction ” no later than June 27, 2025 at 2:00pm to County of Rockingham, Attention: Trish Davidson, 20 East Gay Street, Harrisonburg VA 22802.",
+          "verified": true,
+          "sourceIndex": 5,
+          "sourceLocation": "Page 5"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-d5-1",
+        "description": "Interviews scheduled by the Evaluation Committee.",
+        "date": "2025-07-09",
+        "relatedRequirement": null,
+        "evidence": {
+          "page": 6,
+          "excerpt": "The Evaluation Committee will conduct interviews currently scheduled for July 9, 2025.",
+          "verified": true,
+          "sourceIndex": 6,
+          "sourceLocation": "Page 6"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-d6-1",
+        "description": "RFP Issued to Shortlisted Teams",
+        "date": "April 11, 2025",
+        "relatedRequirement": null,
+        "evidence": {
+          "page": 7,
+          "excerpt": "RFP Issued to Shortlisted Teams April 11, 2025",
+          "verified": true,
+          "sourceIndex": 7,
+          "sourceLocation": "Page 7"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-d6-2",
+        "description": "Pre-Proposal Meeting",
+        "date": "April 28, 2025",
+        "relatedRequirement": null,
+        "evidence": {
+          "page": 7,
+          "excerpt": "Pre-Proposal Meeting April 28, 2025 at 10am",
+          "verified": true,
+          "sourceIndex": 7,
+          "sourceLocation": "Page 7"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-d6-3",
+        "description": "Cutoff for Questions",
+        "date": "June 13, 2025",
+        "relatedRequirement": null,
+        "evidence": {
+          "page": 7,
+          "excerpt": "Cutoff for Questions June 13, 2025",
+          "verified": true,
+          "sourceIndex": 7,
+          "sourceLocation": "Page 7"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-d6-4",
+        "description": "Proposals Due",
+        "date": "June 27, 2025",
+        "relatedRequirement": "RFP Issued to Shortlisted Teams",
+        "evidence": {
+          "page": 7,
+          "excerpt": "Proposals Due – 75 days June 27, 2025",
+          "verified": true,
+          "sourceIndex": 7,
+          "sourceLocation": "Page 7"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-d6-5",
+        "description": "Evaluation Period",
+        "date": "June 30 – July 2, 2025",
+        "relatedRequirement": "Proposals Due",
+        "evidence": {
+          "page": 7,
+          "excerpt": "Evaluation Period June 30 – July 2, 2025",
+          "verified": true,
+          "sourceIndex": 7,
+          "sourceLocation": "Page 7"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-d6-6",
+        "description": "Interviews",
+        "date": "July 3 rd (times TBD)",
+        "relatedRequirement": "Evaluation Period",
+        "evidence": {
+          "page": 7,
+          "excerpt": "Interviews July 3 rd (times TBD)",
+          "verified": true,
+          "sourceIndex": 7,
+          "sourceLocation": "Page 7"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-d6-7",
+        "description": "RFP Decision",
+        "date": "July 16, 2025",
+        "relatedRequirement": "Evaluation Period",
+        "evidence": {
+          "page": 7,
+          "excerpt": "RFP Decision July 16, 2025",
+          "verified": true,
+          "sourceIndex": 7,
+          "sourceLocation": "Page 7"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-d6-8",
+        "description": "Board of Supervisors Consideration for Approval",
+        "date": "July 23, 2025",
+        "relatedRequirement": "RFP Decision",
+        "evidence": {
+          "page": 7,
+          "excerpt": "Board of Supervisors Consideration for Approval July 23, 2025",
+          "verified": true,
+          "sourceIndex": 7,
+          "sourceLocation": "Page 7"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-d6-9",
+        "description": "Construction Completion Goal",
+        "date": "December 31, 2025",
+        "relatedRequirement": "RFP Decision",
+        "evidence": {
+          "page": 7,
+          "excerpt": "Construction Completion Goal December 31, 2025",
+          "verified": true,
+          "sourceIndex": 7,
+          "sourceLocation": "Page 7"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-d7-1",
+        "description": "Contact the County with questions about specifications or solicitation documents",
+        "date": null,
+        "relatedRequirement": "Clarification of terms",
+        "evidence": {
+          "page": 8,
+          "excerpt": "If an offeror has questions about any specifications or other solicitation documents, the Offeror should contact the County no later than ten working days before the due date.",
+          "verified": true,
+          "sourceIndex": 8,
+          "sourceLocation": "Page 8"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-d10-1",
+        "description": "Provide 30 days prior written notice to the County for any substantial modification or cancellation of insurance coverage.",
+        "date": null,
+        "relatedRequirement": "Proof of Insurance",
+        "evidence": {
+          "page": 11,
+          "excerpt": "without 30 days prior written notice to the County",
+          "verified": true,
+          "sourceIndex": 11,
+          "sourceLocation": "Page 11"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-d13-1",
+        "description": "Proposal Receipt Deadline",
+        "date": null,
+        "relatedRequirement": null,
+        "evidence": {
+          "page": 14,
+          "excerpt": "Proposals may be withdrawn or modified by written notice received from offerors prior to the deadline fixed for proposal receipt.",
+          "verified": true,
+          "sourceIndex": 14,
+          "sourceLocation": "Page 14"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-d14-1",
+        "description": "Proposal acceptance period",
+        "date": "60 days",
+        "relatedRequirement": "7.26",
+        "evidence": {
+          "page": 15,
+          "excerpt": "Any proposal in response to this solicitation shall be valid for (60) days.",
+          "verified": true,
+          "sourceIndex": 15,
+          "sourceLocation": "Page 15"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-d14-2",
+        "description": "Termination notice",
+        "date": "Any time",
+        "relatedRequirement": "7.27",
+        "evidence": {
+          "page": 15,
+          "excerpt": "The County may terminate this contract at any time without cause, in whole or in part...",
+          "verified": false,
+          "sourceIndex": 15,
+          "sourceLocation": "Page 15"
+        }
+      }
+    ],
+    "specifications": [
+      {
+        "id": "upload-1795287327039-3a1o77-ai-s3-1",
+        "item": "Metal building addition",
+        "quantity": "70",
+        "unit": "feet",
+        "details": "Approximate width matching existing, max length 100 feet. Preference for 2-story with employee areas on second floor.",
+        "notes": "Preference given to a 2-story building with employee areas on second floor but would consider a single-floor concept.",
+        "evidence": {
+          "page": 4,
+          "excerpt": "Metal building addition to match existing building width, approximately 70 ’ and a max length of 100 ’ . Preference given to a 2-story building with employee areas on second floor but would consider a single-floor concept.",
+          "verified": true,
+          "sourceIndex": 4,
+          "sourceLocation": "Page 4"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-s3-2",
+        "item": "Equipment bays",
+        "quantity": "3",
+        "unit": "bays",
+        "details": "Doors on both sides for pull-through access",
+        "notes": "",
+        "evidence": {
+          "page": 4,
+          "excerpt": "Minimum of 3 equipment bays with doors on both sides for pull-through access.",
+          "verified": true,
+          "sourceIndex": 4,
+          "sourceLocation": "Page 4"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-s3-3",
+        "item": "Garage doors",
+        "quantity": null,
+        "unit": null,
+        "details": "14 feet high and 12 feet wide, match existing, include individual openers, 4 feet space between doors",
+        "notes": "",
+        "evidence": {
+          "page": 4,
+          "excerpt": "Garage doors to match existing (14 ’ high and 12 ’ wide) and include individual openers at each door. Doors to have 4 ’ space between doors.",
+          "verified": true,
+          "sourceIndex": 4,
+          "sourceLocation": "Page 4"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-s3-4",
+        "item": "Lighting",
+        "quantity": null,
+        "unit": null,
+        "details": "All lighting to be LED",
+        "notes": "",
+        "evidence": {
+          "page": 4,
+          "excerpt": "All lighting to be LED",
+          "verified": true,
+          "sourceIndex": 4,
+          "sourceLocation": "Page 4"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-s3-5",
+        "item": "Offices",
+        "quantity": "3",
+        "unit": "offices",
+        "details": "10 feet x 10 feet dimensions (up to 4 if space allows)",
+        "notes": "up to 4 if space allows",
+        "evidence": {
+          "page": 4,
+          "excerpt": "3 offices 10 ’ x 10 ’ (up to 4 if space allows)",
+          "verified": true,
+          "sourceIndex": 4,
+          "sourceLocation": "Page 4"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-s3-6",
+        "item": "Assembly area",
+        "quantity": "20",
+        "unit": "desks",
+        "details": "Desk areas for 20 employees",
+        "notes": "",
+        "evidence": {
+          "page": 4,
+          "excerpt": "Assembly area to include desk areas for 20 employees.",
+          "verified": true,
+          "sourceIndex": 4,
+          "sourceLocation": "Page 4"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-s3-7",
+        "item": "Break room kitchenette",
+        "quantity": null,
+        "unit": null,
+        "details": "Includes area for refrigerator and sink",
+        "notes": "",
+        "evidence": {
+          "page": 4,
+          "excerpt": "Break room set up as a kitchenette to include area for refrigerator and sink.",
+          "verified": true,
+          "sourceIndex": 4,
+          "sourceLocation": "Page 4"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-s4-1",
+        "item": "Cover Letter",
+        "quantity": "1",
+        "unit": null,
+        "details": "Indicating the Offeror ’ s philosophy in providing the requested services.",
+        "notes": "",
+        "evidence": {
+          "page": 5,
+          "excerpt": "Section 1: Cover Letter: Indicating the Offeror ’ s philosophy in providing the requested services.",
+          "verified": true,
+          "sourceIndex": 5,
+          "sourceLocation": "Page 5"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-s4-2",
+        "item": "Company History",
+        "quantity": "1",
+        "unit": null,
+        "details": "The Offeror will briefly describe its company history and history of performing work as described herein. Include any special qualifications, experience, awards etc. Note any changes to key personnel since the original response to the Request for Qualifications.",
+        "notes": "",
+        "evidence": {
+          "page": 5,
+          "excerpt": "Section 2: Company History: The Offeror will briefly describe its company history and history of performing work as described herein.",
+          "verified": true,
+          "sourceIndex": 5,
+          "sourceLocation": "Page 5"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-s4-3",
+        "item": "Design Proposal",
+        "quantity": "1",
+        "unit": null,
+        "details": "The Offeror shall include graphical representations of the proposed project design, written descriptions of the proposed materials, features, and design approach, and any other information relevant or necessary to convey the Offeror ’ s proposed design. The Design Proposal shall indicate the individuals to be included on the Offeror ’ s design team and the manner in which architectural and engineering services will be provided for the project.",
+        "notes": "",
+        "evidence": {
+          "page": 5,
+          "excerpt": "Section 3: Design Proposal: The Offeror shall include graphical representations of the proposed project design, written descriptions of the proposed materials, features, and design approach, and any other information relevant or necessary to convey the Offeror ’ s proposed design.",
+          "verified": true,
+          "sourceIndex": 5,
+          "sourceLocation": "Page 5"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-s4-4",
+        "item": "Total Cost",
+        "quantity": "1",
+        "unit": null,
+        "details": "The proposal must break out any alternatives from the specifications noted in 3.0 Scope of Services. The cost proposal must be in a separate sealed envelope.",
+        "notes": "",
+        "evidence": {
+          "page": 5,
+          "excerpt": "Section 5: Each offeror must provide the total cost for the design-build proposal. The proposal must break out any alternatives from the specifications noted in 3.0 Scope of Services.",
+          "verified": true,
+          "sourceIndex": 5,
+          "sourceLocation": "Page 5"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-s9-1",
+        "item": "Employer's Liability Insurance",
+        "quantity": null,
+        "unit": null,
+        "details": "$1,000,000 each accident / $1,000,000 each disease-policy limit / $1,000,000 each disease each employee",
+        "notes": "Must specifically list Virginia as a covered state.",
+        "evidence": {
+          "page": 10,
+          "excerpt": "Employer ’ s Liability - $1,000,000 each accident/$1,000,000 each disease-policy limit/ $1,000,000 each disease each employee.",
+          "verified": true,
+          "sourceIndex": 10,
+          "sourceLocation": "Page 10"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-s9-2",
+        "item": "Commercial General Liability Insurance",
+        "quantity": null,
+        "unit": null,
+        "details": "$1,000,000 per occurrence / $2,000,000 aggregate limit / $2,000,000 per project aggregate limit",
+        "notes": "Requires form CG 2010 11/85 edition or equivalent and CG 20 01 04 13 or equivalent.",
+        "evidence": {
+          "page": 10,
+          "excerpt": "Commercial General Liability - $1,000,000 per occurrence/$2,000,000 aggregate limit, and a per project aggregate limit of $2,000,000.",
+          "verified": true,
+          "sourceIndex": 10,
+          "sourceLocation": "Page 10"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-s9-3",
+        "item": "Automobile Liability Insurance",
+        "quantity": null,
+        "unit": null,
+        "details": "$1,000,000 per accident",
+        "notes": "Includes hired, owned, non-owned, temporary, and leased vehicles. Endorsement CA 04 49 11 16 or equivalent required.",
+        "evidence": {
+          "page": 10,
+          "excerpt": "Automobile Liability - $1,000,000 per accident.",
+          "verified": true,
+          "sourceIndex": 10,
+          "sourceLocation": "Page 10"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-s9-4",
+        "item": "Umbrella Liability Coverage",
+        "quantity": null,
+        "unit": null,
+        "details": "Minimum coverage of $1,000,000 or greater",
+        "notes": "Must be follow form over general liability, auto, and employer's liability policies.",
+        "evidence": {
+          "page": 10,
+          "excerpt": "Umbrella Liability Coverage - minimum coverage of $1,000,000 or greater;",
+          "verified": true,
+          "sourceIndex": 10,
+          "sourceLocation": "Page 10"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-s9-5",
+        "item": "Professional (E&O) Liability Insurance",
+        "quantity": null,
+        "unit": null,
+        "details": "Amount not less than $1,000,000",
+        "notes": "",
+        "evidence": {
+          "page": 10,
+          "excerpt": "Professional (E&O) Liability Insurance - of an amount not less than $1,000,000.",
+          "verified": true,
+          "sourceIndex": 10,
+          "sourceLocation": "Page 10"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-s11-1",
+        "item": "Coverage Limits",
+        "quantity": "",
+        "unit": "",
+        "details": "Umbrella/Excess Liability: $1,000,000 per claim/$2,000,000 aggregate (Required Insurance)",
+        "notes": "",
+        "evidence": {
+          "page": 12,
+          "excerpt": "Upon execution of this Agreement, Offeror shall provide the County with a certificate of insurance, or other written documentation satisfactory to the County in its sole discretion, issued by Offeror ’ s insurance company(ies), confirming the Required Insurance and the beginning and ending date(s) of Contractor ’ s policy(ies).",
+          "verified": true,
+          "sourceIndex": 12,
+          "sourceLocation": "Page 12"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-s11-2",
+        "item": "Insurance Policy Requirements",
+        "quantity": "1",
+        "unit": "",
+        "details": "Policy shall name the County and its officials, officers, and employees and agents as \" additional insureds \" by endorsement to the Umbrella or Excess Liability policy on a primary and non-contributory basis.",
+        "notes": "",
+        "evidence": {
+          "page": 12,
+          "excerpt": "Such policy shall not have a restriction on the limits of coverage provided to the County of Rockingham as an additional insured. The County of Rockingham shall be entitled to protection up to the full limits of the Offeror ’ s policy regardless of the minimum requirements specified in this contract.",
+          "verified": true,
+          "sourceIndex": 12,
+          "sourceLocation": "Page 12"
+        }
+      }
+    ],
+    "risks": [
+      {
+        "id": "upload-1795287327039-3a1o77-ai-k2-1",
+        "title": "Incomplete Document Excerpt",
+        "severity": "Low",
+        "kind": "detected",
+        "explanation": "The source text abruptly ends mid-sentence at 'WITHDRAWAL OR MODIFICATION OF', indicating that the document is truncated.",
+        "evidence": {
+          "page": 2,
+          "excerpt": "7.23 WITHDRAWAL OR MODIFICATION OF",
+          "verified": true,
+          "sourceIndex": 2,
+          "sourceLocation": "Page 2"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-k3-1",
+        "title": "Restricted Bidding Pool",
+        "severity": "High",
+        "kind": "detected",
+        "explanation": "Proposals are strictly limited to firms determined qualified by the Board of Supervisors on April 9, 2025 (specifically Harman Construction and Legacy Building Company), meaning other contractors cannot bid.",
+        "evidence": {
+          "page": 4,
+          "excerpt": "The County of Rockingham, (the County) a political subdivision of the State of Virginia is seeking design-build proposals from the firms determined qualified by the Board of Supervisors at its meeting on April 9, 2025... Those contractors are Harman Construction and Legacy Building Company.",
+          "verified": false,
+          "sourceIndex": 4,
+          "sourceLocation": "Page 4"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-k4-1",
+        "title": "Proposal Submission Delays",
+        "severity": "Medium",
+        "kind": "suggestion",
+        "explanation": "Late proposals will not be accepted, requiring careful coordination and timely submission.",
+        "evidence": {
+          "page": 5,
+          "excerpt": "Late proposals will not be accepted.",
+          "verified": true,
+          "sourceIndex": 5,
+          "sourceLocation": "Page 5"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-k5-1",
+        "title": "Interviews and Design Narrative",
+        "severity": "Medium",
+        "kind": "detected",
+        "explanation": "Offerors must be prepared to conduct a narrative presentation of their design during the interview scheduled for July 9, 2025.",
+        "evidence": {
+          "page": 6,
+          "excerpt": "The interviews will include a narrative by the Offeror of the design and how it meets the needs described herein.",
+          "verified": true,
+          "sourceIndex": 6,
+          "sourceLocation": "Page 6"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-k7-1",
+        "title": "Transfer of Antitrust Rights",
+        "severity": "Medium",
+        "kind": "detected",
+        "explanation": "Contractor must assign all antitrust causes of action to Rockingham County under the contract.",
+        "evidence": {
+          "page": 8,
+          "excerpt": "By entering into a contract, the contractor conveys, sells, assigns, and transfers to Rockingham County all rights, title and interest in and to all causes of action it may now have or hereafter acquire under the antitrust laws...",
+          "verified": false,
+          "sourceIndex": 8,
+          "sourceLocation": "Page 8"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-k9-1",
+        "title": "Specific Policy Endorsement and Waiver Requirements",
+        "severity": "Medium",
+        "kind": "suggestion",
+        "explanation": "The solicitation specifies exact endorsement forms (CG 2010 11/85, CG 20 01 04 13, CA 04 49 11 16) and primary/non-contributory waivers of subrogation across multiple policies, which may require specialized coordination with insurance providers.",
+        "evidence": {
+          "page": 10,
+          "excerpt": "CGL form CG 2010 11/85 edition or its equivalent is required to be endorsed to the commercial general liability policy.",
+          "verified": true,
+          "sourceIndex": 10,
+          "sourceLocation": "Page 10"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-k10-1",
+        "title": "Strict Insurance and Indemnity Obligations",
+        "severity": "High",
+        "kind": "detected",
+        "explanation": "Compliance with insurance requirements does not relieve the offeror of responsibility to indemnify the County, and carriers might deny coverage or refuse defense.",
+        "evidence": {
+          "page": 11,
+          "excerpt": "Compliance with insurance requirements shall not relieve the Offeror of any responsibility to indemnify the County",
+          "verified": true,
+          "sourceIndex": 11,
+          "sourceLocation": "Page 11"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-k11-1",
+        "title": "Insurance Cancellation",
+        "severity": "High",
+        "kind": "suggestion",
+        "explanation": "Offeror must immediately notify the County if the Required Insurance is subject to cancellation.",
+        "evidence": {
+          "page": 12,
+          "excerpt": "Upon receipt of any notice, verbal or written, that the Required Insurance is subject to cancellation, Offeror shall immediately (within one business day) notify the County.",
+          "verified": true,
+          "sourceIndex": 12,
+          "sourceLocation": "Page 12"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-k12-1",
+        "title": "Non-Appropriation Risk",
+        "severity": "High",
+        "kind": "detected",
+        "explanation": "The agreement may be terminated by the County if funding is not appropriated by the County Board of Supervisors.",
+        "evidence": {
+          "page": 13,
+          "excerpt": "In the event that funding to support this Agreement is not appropriated, whether in whole or in part, then the Agreement may be terminated by the County effective the last day for which appropriated funding is available.",
+          "verified": true,
+          "sourceIndex": 13,
+          "sourceLocation": "Page 13"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-k13-1",
+        "title": "Virginia Labor Law Compliance",
+        "severity": "High",
+        "kind": "detected",
+        "explanation": "Lack of specific details regarding labor law compliance beyond general reference to Virginia labor laws.  Could lead to audits or penalties.",
+        "evidence": {
+          "page": 14,
+          "excerpt": "The contractor shall comply with all laws, ordinances, rules, regulations, and lawful orders of any public authority bearing on the performance of the work and shall give all notices required thereby. This contract and all other contracts and subcontracts are subject to the provisions of Articles 3 and 5, Chapter 4, Title 40.1, Code of Virginia, relating to labor unions and the “ right to work. ” The contractor and its subcontractors, whether residents or nonresidents of the Commonwealth of Virginia, who perform any work related to the project shall comply with all of the said provisions.",
+          "verified": true,
+          "sourceIndex": 14,
+          "sourceLocation": "Page 14"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-k13-2",
+        "title": "Virginia Safety Regulations Compliance",
+        "severity": "High",
+        "kind": "detected",
+        "explanation": "Compliance with Virginia safety regulations is a critical requirement.  Failure to comply could lead to fines, shutdowns, or legal action.",
+        "evidence": {
+          "page": 14,
+          "excerpt": "The provisions of all rules and regulations governing safety as adopted by the Safety Codes Commission of the Commonwealth of Virginia and as issued by the Department of Labor and Industry under Title 40.1 of the Code of Virginia shall apply to all work under this contract Inspectors from the Department of Labor and Industry shall be granted access to the work for inspection without first obtaining a search warrant from the court.",
+          "verified": true,
+          "sourceIndex": 14,
+          "sourceLocation": "Page 14"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-k14-1",
+        "title": "Proposal Delivery Delay",
+        "severity": "Medium",
+        "kind": "detected",
+        "explanation": "Failure to deliver proposals on time may result in disqualification.",
+        "evidence": {
+          "page": 15,
+          "excerpt": "It is the responsibility of each Offeror to assure that their proposal is delivered to the place designated for receipt of proposals and prior to the time set for receipt of proposals.",
+          "verified": true,
+          "sourceIndex": 15,
+          "sourceLocation": "Page 15"
+        }
+      },
+      {
+        "id": "upload-1795287327039-3a1o77-ai-k14-2",
+        "title": "Lack of Vendor Protection",
+        "severity": "Low",
+        "kind": "suggestion",
+        "explanation": "Need to consider proactive measures to protect proprietary information.",
+        "evidence": {
+          "page": 15,
+          "excerpt": "Section 2.2-4342-F of the Code of Virginia states: Trade secrets or proprietary information submitted by a Offeror, offeror, or contractor...",
+          "verified": false,
+          "sourceIndex": 15,
+          "sourceLocation": "Page 15"
+        }
+      }
+    ],
+    "missing": [
+      "Specific submission deadlines and dates are missing from the provided text snippet.",
+      "Detailed technical specifications and quantities are missing due to document truncation.",
+      "Proposal submission deadline date and time",
+      "Budget or cost limitations",
+      "Contract terms and conditions",
+      "Submission delivery instructions and location",
+      "Exact due date for the RFP proposal submission",
+      "Specific details or requirements of provision 1 referenced in the text",
+      "Details following the incomplete header 'All insurance coverage:' at the end of section 7.13.",
+      "Specific labor law requirements",
+      "Specific safety regulation thresholds or standards",
+      "Detailed proposal submission guidelines beyond general requirements",
+      "Specifications",
+      "Detailed Termination Process",
+      "Contract type details",
+      "Bond terms",
+      "Exclusions to debarment",
+      "Detailed bonding requirements",
+      "Contract amount thresholds for bonding"
+    ],
+    "inconsistencies": [
+      "The RFP does not specify which agency or department is requesting the proposal.",
+      "The text mentions adopting the Virginia Public Procurement Act, but does not include specific requirements from the Act.",
+      "No deadline is specified.",
+      "Lack of specific specification details.",
+      "No details on scope of work.",
+      "Vague description of termination by the county for convenience; lacks specific processes.",
+      "Conflicting information regarding the effect of termination on surety bonds (4 vs. no further obligation to the contractor).",
+      "The debarment certification statement does not explicitly specify the types of entities involved, e.g., individuals, corporations, etc."
+    ],
+    "generatedAt": "2026-11-21T19:34:09.234Z"
+  }
+}

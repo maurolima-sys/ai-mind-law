@@ -1,0 +1,279 @@
+{
+  "document": "SEDA-Vinyl-Siding-Facia-RFP.pdf",
+  "analysis": {
+    "mode": "local",
+    "processingSource": "on-device",
+    "engine": "Firebase AI Logic · on-device",
+    "model": "Chrome on-device model",
+    "summary": "SEDA-COG is seeking contractor bids for vinyl siding and facia replacement at their main office building in Lewisburg, PA. Proposals are due September 30th, 2024. SEDA Foundation Inc. is seeking a contractor to replace siding, fascia, louvers, and accents at their main office building. The project must comply with 2024 ICC Building Codes. Permits, plans, and material disposal costs are the contractor's responsibility. Proposals should include a project schedule and an initial estimate detailing all costs. Proposals must be submitted by September 30th, 2024, to SEDA-COG. The proposal will be evaluated based on adequacy, experience, quality, timeliness, cost, and timeline. References are required, and Professional Liability Insurance and a PA Contractors License are mandated.",
+    "requirements": [
+      {
+        "id": "upload-1795470767843-j3nkx9-ai-r2-1",
+        "description": "Install new vinyl siding & accessories on all three sections of the main SEDA COG facility.",
+        "category": "Delivery",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 3,
+          "excerpt": "Install new vinyl siding & accessories on all three sections of the main SEDA COG facility.",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      },
+      {
+        "id": "upload-1795470767843-j3nkx9-ai-r2-2",
+        "description": "Install new vinyl soffit & aluminum fascia on all three sections of the main SEDA COG facility.",
+        "category": "Delivery",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 3,
+          "excerpt": "Install new vinyl soffit & aluminum fascia on all three sections of the main SEDA COG facility.",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      },
+      {
+        "id": "upload-1795470767843-j3nkx9-ai-r2-3",
+        "description": "Wrap all windowsills and frames with aluminum and/or vinyl.",
+        "category": "Delivery",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 3,
+          "excerpt": "Wrap all windowsills and frames with aluminum and/or vinyl.",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      },
+      {
+        "id": "upload-1795470767843-j3nkx9-ai-r2-4",
+        "description": "Replace door trim with new vinyl.",
+        "category": "Delivery",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 3,
+          "excerpt": "Replace door trim with new vinyl.",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      },
+      {
+        "id": "upload-1795470767843-j3nkx9-ai-r2-5",
+        "description": "Replace any rotted underlying wood with new material.",
+        "category": "Delivery",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 3,
+          "excerpt": "Replace any rotted underlying wood with new material.",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      },
+      {
+        "id": "upload-1795470767843-j3nkx9-ai-r2-6",
+        "description": "Install vinyl accessories including corners, light blocks, electrical outlet blocks, hose bib blocks, vent blocks, and J-channel.",
+        "category": "Delivery",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 3,
+          "excerpt": "Install vinyl accessories including corners, light blocks, electrical outlet blocks, hose bib blocks, vent blocks, and J-channel.",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      },
+      {
+        "id": "upload-1795470767843-j3nkx9-ai-r2-7",
+        "description": "Install Radiant Barrier wrap",
+        "category": "Delivery",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 3,
+          "excerpt": "Install Radiant Barrier wrap",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      },
+      {
+        "id": "upload-1795470767843-j3nkx9-ai-r2-8",
+        "description": "Clean up all debris from jobsite.",
+        "category": "Delivery",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 3,
+          "excerpt": "Clean up all debris from jobsite.",
+          "verified": true,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      },
+      {
+        "id": "upload-1795470767843-j3nkx9-ai-r3-1",
+        "description": "Submit three (3) copies of the proposal to Scott Kramer, Facilities Manager, SEDA-COG.",
+        "category": "Delivery",
+        "mandatory": false,
+        "confidence": 0.3,
+        "evidence": {
+          "page": 3,
+          "excerpt": "Three (3) copies of the proposal must be submitted to: Scott Kramer, Facilities Manager\nSEDA-COG\n201 Furnace Road\nLewisburg, PA 17837",
+          "verified": false,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      },
+      {
+        "id": "upload-1795470767843-j3nkx9-ai-r3-2",
+        "description": "Proposals must be received no later than 1:00pm prevailing time, Monday, September 30th, 2024.",
+        "category": "Delivery",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 4,
+          "excerpt": "Proposals must be received no later than 1:00pm prevailing time, Monday, September 30th, 2024.",
+          "verified": true,
+          "sourceIndex": 4,
+          "sourceLocation": "Page 4"
+        }
+      },
+      {
+        "id": "upload-1795470767843-j3nkx9-ai-r3-3",
+        "description": "Provide a minimum of two references where similar services have been performed during the past three years.",
+        "category": "Eligibility",
+        "mandatory": true,
+        "confidence": 1,
+        "evidence": {
+          "page": 4,
+          "excerpt": "Each proposer shall provide a minimum of two references where similar services have been performed during the past three years.",
+          "verified": true,
+          "sourceIndex": 4,
+          "sourceLocation": "Page 4"
+        }
+      },
+      {
+        "id": "upload-1795470767843-j3nkx9-ai-r3-4",
+        "description": "Include the level of coverage provided for Professional Liability Insurance and PA Contractors License.",
+        "category": "Eligibility",
+        "mandatory": true,
+        "confidence": 0.8,
+        "evidence": {
+          "page": 4,
+          "excerpt": "Professional Liability Insurance and PA Contractors License are required for this project. Please include the level of coverage provided.",
+          "verified": true,
+          "sourceIndex": 4,
+          "sourceLocation": "Page 4"
+        }
+      }
+    ],
+    "deadlines": [
+      {
+        "id": "upload-1795470767843-j3nkx9-ai-d1-1",
+        "description": "Proposal Due Date",
+        "date": "September 30th, 2024",
+        "relatedRequirement": "Proposals shall be accepted until 1:00pm prevailing time",
+        "evidence": {
+          "page": 1,
+          "excerpt": "Proposals will be accepted until 1:00pm prevailing time, Monday September 30th, at which time they will be publicly opened at the SEDA-COG office.",
+          "verified": false,
+          "sourceIndex": 1,
+          "sourceLocation": "Page 1"
+        }
+      },
+      {
+        "id": "upload-1795470767843-j3nkx9-ai-d1-2",
+        "description": "Pre-bid Meeting",
+        "date": "Wednesday, September 18 th 2024",
+        "relatedRequirement": null,
+        "evidence": {
+          "page": 1,
+          "excerpt": "A pre-bid meeting will be held on Wednesday, September 18 th 2024, at 2pm.",
+          "verified": false,
+          "sourceIndex": 1,
+          "sourceLocation": "Page 1"
+        }
+      },
+      {
+        "id": "upload-1795470767843-j3nkx9-ai-d3-1",
+        "description": "Proposal Submission Deadline",
+        "date": "September 30th, 2024",
+        "relatedRequirement": null,
+        "evidence": {
+          "page": 4,
+          "excerpt": "Proposals must be received no later than 1:00pm prevailing time, Monday, September 30th, 2024.",
+          "verified": true,
+          "sourceIndex": 4,
+          "sourceLocation": "Page 4"
+        }
+      }
+    ],
+    "specifications": [
+      {
+        "id": "upload-1795470767843-j3nkx9-ai-s3-1",
+        "item": "Proposal Submission Format",
+        "quantity": "1",
+        "unit": "Document",
+        "details": "Three copies of the proposal.",
+        "notes": "",
+        "evidence": {
+          "page": 3,
+          "excerpt": "Three (3) copies of the proposal must be submitted to: Scott Kramer, Facilities Manager\nSEDA-COG\n201 Furnace Road\nLewisburg, PA 17837",
+          "verified": false,
+          "sourceIndex": 3,
+          "sourceLocation": "Page 3"
+        }
+      }
+    ],
+    "risks": [],
+    "missing": [],
+    "inconsistencies": [
+      "The text does not specify the start date for the project.",
+      "The text does not specify any relevant deadlines for contractor proposals."
+    ],
+    "generatedAt": "2026-11-23T22:03:53.102Z",
+    "executionReport": {
+      "totalSections": 3,
+      "completedSections": 3,
+      "onDeviceSections": 3,
+      "cloudSections": 0,
+      "cloudFallbackSections": 0,
+      "totalDurationMs": 211364,
+      "sections": [
+        {
+          "section": 1,
+          "total": 3,
+          "source": "ON_DEVICE",
+          "attempts": 1,
+          "durationMs": 55030,
+          "timedOut": false
+        },
+        {
+          "section": 2,
+          "total": 3,
+          "source": "ON_DEVICE",
+          "attempts": 1,
+          "durationMs": 81296,
+          "timedOut": false
+        },
+        {
+          "section": 3,
+          "total": 3,
+          "source": "ON_DEVICE",
+          "attempts": 1,
+          "durationMs": 75038,
+          "timedOut": false
+        }
+      ]
+    }
+  }
+}

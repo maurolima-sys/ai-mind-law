@@ -11,8 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChangelogRouteImport } from './routes/changelog'
+import { Route as ComplianceRouteImport } from './routes/compliance'
+import { Route as DocumentsRouteImport } from './routes/documents'
 import { Route as EvaluationRouteImport } from './routes/evaluation'
+import { Route as IntegrationsRouteImport } from './routes/integrations'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ProcessingRouteImport } from './routes/processing'
+import { Route as ProjectsRouteImport } from './routes/projects'
+import { Route as RisksRouteImport } from './routes/risks'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as AnalysisDocIdRouteImport } from './routes/analysis/$docId'
 import { Route as ProcessingRunRouteImport } from './routes/processing/run'
 
@@ -26,14 +33,49 @@ const ChangelogRoute = ChangelogRouteImport.update({
   path: '/changelog',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ComplianceRoute = ComplianceRouteImport.update({
+  id: '/compliance',
+  path: '/compliance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocumentsRoute = DocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EvaluationRoute = EvaluationRouteImport.update({
   id: '/evaluation',
   path: '/evaluation',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IntegrationsRoute = IntegrationsRouteImport.update({
+  id: '/integrations',
+  path: '/integrations',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProcessingRoute = ProcessingRouteImport.update({
+  id: '/processing',
+  path: '/processing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProjectsRoute = ProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RisksRoute = RisksRouteImport.update({
+  id: '/risks',
+  path: '/risks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AnalysisDocIdRoute = AnalysisDocIdRouteImport.update({
@@ -42,24 +84,38 @@ const AnalysisDocIdRoute = AnalysisDocIdRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProcessingRunRoute = ProcessingRunRouteImport.update({
-  id: '/processing/run',
-  path: '/processing/run',
-  getParentRoute: () => rootRouteImport,
+  id: '/run',
+  path: '/run',
+  getParentRoute: () => ProcessingRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/changelog': typeof ChangelogRoute
+  '/compliance': typeof ComplianceRoute
+  '/documents': typeof DocumentsRoute
   '/evaluation': typeof EvaluationRoute
+  '/integrations': typeof IntegrationsRoute
   '/login': typeof LoginRoute
+  '/processing': typeof ProcessingRouteWithChildren
+  '/projects': typeof ProjectsRoute
+  '/risks': typeof RisksRoute
+  '/settings': typeof SettingsRoute
   '/analysis/$docId': typeof AnalysisDocIdRoute
   '/processing/run': typeof ProcessingRunRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/changelog': typeof ChangelogRoute
+  '/compliance': typeof ComplianceRoute
+  '/documents': typeof DocumentsRoute
   '/evaluation': typeof EvaluationRoute
+  '/integrations': typeof IntegrationsRoute
   '/login': typeof LoginRoute
+  '/processing': typeof ProcessingRouteWithChildren
+  '/projects': typeof ProjectsRoute
+  '/risks': typeof RisksRoute
+  '/settings': typeof SettingsRoute
   '/analysis/$docId': typeof AnalysisDocIdRoute
   '/processing/run': typeof ProcessingRunRoute
 }
@@ -67,8 +123,15 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/changelog': typeof ChangelogRoute
+  '/compliance': typeof ComplianceRoute
+  '/documents': typeof DocumentsRoute
   '/evaluation': typeof EvaluationRoute
+  '/integrations': typeof IntegrationsRoute
   '/login': typeof LoginRoute
+  '/processing': typeof ProcessingRouteWithChildren
+  '/projects': typeof ProjectsRoute
+  '/risks': typeof RisksRoute
+  '/settings': typeof SettingsRoute
   '/analysis/$docId': typeof AnalysisDocIdRoute
   '/processing/run': typeof ProcessingRunRoute
 }
@@ -77,24 +140,45 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/changelog'
+    | '/compliance'
+    | '/documents'
     | '/evaluation'
+    | '/integrations'
     | '/login'
+    | '/processing'
+    | '/projects'
+    | '/risks'
+    | '/settings'
     | '/analysis/$docId'
     | '/processing/run'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/changelog'
+    | '/compliance'
+    | '/documents'
     | '/evaluation'
+    | '/integrations'
     | '/login'
+    | '/processing'
+    | '/projects'
+    | '/risks'
+    | '/settings'
     | '/analysis/$docId'
     | '/processing/run'
   id:
     | '__root__'
     | '/'
     | '/changelog'
+    | '/compliance'
+    | '/documents'
     | '/evaluation'
+    | '/integrations'
     | '/login'
+    | '/processing'
+    | '/projects'
+    | '/risks'
+    | '/settings'
     | '/analysis/$docId'
     | '/processing/run'
   fileRoutesById: FileRoutesById
@@ -102,10 +186,16 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ChangelogRoute: typeof ChangelogRoute
+  ComplianceRoute: typeof ComplianceRoute
+  DocumentsRoute: typeof DocumentsRoute
   EvaluationRoute: typeof EvaluationRoute
+  IntegrationsRoute: typeof IntegrationsRoute
   LoginRoute: typeof LoginRoute
+  ProcessingRoute: typeof ProcessingRouteWithChildren
+  ProjectsRoute: typeof ProjectsRoute
+  RisksRoute: typeof RisksRoute
+  SettingsRoute: typeof SettingsRoute
   AnalysisDocIdRoute: typeof AnalysisDocIdRoute
-  ProcessingRunRoute: typeof ProcessingRunRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -124,6 +214,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChangelogRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/compliance': {
+      id: '/compliance'
+      path: '/compliance'
+      fullPath: '/compliance'
+      preLoaderRoute: typeof ComplianceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/documents': {
+      id: '/documents'
+      path: '/documents'
+      fullPath: '/documents'
+      preLoaderRoute: typeof DocumentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/evaluation': {
       id: '/evaluation'
       path: '/evaluation'
@@ -131,11 +235,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EvaluationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/integrations': {
+      id: '/integrations'
+      path: '/integrations'
+      fullPath: '/integrations'
+      preLoaderRoute: typeof IntegrationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/processing': {
+      id: '/processing'
+      path: '/processing'
+      fullPath: '/processing'
+      preLoaderRoute: typeof ProcessingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projects': {
+      id: '/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof ProjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/risks': {
+      id: '/risks'
+      path: '/risks'
+      fullPath: '/risks'
+      preLoaderRoute: typeof RisksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/analysis/$docId': {
@@ -147,21 +286,39 @@ declare module '@tanstack/react-router' {
     }
     '/processing/run': {
       id: '/processing/run'
-      path: '/processing/run'
+      path: '/run'
       fullPath: '/processing/run'
       preLoaderRoute: typeof ProcessingRunRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ProcessingRoute
     }
   }
 }
 
+interface ProcessingRouteChildren {
+  ProcessingRunRoute: typeof ProcessingRunRoute
+}
+
+const ProcessingRouteChildren: ProcessingRouteChildren = {
+  ProcessingRunRoute: ProcessingRunRoute,
+}
+
+const ProcessingRouteWithChildren = ProcessingRoute._addFileChildren(
+  ProcessingRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChangelogRoute: ChangelogRoute,
+  ComplianceRoute: ComplianceRoute,
+  DocumentsRoute: DocumentsRoute,
   EvaluationRoute: EvaluationRoute,
+  IntegrationsRoute: IntegrationsRoute,
   LoginRoute: LoginRoute,
+  ProcessingRoute: ProcessingRouteWithChildren,
+  ProjectsRoute: ProjectsRoute,
+  RisksRoute: RisksRoute,
+  SettingsRoute: SettingsRoute,
   AnalysisDocIdRoute: AnalysisDocIdRoute,
-  ProcessingRunRoute: ProcessingRunRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

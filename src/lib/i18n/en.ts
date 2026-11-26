@@ -511,6 +511,10 @@
   drop_choose: "Choose document",
   drop_note: "PDF, DOCX, or XLSX · maximum 50 MB · scanned PDFs may use optional external OCR",
 
+  // ── Guided action pointer & upload modal ──────────────────────────────────────
+  guide_next_step: "Click here next",
+  upload_close: "Close upload dialog",
+
   // ── Processing — external OCR ─────────────────────────────────────────────────
   ocr_sparse_title: "{{count}} pages have little or no selectable text.",
   ocr_sparse_desc:
