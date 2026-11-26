@@ -50,8 +50,7 @@ function ProcessingRunPage() {
 
   function handleOpenResults() {
     const docId = run!.documentId;
-    clearRun();
-    void navigate({ to: "/analysis/$docId", params: { docId } });
+    void navigate({ to: "/analysis/$docId", params: { docId } }).then(() => clearRun());
   }
 
   const monitorStatus =
