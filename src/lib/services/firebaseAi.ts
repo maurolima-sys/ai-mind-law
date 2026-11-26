@@ -258,6 +258,20 @@ export function isInvalidFirebaseAppCheckTokenError(error: unknown): boolean {
   return candidate.cause ? isInvalidFirebaseAppCheckTokenError(candidate.cause) : false;
 }
 
+/** True when App Check has throttled requests after a 403 (appCheck/throttled). */
+export function isAppCheckThrottledError(error: unknown): boolean {
+  if (typeof error !== "object" || error === null) return false;
+  const candidate = error as { code?: unknown; message?: unknown; cause?: unknown };
+  if (typeof candidate.code === "string" && /appCheck\/throttled/i.test(candidate.code))
+    return true;
+  if (
+    typeof candidate.message === "string" &&
+    /appCheck.*throttled|Requests throttled due to previous 403/i.test(candidate.message)
+  )
+    return true;
+  return candidate.cause ? isAppCheckThrottledError(candidate.cause) : false;
+}
+
 export function isAppCheckError(error: unknown): boolean {
   if (typeof error !== "object" || error === null) return false;
   const candidate = error as { code?: unknown; message?: unknown; cause?: unknown };

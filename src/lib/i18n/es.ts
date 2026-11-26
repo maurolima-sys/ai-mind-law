@@ -526,6 +526,8 @@ export const es: Translations = {
   error_dismiss: "Descartar error",
   firebase_app_check_token_error:
     "Firebase rechazó el token de seguridad, por lo que no se pudo completar el análisis en vivo. Recarga e inténtalo de nuevo o usa el modo Sample. Si persiste, pide al administrador del despliegue que compruebe la clave de sitio de reCAPTCHA Enterprise, el dominio autorizado y el registro de Firebase App Check; los cambios en variables VITE_* requieren una nueva compilación y publicación.",
+  firebase_app_check_throttled_error:
+    "Firebase App Check está bloqueando temporalmente las solicitudes tras un fallo de autenticación anterior. El análisis en la nube no está disponible hasta 24 horas. Usa el modo en el dispositivo o pide al administrador que verifique el registro de App Check y la clave de sitio de reCAPTCHA Enterprise.",
   on_device_init_timeout_error:
     "Chrome no terminó de preparar el modelo en el dispositivo tras 60 segundos sin progreso. Usa Chrome de escritorio compatible y mantén esta página abierta mientras se descarga el modelo. Este intento no envió texto extraído al servicio en la nube de Firebase.",
   on_device_generation_timeout_error:

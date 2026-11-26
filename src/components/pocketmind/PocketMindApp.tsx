@@ -147,6 +147,7 @@ import {
   getOnDeviceTimeoutStage,
   isFirebaseConfigured,
   isInvalidFirebaseAppCheckTokenError,
+  isAppCheckThrottledError,
 } from "@/lib/services/firebaseAi";
 import { markUnpaginatedEvidenceUnverified } from "@/lib/services/ocrEvidence";
 import { mergeOcrPageText, pagesNeedingExternalOcr } from "@/lib/services/ocrNormalize";
@@ -1363,6 +1364,10 @@ export function PocketMindApp({
     }
     if (timeoutStage === "generation") {
       setErrorMessage(t("on_device_generation_timeout_error"));
+      return;
+    }
+    if (isAppCheckThrottledError(error)) {
+      setErrorMessage(t("firebase_app_check_throttled_error"));
       return;
     }
     if (isInvalidFirebaseAppCheckTokenError(error)) {
