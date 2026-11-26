@@ -332,6 +332,56 @@ describe("analysis activity events", () => {
     expect(onInference.mock.calls).toEqual([["IN_CLOUD"], ["ON_DEVICE"]]);
   });
 
+  it("surfaces the on-device response error instead of retrying smaller until giving up", async () => {
+    // A structurally invalid on-device response fails parsing at every chunk
+    // size, so halving the input cannot help. The real validation error must
+    // reach the user instead of a generic "could not process a sub-chunk".
+    const invalidResponse = JSON.stringify({
+      summary: "Test",
+      requirements: [
+        {
+          description: "r",
+          category: null,
+          mandatory: null,
+          confidence: 0.9,
+          sourceIndex: null,
+          excerpt: "e",
+        },
+      ],
+      deadlines: [],
+      specifications: [],
+      risks: [],
+      missing: [],
+      inconsistencies: [],
+    });
+    const localModel = model(invalidResponse, "on_device");
+    let localCalls = 0;
+    localModel.generateContent.mockImplementation(async () => {
+      localCalls += 1;
+      if (localCalls === 1) throw new Error("On-device request failed");
+      return { response: { inferenceSource: "on_device", text: () => invalidResponse } };
+    });
+    const cloudModel = model(validResponse, "in_cloud");
+    cloudModel.generateContent.mockRejectedValue(new Error("Cloud processing failed"));
+    mocks.createTenderModel.mockImplementation((preference: string) => ({
+      model: preference === "cloud" ? cloudModel : localModel,
+    }));
+
+    const events: AnalysisProgressEvent[] = [];
+    const outcome = await analyzeTender(["x".repeat(6000)], "hybrid", () => {}, () => {}, {
+      onEvent: (event) => events.push(event),
+    }).then(
+      (result) => ({ ok: true as const, result }),
+      (error: unknown) => ({ ok: false as const, error }),
+    );
+
+    expect(outcome.ok).toBe(false);
+    const message = outcome.ok ? "" : (outcome.error as Error).message;
+    expect(message).toMatch(/did not match the required analysis format|could not be parsed/);
+    expect(message).not.toMatch(/could not process a sub-chunk/);
+    expect(events.filter((event) => event.type === "response").length).toBe(1);
+  });
+
   it("does not use local processing when cloud-only processing fails", async () => {
     const cloudModel = model(validResponse, "in_cloud");
     cloudModel.generateContent.mockRejectedValue(new Error("Cloud unavailable"));

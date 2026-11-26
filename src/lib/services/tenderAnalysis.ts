@@ -781,22 +781,53 @@ export async function analyzeTender(
           // split each page into on-device-sized sub-chunks.
           const currentChunk = chunks[index] ?? chunk;
           for (const page of currentChunk.pages) {
-            for (let offset = 0; offset < page.text.length; offset += ON_DEVICE_CHUNK_CHARACTERS) {
-              const localChunk = {
-                pages: [
-                  { ...page, text: page.text.slice(offset, offset + ON_DEVICE_CHUNK_CHARACTERS) },
-                ],
-              };
-              const localPrompt = buildPrompt(localChunk, "local", options.locale ?? "en");
-              const localResult = await generateWithModelFallback("local", (_candidate, signal) => {
-                options.onEvent?.({
-                  type: "request-started",
-                  section: index + 1,
-                  total: chunks.length,
-                });
-                return localModel.generateContent(localPrompt, signal ? { signal } : undefined);
-              });
-              recordResponse(localResult, true);
+            let offset = 0;
+            while (offset < page.text.length) {
+              let subSize = ON_DEVICE_CHUNK_CHARACTERS;
+              let succeeded = false;
+              while (subSize >= MIN_ON_DEVICE_SPLIT_CHARACTERS) {
+                const localChunk = {
+                  pages: [
+                    { ...page, text: page.text.slice(offset, offset + subSize) },
+                  ],
+                };
+                const localPrompt = buildPrompt(localChunk, "local", options.locale ?? "en");
+                try {
+                  const localResult = await generateWithModelFallback(
+                    "local",
+                    (_candidate, signal) => {
+                      options.onEvent?.({
+                        type: "request-started",
+                        section: index + 1,
+                        total: chunks.length,
+                      });
+                      return localModel.generateContent(
+                        localPrompt,
+                        signal ? { signal } : undefined,
+                      );
+                    },
+                  );
+                  recordResponse(localResult, true);
+                  succeeded = true;
+                  break;
+                } catch (error) {
+                  // Halving the input only helps when the on-device model
+                  // rejects the request size. A response that arrives but then
+                  // fails validation or source reporting fails at every size —
+                  // surface the real error instead of retrying to the floor.
+                  const detail = error instanceof Error ? error.message : String(error);
+                  if (/^The AI response\b|inference source|unexpected source/.test(detail)) {
+                    throw error;
+                  }
+                  subSize = Math.floor(subSize / 2);
+                }
+              }
+              if (!succeeded) {
+                throw new Error(
+                  `On-device fallback could not process a sub-chunk of ${subSize * 2} characters after repeated splits.`,
+                );
+              }
+              offset += subSize;
             }
           }
         } catch (localError) {
