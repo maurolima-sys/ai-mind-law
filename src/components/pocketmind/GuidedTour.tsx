@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+﻿import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   Check,
   ChevronLeft,
@@ -17,7 +17,7 @@ import {
   synthesiseTourStep,
 } from "@/lib/services/tourNarration.functions";
 
-// ─── types & constants ────────────────────────────────────────────────────────
+// â”€â”€â”€ types & constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type TourScreen = "overview" | "library" | "analysis" | "compliance" | "processing" | "risks";
 
@@ -90,7 +90,7 @@ const STEPS: TourStep[] = [
   },
 ];
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
@@ -109,7 +109,7 @@ function stepText(title: string, body: string): string {
   return `${title}. ${body}`;
 }
 
-// ─── narration hook ───────────────────────────────────────────────────────────
+// â”€â”€â”€ narration hook â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type NarrationStatus = "idle" | "loading" | "playing" | "error";
 
@@ -155,7 +155,6 @@ function useNarration(active: boolean, locale: "en" | "pt" | "es", narrationEnab
     return () => {
       stopAudio();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function stopAudio() {
@@ -186,14 +185,14 @@ function useNarration(active: boolean, locale: "en" | "pt" | "es", narrationEnab
     } catch {
       setStatus("error");
     }
-    // stepIndex unused — speechSynthesis has no caching cost
+    // stepIndex unused â€” speechSynthesis has no caching cost
     void stepIndex;
   }
 
   return { available, muted, status, toggleMute, playStep, stopAudio };
 }
 
-// ─── geometry ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ geometry â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface Rect {
   left: number;
@@ -202,7 +201,7 @@ interface Rect {
   height: number;
 }
 
-// ─── component ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface GuidedTourProps {
   active: boolean;
@@ -230,8 +229,10 @@ export function GuidedTour({
   const primaryBtnRef = useRef<HTMLButtonElement | null>(null);
 
   const narration = useNarration(active, locale, narrationEnabled);
+  const playStepRef = useRef(narration.playStep);
+  playStepRef.current = narration.playStep;
 
-  // ── lifecycle ────────────────────────────────────────────────────────────────
+  // â”€â”€ lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const finish = useCallback(() => {
     try {
@@ -281,7 +282,7 @@ export function GuidedTour({
     return () => window.removeEventListener("keydown", onKey);
   }, [active, next, back, finish]);
 
-  // ── spotlight measurement ────────────────────────────────────────────────────
+  // â”€â”€ spotlight measurement â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const measure = useCallback(() => {
     const current = STEPS[step];
@@ -319,7 +320,7 @@ export function GuidedTour({
       let left: number;
       let top: number;
 
-      // Sidebar / left-edge targets — open popover to the right.
+      // Sidebar / left-edge targets â€” open popover to the right.
       if (target.left < vw * 0.28 && target.right + gap + pw < vw - margin) {
         left = target.right + gap;
         top = clamp(target.top, margin, vh - ph - margin);
@@ -351,15 +352,13 @@ export function GuidedTour({
     const title = t(current.titleKey as Parameters<typeof t>[0]);
     const body = t(current.bodyKey as Parameters<typeof t>[0]);
     const tid = setTimeout(() => {
-      void narration.playStep(step, title, body);
+      void playStepRef.current(step, title, body);
     }, 80);
 
     return () => {
       cleanup?.();
       clearTimeout(tid);
     };
-    // narration.playStep is stable (defined inside useNarration with no deps that change per render)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, step, screen, onNavigate, measure, t]);
 
   // Re-measure on resize / scroll.
@@ -385,7 +384,7 @@ export function GuidedTour({
     returnFocusRef?.current?.focus?.();
   }, [active, returnFocusRef]);
 
-  // ── render ───────────────────────────────────────────────────────────────────
+  // â”€â”€ render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   if (!active) return null;
 
@@ -402,7 +401,7 @@ export function GuidedTour({
 
   return (
     <div className="pm-tour-overlay" aria-hidden={false}>
-      {/* ── spotlight ── */}
+      {/* â”€â”€ spotlight â”€â”€ */}
       <div
         className={`pm-tour-spotlight${modalMode ? " is-modal" : ""}`}
         style={
@@ -417,7 +416,7 @@ export function GuidedTour({
         }
       />
 
-      {/* ── popover ── */}
+      {/* â”€â”€ popover â”€â”€ */}
       <div
         className={`pm-tour-popover${modalMode ? " is-modal" : ""}`}
         ref={popoverRef}
