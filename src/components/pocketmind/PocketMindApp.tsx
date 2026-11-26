@@ -1407,7 +1407,6 @@ export function PocketMindApp({
     setIsAnalyzing(true);
     setErrorMessage("");
     startMonitor(selectedDocument);
-    void navigate({ to: "/monitor" });
     try {
       let pages: string[];
       let locations: string[];
@@ -1470,9 +1469,11 @@ export function PocketMindApp({
         appendMonitor(selectedDocument.id, { type: "ocr-waiting" });
         setMonitorStatus(selectedDocument.id, "waiting");
         void checkExternalOcrStatus();
-        // Stay on the Processing screen so the user can choose OCR or proceed with extracted text
+        // Return to Processing so the user can see the OCR prompt and choose how to proceed
+        void navigate({ to: "/processing", search: { doc: selectedDocument.id } });
         return;
       }
+      void navigate({ to: "/monitor" });
       if (selectedDocument.source === "upload") {
         const updatedDocument: DocumentRecord = {
           ...selectedDocument,
