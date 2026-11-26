@@ -765,6 +765,7 @@ export function PocketMindApp({
     }
     setDocuments((current) => [newDocument, ...current.filter((document) => document.id !== id)]);
     setSelectedDocumentId(id);
+    selectedDocumentIdRef.current = id;
     setFilesByDocumentId((current) => ({ ...current, [id]: selectedFile }));
     setSelectedRequirementId(null);
     setSelectedEvidenceId("");
@@ -848,6 +849,7 @@ export function PocketMindApp({
     }
     setDocuments((current) => [newDocument, ...current.filter((d) => d.id !== resolvedId)]);
     setSelectedDocumentId(resolvedId);
+    selectedDocumentIdRef.current = resolvedId;
     setFilesByDocumentId((current) => ({ ...current, [resolvedId]: file }));
     setSelectedRequirementId(null);
     setSelectedEvidenceId("");
