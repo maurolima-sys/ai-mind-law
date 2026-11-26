@@ -65,7 +65,7 @@ function ProcessingRunPage() {
         <span className="pm-run-header-sep" aria-hidden="true">
           ·
         </span>
-        <Link to="/" className="pm-run-back" aria-label={t("monitor_back_to_processing")}>
+        <Link to="/processing" className="pm-run-back" aria-label={t("monitor_back_to_processing")}>
           ← {t("monitor_back_to_processing")}
         </Link>
       </header>

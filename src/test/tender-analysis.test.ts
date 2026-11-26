@@ -61,6 +61,66 @@ describe("parseTenderResponse", () => {
     );
   });
 
+  it("accepts null for optional text fields instead of rejecting the whole response", () => {
+    // On-device models are told "use null for unknown optional values" and may
+    // return null for evidence excerpts. A single null excerpt must not void the
+    // entire analysis (production: deadlines[0].excerpt expected string, null).
+    const response = {
+      summary: null,
+      requirements: [
+        {
+          description: "Site access",
+          category: "Administrative",
+          mandatory: true,
+          confidence: 0.8,
+          sourceIndex: 1,
+          excerpt: null,
+        },
+      ],
+      deadlines: [
+        {
+          description: "Clarification round",
+          date: null,
+          relatedRequirement: null,
+          sourceIndex: 1,
+          excerpt: null,
+        },
+      ],
+      specifications: [
+        {
+          item: "Facade panels",
+          quantity: null,
+          unit: null,
+          details: "Vinyl",
+          notes: null,
+          sourceIndex: 1,
+          excerpt: null,
+        },
+      ],
+      risks: [
+        {
+          title: "Weather delay",
+          severity: "Medium",
+          kind: "suggestion",
+          explanation: "Outdoor work",
+          sourceIndex: 1,
+          excerpt: null,
+        },
+      ],
+      missing: [],
+      inconsistencies: [],
+    };
+    const parsed = parseTenderResponse(JSON.stringify(response));
+    expect(parsed.deadlines[0]).toMatchObject({
+      description: "Clarification round",
+      date: null,
+      excerpt: "",
+    });
+    expect(parsed.requirements[0]?.excerpt).toBe("");
+    expect(parsed.specifications[0]?.excerpt).toBe("");
+    expect(parsed.risks[0]?.excerpt).toBe("");
+  });
+
   it("surfaces malformed or incomplete model output", () => {
     expect(() => parseTenderResponse("not JSON")).toThrow(
       "The AI response could not be parsed as structured analysis",
@@ -80,7 +140,7 @@ describe("parseTenderResponse", () => {
           mandatory: true,
           confidence: 0.85,
           sourceIndex: 1,
-          excerpt: null,
+          excerpt: { nested: true },
         },
       ],
       deadlines: [],
@@ -91,7 +151,7 @@ describe("parseTenderResponse", () => {
     };
 
     expect(() => parseTenderResponse(JSON.stringify(response))).toThrow(
-      "requirements[0].excerpt: Expected string, received null",
+      "requirements[0].excerpt: Expected string, received object",
     );
   });
 

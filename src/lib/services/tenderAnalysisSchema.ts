@@ -2,7 +2,11 @@ import { Schema } from "firebase/ai";
 import { z } from "zod";
 
 const findingSchema = z.object({
-  description: z.string().default(""),
+  description: z
+    .string()
+    .nullable()
+    .default(null)
+    .transform((v) => v ?? ""),
   category: z
     .string()
     .transform((v) => {
@@ -41,22 +45,38 @@ const findingSchema = z.object({
     .union([z.number(), z.string()])
     .transform((v) => (typeof v === "string" ? parseInt(v, 10) : v))
     .pipe(z.number().int().min(0).catch(1)),
-  excerpt: z.string().default(""),
+  excerpt: z
+    .string()
+    .nullable()
+    .default(null)
+    .transform((v) => v ?? ""),
 });
 
 const deadlineSchema = z.object({
-  description: z.string().default(""),
+  description: z
+    .string()
+    .nullable()
+    .default(null)
+    .transform((v) => v ?? ""),
   date: z.string().nullable().default(null),
   relatedRequirement: z.string().nullable().default(null),
   sourceIndex: z
     .union([z.number(), z.string()])
     .transform((v) => (typeof v === "string" ? parseInt(v, 10) : v))
     .pipe(z.number().int().min(0).catch(1)),
-  excerpt: z.string().default(""),
+  excerpt: z
+    .string()
+    .nullable()
+    .default(null)
+    .transform((v) => v ?? ""),
 });
 
 const specificationSchema = z.object({
-  item: z.string().default(""),
+  item: z
+    .string()
+    .nullable()
+    .default(null)
+    .transform((v) => v ?? ""),
   quantity: z
     .union([z.string(), z.number()])
     .nullable()
@@ -67,7 +87,11 @@ const specificationSchema = z.object({
     .nullable()
     .default(null)
     .transform((v) => (v === null ? null : String(v))),
-  details: z.string().default(""),
+  details: z
+    .string()
+    .nullable()
+    .default(null)
+    .transform((v) => v ?? ""),
   notes: z
     .string()
     .nullable()
@@ -77,11 +101,19 @@ const specificationSchema = z.object({
     .union([z.number(), z.string()])
     .transform((v) => (typeof v === "string" ? parseInt(v, 10) : v))
     .pipe(z.number().int().min(0).catch(1)),
-  excerpt: z.string().default(""),
+  excerpt: z
+    .string()
+    .nullable()
+    .default(null)
+    .transform((v) => v ?? ""),
 });
 
 const riskSchema = z.object({
-  title: z.string().default(""),
+  title: z
+    .string()
+    .nullable()
+    .default(null)
+    .transform((v) => v ?? ""),
   severity: z
     .string()
     .transform((v) => {
@@ -98,18 +130,30 @@ const riskSchema = z.object({
       return normalized === "suggestion" ? "suggestion" : "detected";
     })
     .pipe(z.enum(["detected", "suggestion"])),
-  explanation: z.string().default(""),
+  explanation: z
+    .string()
+    .nullable()
+    .default(null)
+    .transform((v) => v ?? ""),
   sourceIndex: z
     .union([z.number(), z.string()])
     .transform((v) => (typeof v === "string" ? parseInt(v, 10) : v))
     .pipe(z.number().int().min(0).catch(1)),
-  excerpt: z.string().default(""),
+  excerpt: z
+    .string()
+    .nullable()
+    .default(null)
+    .transform((v) => v ?? ""),
 });
 
 // Array bounds guard against GHSA-mrhx-c7xc-m3w5 (Zod DoS via oversized constrained
 // collections). Limits are set well above any realistic tender analysis output.
 export const chunkResponseSchema = z.object({
-  summary: z.string().default(""),
+  summary: z
+    .string()
+    .nullable()
+    .default(null)
+    .transform((v) => v ?? ""),
   requirements: z.array(findingSchema).max(500),
   deadlines: z.array(deadlineSchema).max(500),
   specifications: z.array(specificationSchema).max(500),

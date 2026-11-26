@@ -411,9 +411,17 @@ export function PocketMindApp({
   const [selectedDocumentId, setSelectedDocumentId] = useState(initialDocumentId);
   const location = useLocation();
   const screen = pathToScreen(location.pathname);
-  // setScreen navigates to the corresponding route
+  // setScreen navigates to the corresponding route.
+  // For "analysis", always navigate to /analysis/$docId using the current selectedDocumentId.
   function setScreen(s: Screen) {
-    void navigate({ to: SCREEN_PATHS[s] });
+    if (s === "analysis") {
+      void navigate({
+        to: "/analysis/$docId",
+        params: { docId: selectedDocumentIdRef.current },
+      });
+    } else {
+      void navigate({ to: SCREEN_PATHS[s] });
+    }
   }
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [search, setSearch] = useState("");
