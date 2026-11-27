@@ -1031,6 +1031,9 @@ export const pt: Translations = {
   projects_delete_confirm:
     "Eliminar agora a organização deste projeto? Os documentos locais não serão apagados.",
 
+  analysis_saved_result:
+    "Análise guardada · gerada em {{date}} · {{mode}}. Execute uma nova análise em Processamento para atualizar.",
+
   // ── Hero CTA ──────────────────────────────────────────────────────────────────
   hero_rfp_title: "Experimente uma análise de documento em tempo real",
   hero_rfp_subtitle:

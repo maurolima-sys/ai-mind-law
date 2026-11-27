@@ -250,3 +250,55 @@ Feature Branch
 ```
 
 Merging remains a separate decision and must never be performed automatically by git-exe.
+
+---
+
+## Creating a Pull Request via GitHub API
+
+When the user asks to create a PR without exposing `.env.local`, use the following pattern:
+
+1. Write a temporary ESM script to `scripts/create-pr.mjs` that reads `.env.local` directly with `readFileSync` (using `path.join(__dirname, '..', '.env.local')`) and calls the GitHub API via `fetch` with `GITHUB_ACCESS_TOKEN`.
+2. Run it with `node scripts/create-pr.mjs`.
+3. Delete the script immediately after: `del scripts\create-pr.mjs`.
+
+**Key rules:**
+- Never log or print the token value — only log `TOKEN_FOUND` / `TOKEN_NOT_FOUND` for diagnostics.
+- Never commit the script — delete it before any staging.
+- The token key in `.env.local` is `GITHUB_ACCESS_TOKEN`.
+- Use `import.meta.url` + `fileURLToPath` + `dirname` for `__dirname` in ESM, then `path.join(__dirname, '..', '.env.local')` for the path — do NOT use `new URL(...).pathname` on Windows (produces double-drive-letter paths).
+- Parse `.env.local` manually line by line (`line.match(/^([^#=\s][^=]*)=(.*)$/)`) — do not use the `dotenv` package (its injector intercepts the process and swallows async callbacks).
+- The GitHub API endpoint is `POST https://api.github.com/repos/maurolima-sys/ai-mind-law/pulls` with headers `Authorization: Bearer <token>`, `Accept: application/vnd.github+json`, `X-GitHub-Api-Version: 2022-11-28`, `User-Agent: pocketmind-ai-agent`.
+- On success the response contains `html_url` and `number`; log `PR_CREATED: <url> | number: <n>`.
+- On failure log `STATUS: <code> | message: <msg> | errors: <json>`.
+
+**Script template (minimal):**
+
+```js
+// scripts/create-pr.mjs — delete after use, never commit
+import { readFileSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const raw = readFileSync(join(__dirname, "..", ".env.local"), "utf8");
+const env = {};
+for (const line of raw.split("\n")) {
+  const m = line.match(/^([^#=\s][^=]*)=(.*)$/);
+  if (m) env[m[1].trim()] = m[2].trim().replace(/^["']|["']$/g, "");
+}
+const token = env["GITHUB_ACCESS_TOKEN"];
+if (!token) { console.error("GITHUB_ACCESS_TOKEN not found"); process.exit(1); }
+const res = await fetch("https://api.github.com/repos/maurolima-sys/ai-mind-law/pulls", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${token}`,
+    Accept: "application/vnd.github+json",
+    "Content-Type": "application/json",
+    "User-Agent": "pocketmind-ai-agent",
+    "X-GitHub-Api-Version": "2022-11-28",
+  },
+  body: JSON.stringify({ title: "<title>", head: "<branch>", base: "main", body: "<body>" }),
+});
+const r = await res.json();
+if (r.html_url) console.log("PR_CREATED:", r.html_url, "| number:", r.number);
+else console.error("STATUS:", res.status, "| message:", r.message, "| errors:", JSON.stringify(r.errors ?? null));
+```

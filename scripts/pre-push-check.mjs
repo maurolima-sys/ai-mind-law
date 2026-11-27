@@ -157,7 +157,7 @@ run("Staged whitespace (git diff --cached --check)", "git diff --cached --check"
 run("Lint (npm run lint)", "npm run lint");
 
 // ── 6. TypeScript ─────────────────────────────────────────────────────────────
-run("TypeScript (tsc --noEmit)", "npx tsc --noEmit");
+run("TypeScript (tsc --noEmit)", "node node_modules/typescript/bin/tsc --noEmit");
 
 // ── 7. Tests ──────────────────────────────────────────────────────────────────
 run("Tests (npm run test -- --run)", "npm run test -- --run");

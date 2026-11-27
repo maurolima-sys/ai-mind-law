@@ -612,13 +612,13 @@ export function PocketMindApp({
   // Before the workspace loads, documents only contains the demo record.
   // Do not fall back to documents[0] (Riverside) while IndexedDB is still
   // loading — that would silently replace a real upload with the demo.
-  // After workspaceReady: if the id is the demo or no upload id was requested,
-  // fall back to documents[0]. If a specific upload id was requested but is
-  // genuinely absent, return undefined so the UI can show an explicit message.
-  const isExternalId = selectedDocumentId !== DEMO_DOC_ID;
+  // After workspaceReady: fall back to documents[0] ONLY when the demo is
+  // explicitly selected. Any other ID (upload-*, demo-rfp-sample, etc.) must
+  // resolve to the exact document or return undefined — never substitute
+  // another document's analysis silently.
   const selectedDocument =
     documents.find((document) => document.id === selectedDocumentId) ??
-    (workspaceReady && !isExternalId ? documents[0] : undefined);
+    (workspaceReady && selectedDocumentId === DEMO_DOC_ID ? documents[0] : undefined);
   const file = filesByDocumentId[selectedDocumentId] ?? null;
 
   // Guided action pointer: highlight the next button in the document flow.
@@ -816,17 +816,23 @@ export function PocketMindApp({
   }
 
   async function addDocumentFromUrl(url: string, docId: string, fileName: string) {
-    if (documents.some((d) => d.id === docId)) {
-      // Already loaded — navigate to analysis if it has results, otherwise processing
-      const existing = documents.find((d) => d.id === docId);
-      setSelectedDocumentId(docId);
-      selectedDocumentIdRef.current = docId;
+    // Look up by the stable logical key (docId) OR by filename — the actual
+    // persisted document uses a resolvedId (upload-<timestamp>-<random>), so
+    // we match by name when the logical key is absent.
+    const existing =
+      documents.find((d) => d.id === docId) ??
+      documents.find((d) => d.source === "upload" && d.name === fileName);
+    if (existing) {
+      // Already loaded — always go to Processing so the user can see the saved
+      // result provenance and choose to run a fresh analysis if they want.
+      setSelectedDocumentId(existing.id);
+      selectedDocumentIdRef.current = existing.id;
       setCloudConsent(false);
       setEvidenceCloudConsent(false);
       setSelectedRequirementId(null);
       setActiveExcerpt(null);
       setActivePage(1);
-      setScreen(existing?.analysis ? "analysis" : "processing");
+      setScreen("processing");
       return;
     }
     if (!workspaceReady || workspaceError) {
@@ -2029,8 +2035,11 @@ export function PocketMindApp({
                 setActiveExcerpt(null);
                 setActivePage(1);
                 setActiveFinding("all");
+                // Navigate based on the document we just resolved — never
+                // fall back to another document's analysis.
                 const nextDocument = documents.find((document) => document.id === id);
-                setScreen(id === DEMO_DOC_ID || nextDocument?.analysis ? "analysis" : "processing");
+                if (!nextDocument) return; // workspace not ready yet
+                setScreen(nextDocument.analysis ? "analysis" : "processing");
               }}
               onDeleteDocument={(document) => setDeleteDocumentPending(document)}
               onLoadDiscoveredDocument={addDocumentFromUrl}
@@ -2043,6 +2052,8 @@ export function PocketMindApp({
               storageError={workspaceError}
               onAddDocument={() => setUploadModalOpen(true)}
               onOpenDocument={(id) => {
+                const target = documents.find((document) => document.id === id);
+                if (!target) return;
                 setSelectedDocumentId(id);
                 selectedDocumentIdRef.current = id;
                 setCloudConsent(false);
@@ -2051,11 +2062,7 @@ export function PocketMindApp({
                 setSelectedRequirementId(null);
                 setActiveExcerpt(null);
                 setActivePage(1);
-                setScreen(
-                  documents.find((document) => document.id === id)?.analysis
-                    ? "analysis"
-                    : "processing",
-                );
+                setScreen(target.analysis ? "analysis" : "processing");
               }}
               onClearWorkspace={() => void clearWorkspace().catch(() => undefined)}
             />
@@ -2075,6 +2082,8 @@ export function PocketMindApp({
               onAddLink={addProjectDocument}
               onRemoveLink={removeProjectDocument}
               onOpenDocument={(id) => {
+                const target = documents.find((document) => document.id === id);
+                if (!target) return;
                 setSelectedDocumentId(id);
                 selectedDocumentIdRef.current = id;
                 setCloudConsent(false);
@@ -2083,11 +2092,7 @@ export function PocketMindApp({
                 setSelectedRequirementId(null);
                 setActiveExcerpt(null);
                 setActivePage(1);
-                setScreen(
-                  documents.find((document) => document.id === id)?.analysis
-                    ? "analysis"
-                    : "processing",
-                );
+                setScreen(target.analysis ? "analysis" : "processing");
               }}
             />
           )}
@@ -2989,6 +2994,26 @@ function AnalysisScreen({
           <span>
             {analysis.mode === "demo" ? t("warning_demo_prepared") : t("warning_demo_ai")}
           </span>
+        </div>
+      )}
+
+      {document.source === "upload" && (
+        <div className="pm-inline-warning" role="note">
+          <Calendar size={16} />
+          <span>
+            {t("analysis_saved_result", {
+              date: new Date(analysis.generatedAt).toLocaleString(),
+              mode: modeLabel(processingSource, t),
+            })}
+          </span>
+          <button
+            type="button"
+            className="pm-button pm-button--outline"
+            style={{ marginLeft: "auto", flexShrink: 0 }}
+            onClick={onOpenProcessing}
+          >
+            {t("empty_analysis_cta")}
+          </button>
         </div>
       )}
 
