@@ -1640,9 +1640,7 @@ export function PocketMindApp({
       return <main className="pm-empty-analysis">{t("workspace_loading")}</main>;
     }
     // workspaceReady but id not found — explicit message instead of silent demo substitution.
-    return (
-      <main className="pm-empty-analysis">{t("workspace_document_not_found")}</main>
-    );
+    return <main className="pm-empty-analysis">{t("workspace_document_not_found")}</main>;
   }
 
   return (

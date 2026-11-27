@@ -35,8 +35,9 @@ const upload: DocumentRecord = {
   id: "upload-real-456",
   name: "utility-office-rfp.pdf",
   source: "upload",
+  size: 1024,
   pages: ["page one"],
-  uploadedAt: new Date().toISOString(),
+  addedAt: new Date().toISOString(),
 };
 
 describe("workspace hydration — selectedDocument guard", () => {

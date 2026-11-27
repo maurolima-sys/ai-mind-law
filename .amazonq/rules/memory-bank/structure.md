@@ -1,130 +1,146 @@
-# Structure — PocketMind AI
+# PocketMind AI — Project Structure
 
-## Directory Layout
+## Root Layout
 
 ```
 ai-mind-law/
-├── src/
-│   ├── components/
-│   │   ├── pocketmind/          # Application-level components
-│   │   │   ├── PocketMindApp.tsx      # Root app shell: routing, state, sidebar, topbar
-│   │   │   ├── DocumentQaPanel.tsx    # Q&A panel: questions, citations, research
-│   │   │   ├── GuidedTour.tsx         # Onboarding tour (9 steps)
-│   │   │   ├── LanguageSelector.tsx   # EN/PT/ES switcher
-│   │   │   └── ChangelogPage.tsx      # Changelog display
-│   │   └── ui/                  # shadcn/ui primitives (Radix-based)
-│   ├── data/
-│   │   └── sampleTender.ts      # Fictional sample tender + prepared analysis
-│   ├── hooks/
-│   │   └── use-mobile.tsx       # Responsive breakpoint hook
-│   ├── lib/
-│   │   ├── i18n/                # Internationalization
-│   │   │   ├── index.tsx        # LocaleProvider, useLocale, t() hook
-│   │   │   ├── en.ts            # English strings
-│   │   │   ├── pt.ts            # Portuguese strings
-│   │   │   └── es.ts            # Spanish strings
-│   │   ├── services/            # Business logic and external integrations
-│   │   │   ├── firebaseAi.ts         # Firebase init, App Check, model creation, retry/fallback
-│   │   │   ├── tenderAnalysis.ts     # PDF chunking, prompt building, analysis orchestration
-│   │   │   ├── documentQa.ts         # Q&A prompt building and response parsing
-│   │   │   ├── evidence.ts           # Excerpt verification against extracted pages
-│   │   │   ├── csv.ts                # Compliance matrix CSV export
-│   │   │   ├── documentProcessing.ts # PDF.js text extraction
-│   │   │   ├── externalOcr.ts        # LlamaParse OCR client
-│   │   │   ├── legalResearch.ts      # Firecrawl legal research client
-│   │   │   ├── legalResearch.functions.ts  # Server function: Firecrawl API call
-│   │   │   ├── ocr.functions.ts      # Server function: LlamaParse API call
-│   │   │   ├── ocrEvidence.ts        # OCR evidence verification
-│   │   │   ├── ocrNormalize.ts       # OCR output normalization
-│   │   │   └── tourNarration.functions.ts  # Server function: tour TTS
-│   │   ├── types.ts             # All shared TypeScript types and interfaces
-│   │   ├── utils.ts             # cn() and general utilities
-│   │   ├── buildInfo.ts         # App version, build time, commit hash
-│   │   ├── error-capture.ts     # Error boundary helpers
-│   │   ├── error-page.ts        # Error page component
-│   │   └── lovable-error-reporting.ts  # Lovable platform error reporting
-│   ├── routes/
-│   │   ├── __root.tsx           # TanStack Router root: HTML shell, providers, meta
-│   │   ├── index.tsx            # Main app route (renders PocketMindApp)
-│   │   └── changelog.tsx        # /changelog route
-│   ├── router.tsx               # Router instance creation
-│   ├── routeTree.gen.ts         # Auto-generated route tree (TanStack Router)
-│   ├── server.ts                # Nitro server entry (H3 middleware, CSRF)
-│   ├── start.ts                 # TanStack Start client entry
-│   └── styles.css               # Global CSS (Tailwind v4 + CSS variables)
-├── public/                      # Static assets (favicons, screenshots)
-├── docs/                        # Project documentation (user guide, storyboard, etc.)
-├── scripts/
-│   └── set-vercel-vars.ps1      # Sync .env to Vercel via CLI
-├── .amazonq/rules/memory-bank/  # Amazon Q memory bank
-├── .lovable/                    # Lovable platform config
-├── package.json
-├── vite.config.ts               # Vite config via @lovable.dev/vite-tanstack-config
-├── vitest.config.ts             # Vitest test config
-├── tsconfig.json
-├── vercel.json                  # Vercel deployment (framework: tanstack-start)
-├── eslint.config.js
-└── .prettierrc
+├── src/                    # Main application source
+├── scripts/                # Dev/ops scripts (pre-push gate, Vercel sync, etc.)
+├── docs/                   # Analysis samples, guides, reference PDFs, tenders
+├── public/                 # Static assets (favicons, mockup images, sample PDF)
+├── ai-mind-law/            # next-forge monorepo scaffold (NOT the running app)
+├── supabase/               # Supabase project link (roadmap, not implemented)
+├── .amazonq/rules/         # Amazon Q rules and memory bank
+├── .agents/skills/         # Firebase/Lovable agent skill definitions
+├── .github/workflows/      # CI (TypeScript gate, tests, build, ESLint)
+└── [config files]          # package.json, tsconfig, vite.config, vercel.json, etc.
 ```
 
-## Core Components and Relationships
+> **Note:** The `ai-mind-law/` subdirectory is a next-forge monorepo template scaffold used as a reference. The actual running application lives entirely in `src/`.
 
-### State Management (PocketMindApp.tsx)
-
-- Single root component holds all application state: `documents`, `activeDocumentId`, `processingChoice`, `cloudConsent`, `reviews`, `searchQuery`
-- State flows down as props; no external state library (no Redux/Zustand)
-- Four screens rendered conditionally: `OverviewScreen`, `AnalysisScreen`, `ComplianceScreen`, `ProcessingScreen`
-- Navigation via `activeScreen` state (not URL-based within the app)
-
-### Data Flow
+## Source Tree (`src/`)
 
 ```
-PDF upload → documentProcessing.ts (PDF.js) → pages: string[]
-                                             ↓
-                              tenderAnalysis.ts (chunking + prompts)
-                                             ↓
-                              firebaseAi.ts (Firebase AI Logic SDK)
-                                             ↓
-                              evidence.ts (excerpt verification)
-                                             ↓
-                              Analysis object → stored in DocumentRecord
+src/
+├── components/
+│   ├── pocketmind/         # All application screens and panels
+│   └── ui/                 # shadcn/ui primitives (accordion, button, dialog, etc.)
+├── data/
+│   └── sampleTender.ts     # Bundled fictional tender + prepared analysis
+├── hooks/
+│   └── use-mobile.tsx      # Responsive breakpoint hook
+├── lib/
+│   ├── i18n/               # Translations: en.ts, pt.ts, es.ts + index.tsx provider
+│   ├── services/           # All business logic and external integrations
+│   ├── analysisRunContext.tsx  # React context for active analysis run state
+│   ├── types.ts            # All shared TypeScript types and interfaces
+│   ├── preferences.ts      # User preferences (localStorage, versioned)
+│   ├── layoutPreferences.ts # Sidebar/panel expand state (localStorage)
+│   ├── buildInfo.ts        # Version/commit hash constants
+│   ├── byokConfig.ts       # BYOK Firebase config (localStorage)
+│   ├── utils.ts            # cn() and general utilities
+│   └── ...                 # auth, evaluation, error-capture, etc.
+├── routes/                 # TanStack Router file-based routes
+├── test/                   # Vitest test suite
+├── router.tsx              # Router creation
+├── routeTree.gen.ts        # Auto-generated route tree (do not edit manually)
+├── server.ts               # Nitro server entry
+├── start.ts                # TanStack Start entry
+└── styles.css              # Global CSS (Tailwind v4 + custom pm-* classes)
 ```
 
-### Server Functions (TanStack Start / Nitro)
+## Key Components (`src/components/pocketmind/`)
 
-- `ocr.functions.ts` — LlamaParse OCR (server-side, never exposes API key to browser)
-- `legalResearch.functions.ts` — Firecrawl search (server-side only)
-- `tourNarration.functions.ts` — TTS for guided tour
-- All server functions use `createServerFn` from `@tanstack/react-start`
+| File | Role |
+|------|------|
+| `PocketMindApp.tsx` | Root shell: sidebar, topbar, screen routing, workspace state, upload flow |
+| `ProcessingMonitor.tsx` | Real-time analysis progress monitor with event log |
+| `DocumentQaPanel.tsx` | Chat interface for document Q&A with citations |
+| `EvidenceComparisonPanel.tsx` | Bidder evidence attachment and AI comparison |
+| `SmartDiscoveryPanel.tsx` | Tender discovery from external sources |
+| `LocalWorkspaceLibrary.tsx` | Document library (IndexedDB-backed) |
+| `SourceDocumentViewer.tsx` | Side-by-side source text viewer with pagination |
+| `IntegrationsScreen.tsx` | Firebase/LlamaParse/ElevenLabs diagnostics |
+| `SettingsScreen.tsx` | Language, inference mode, data management |
+| `ProjectsScreen.tsx` | Local project organization |
+| `RiskScreen.tsx` | Risk register with filters and CSV export |
+| `GuidedTour.tsx` | Onboarding tour with optional narration |
+| `UploadDocumentModal.tsx` | File upload with format validation |
 
-### Routing (TanStack Router)
+## Services (`src/lib/services/`)
 
-- File-based routing: `src/routes/`
-- `__root.tsx` wraps everything in providers: `QueryClientProvider`, `LocaleProvider`, `RouterProvider`
-- `routeTree.gen.ts` is auto-generated — never edit manually
-- Only two routes: `/` (main app) and `/changelog`
+| File | Role |
+|------|------|
+| `firebaseAi.ts` | Firebase init, App Check, model creation, fallback chain, quota circuit breaker |
+| `tenderAnalysis.ts` | Main analysis orchestration (hybrid/cloud/local paths) |
+| `tenderAnalysisSchema.ts` | Zod schema + Firebase response schema for analysis output |
+| `documentProcessing.ts` | PDF.js, Mammoth, ExcelJS text extraction |
+| `localWorkspace.ts` | IndexedDB CRUD for all workspace entities |
+| `inferenceSource.ts` | Inference source classification and display helpers |
+| `compliance.ts` | Compliance assessment and review state helpers |
+| `documentQa.ts` | Document Q&A prompt building and response parsing |
+| `evidenceComparison.ts` | Evidence-to-requirement AI comparison |
+| `evidenceComparisonSchema.ts` | Zod schema for evidence comparison output |
+| `externalOcr.ts` | LlamaParse OCR availability check and execution |
+| `ocrNormalize.ts` | OCR page text merging and normalization |
+| `ocrEvidence.ts` | Mark unpaginated OCR evidence as unverified |
+| `csv.ts` | Compliance matrix CSV export |
+| `workspaceMetrics.ts` | Dashboard metrics aggregation |
+| `projects.ts` | Project record creation/update helpers |
+| `riskReview.ts` | Risk review state key helpers |
+| `legalResearch.ts` | Firecrawl legal research (server-side function) |
+| `aiDiagnostics.ts` | Firebase/LlamaParse/ElevenLabs connectivity diagnostics |
+| `supabase.ts` | Supabase client (roadmap, minimal) |
 
-### i18n Architecture
+## Routes (`src/routes/`)
 
-- `LocaleProvider` in `src/lib/i18n/index.tsx` wraps the app
-- `useLocale()` hook returns `{ t, locale, setLocale }`
-- `t(key)` looks up strings from `en.ts` / `pt.ts` / `es.ts`
-- SSR-safe: initializes with `"en"`, syncs to `localStorage` in `useEffect`
-- AI prompts remain in English (technical instructions to the model)
+TanStack Router file-based routing. Auto-generated `routeTree.gen.ts` — never edit manually.
 
-### Firebase AI Logic Integration
+| Route | Screen |
+|-------|--------|
+| `/` | Dashboard (OverviewScreen) |
+| `/documents` | Document library |
+| `/analysis` | Analysis screen |
+| `/analysis/$docId` | Analysis for specific document |
+| `/compliance` | Compliance matrix |
+| `/processing` | Processing & privacy |
+| `/risks` | Risk register |
+| `/projects` | Projects |
+| `/settings` | Settings |
+| `/integrations` | Integrations & diagnostics |
+| `/monitor` | Processing monitor |
+| `/evaluation` | Evaluator workspace |
+| `/login` | Login (stub) |
+| `/changelog` | Changelog |
 
-- `firebaseAi.ts` initializes Firebase app, App Check, and AI instance once (cached on `window.__pocketMindFirebaseRuntime`)
-- `createTenderModel(preference, modelName)` returns a `GenerativeModel` with the correct `InferenceMode`
-- `generateWithModelFallback()` handles retry with exponential backoff and model chain fallback
-- `tenderAnalysis.ts` orchestrates chunking, prompting, and merging results across chunks
+## i18n (`src/lib/i18n/`)
+
+- `index.tsx`: `LocaleProvider`, `useLocale()`, `useT()` hooks
+- `en.ts`, `pt.ts`, `es.ts`: Translation key maps
+- Default locale: `"en"` (SSR-safe; synced from localStorage in `useEffect`)
+- AI prompts remain in English regardless of UI locale
+
+## Data Flow
+
+```
+User uploads PDF/DOCX/XLSX
+  → documentProcessing.ts (local extraction, browser only)
+  → saveDocumentBundle() → IndexedDB
+  → User selects processing mode + gives consent
+  → tenderAnalysis.ts (hybrid/cloud/local)
+      → firebaseAi.ts (model creation, App Check, fallback chain)
+      → Firebase AI Logic (Gemini)
+  → Analysis saved to IndexedDB
+  → PocketMindApp.tsx renders findings
+  → User reviews, adds evidence, exports
+```
 
 ## Architectural Patterns
 
-- **No global state library** — React `useState` + prop drilling in `PocketMindApp.tsx`
-- **Server/client split** — API keys stay server-side via TanStack Start server functions
-- **Zod validation** — all AI responses validated with Zod schemas before use
-- **Evidence verification** — every AI citation checked against extracted page text via `evidence.ts`
-- **Chunked processing** — large PDFs split into 8,000-character chunks, each analyzed independently then merged
-- **Consent-gated cloud** — cloud inference path requires explicit boolean consent stored in component state
-- **SSR-aware** — `LocaleProvider` and Firebase init guard against server-side execution
+- **Single-page shell:** `PocketMindApp.tsx` owns all workspace state; screens are rendered as children
+- **Service layer:** All business logic in `src/lib/services/` — no logic in route files
+- **Type-first:** All shared types in `src/lib/types.ts`; Zod schemas in `*Schema.ts` files
+- **Context for cross-cutting state:** `analysisRunContext.tsx` for active analysis progress
+- **localStorage for preferences:** versioned, with migration; never for sensitive data
+- **IndexedDB for workspace data:** via `localWorkspace.ts` service; not encrypted
+- **Server functions:** `.functions.ts` suffix for Nitro/TanStack Start server-side functions

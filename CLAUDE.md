@@ -9,6 +9,7 @@ Browser-based procurement/tender review workspace: extracts text from PDF/DOCX/X
 ## Read first
 
 - `AGENTS.md` — Lovable-managed rules (DB schema, generated files, secrets, AI gateway).
+- `docs/ENGINEERING.md` — regression-safety rules: reproduce bugs with a failing test first, use PR/CI/preview gates, and follow the critical-flow smoke checklist.
 - `DESIGN.md` — the visual system, extracted from `src/styles.css`. Read before any CSS/component work.
 - `PRODUCT.md` — product context, voice, UX principles.
 - `src/routes/README.md` — file-based routing conventions and the `/evaluation` route guard.
@@ -50,8 +51,20 @@ bunx tsc --noEmit && bun run test && bun run build
 
 ## Git
 
-- Always work on a feature branch. Never commit directly to `main`.
+- Always work on a `fix/…` or `feat/…` branch. Never commit directly to `main`.
 - Never rewrite published history (no force push, rebase, amend, or squash on pushed commits) — the connected branch syncs to Lovable and Vercel publishes from `main`; keep branches in a working state.
+- Open a PR, wait for CI green, verify the Vercel preview URL, then merge.
+
+## Regression-safety protocol
+
+See `docs/ENGINEERING.md` for the full protocol. The non-negotiable rules:
+
+1. **Bug → test → fix.** Write a failing test that reproduces the bug *before* writing the fix. The test must fail first, then pass. Never fix a bug without a test.
+2. **One cause per commit.** If a second `fix:` on the same flow appears, stop and find the root cause before the third.
+3. **Smoke the affected flow.** After any change to a user-facing path, walk through it in the Vercel preview: upload → processing → analysis, or the specific flow changed. Check deep links (`?doc=upload-xxx`) and the not-found case.
+4. **Update CHANGELOG.md in the same commit.** Include the short hash (amend before push if needed).
+5. **CI must be green before merge.** `bunx tsc --noEmit && bun run test && bun run build`. Do not merge with a red CI.
+6. **No secrets, no document text in commits.** `.env*` files, debug tokens, and extracted document content must never appear in the diff.
 
 ## Off-limits (never touch)
 

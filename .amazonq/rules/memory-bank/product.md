@@ -1,92 +1,89 @@
-# Product — PocketMind AI
+# PocketMind AI — Product Overview
 
-## Purpose & Value Proposition
+## Purpose
 
-PocketMind AI turns complex tender PDFs into a structured, human-reviewable workspace. It extracts text locally in the browser (PDF.js), then — under explicit user consent — sends it to Firebase AI Logic for analysis in cloud-only, on-device-only, or on-device-first hybrid mode.
+PocketMind AI turns procurement/tender documents into a structured, human-reviewable workspace. It extracts text locally in the browser, runs AI analysis via Firebase AI Logic (Gemini), and surfaces a compliance matrix with source-verified findings.
 
-Core problem solved: tender documents run to dozens of pages of dense prose. Obligations that decide bid eligibility, technical compliance, and commercial soundness are buried in that text. PocketMind AI reads the extracted text, organizes findings, verifies each excerpt against the cited page, and surfaces a compliance matrix the team can review, annotate, and export — without losing the link to the original document.
+**Live demo:** https://ai-mind-law.vercel.app/
+**Hackathon:** #BuildHybridAI 2026 submission
 
-Hackathon: **#BuildHybridAI 2026** — Web (Chrome) · Firebase AI Logic hybrid inference.
+## Core Value Proposition
 
-Live deployment: **https://ai-mind-law.vercel.app/**
+Tender documents run to dozens of pages of dense prose. PocketMind AI:
+- Extracts text from PDF/DOCX/XLSX locally in the browser (no upload to cloud)
+- Runs hybrid AI inference: on-device first, cloud fallback, with explicit user consent
+- Surfaces requirements, deadlines, specifications, and risks with source-verified excerpts
+- Provides a compliance matrix for human review, notes, and CSV/JSON export
 
 ## Key Features
 
 ### Document Processing
+- Upload PDF, DOCX, XLSX up to 50 MB
+- Local text extraction: PDF.js (PDFs), Mammoth (DOCX), ExcelJS (XLSX)
+- Optional LlamaParse OCR for scanned/sparse PDFs (requires separate per-document consent)
+- Page-level text retention with source labels
 
-- Upload PDFs up to 20 MB; text extracted locally in the browser with PDF.js
-- Optional LlamaParse OCR for scanned/sparse PDFs (separate per-document consent required)
-- Three AI processing modes: on-device only, cloud only, hybrid (on-device-first with cloud fallback)
-- Demo mode with fictional sample tender (no Firebase required)
+### AI Inference (Firebase AI Logic)
+- Three modes: Cloud-only, On-device-only, Hybrid (on-device-first with cloud fallback)
+- Model fallback chain: `gemini-3.8-flash` → `gemini-3.6-flash` → `gemini-3.5-flash-lite`
+- App Check with reCAPTCHA Enterprise (production) / debug token (dev)
+- Explicit cloud consent required before any cloud path is used
+- Reports actual inference source (ON_DEVICE / IN_CLOUD / CLOUD_FALLBACK) per section
+- BYOK (Bring Your Own Key) Firebase config support
 
-### Firebase AI Logic Integration
-
-- Hybrid inference via `getGenerativeModel` with `InferenceMode.PREFER_ON_DEVICE`
-- Actual inference source (`on-device`, `cloud`, `cloud-fallback`, `mixed`) surfaced to user after every analysis
-- App Check enforced for all Firebase AI Logic calls
-- Model fallback chain: `gemini-3.8-flash` → `gemini-3.7-flash` → `gemini-3.6-flash` → `gemini-3.5-flash-lite`
-- Exponential backoff retry for HTTP 429/500/502/503
-
-### Analysis Findings
-
-- Five finding types: Requirements, Deadlines, Specifications, Risks, Missing/Inconsistencies
-- Every finding links to a source page and excerpt, verified against extracted text
-- Confidence scoring per requirement
-- Severity levels: Critical, High, Medium, Low
-
-### Compliance Matrix
-
-- Per-requirement review tracking (pending / reviewed / satisfied / unclear)
-- Review notes (browser session only — no persistent cloud storage)
-- Export as CSV
+### Compliance Workspace
+- Compliance matrix with per-requirement review tracking (pending/reviewed/satisfied/unclear)
+- Source verification: excerpts checked against extracted text
+- Bidder evidence attachment and AI-powered comparison
+- Human review states: assessment (compliant/partially/non-compliant) + notes
+- CSV and JSON export
 
 ### Document Q&A
-
-- Follow-up questions about extracted PDF text using same hybrid inference path
-- Answers separate: stated facts, working hypotheses, unresolved questions
-- Exact-text-checked page citations
-- Browser speech input (optional) and text-to-speech output
+- Follow-up questions about extracted document text
+- Separates stated facts, working hypotheses, and unresolved questions
+- Citations verified against extracted text
+- Optional browser speech input/output
 - Optional Firecrawl external legal research (server-side only, separate consent)
 
-### Privacy & Consent
+### Local Persistence
+- All data in IndexedDB (not encrypted, not synced)
+- Documents, analyses, evidence, projects, review state, activity log
+- Projects: organize documents with roles (tender, annex, evidence, etc.)
 
-- Text extracted locally; cloud processing requires explicit consent
-- Processing mode is a product feature, not an implementation detail
-- Sensitive procurement documents may not leave the device
-- `FIRECRAWL_API_KEY` server-side only — never in `VITE_*` variables
-
-### Internationalization
-
-- Interface languages: EN, PT, ES
-- AI responses follow the question's language automatically
-- Document evidence preserved in original language (never translated)
-
-### Export & Sharing
-
-- Export analysis as JSON
-- Export compliance matrix as CSV
-- No accounts, shared workspaces, or persistent cloud document storage (v1 scope)
+### Integrations & Diagnostics
+- Firebase AI Logic connectivity check
+- LlamaParse availability check
+- ElevenLabs narration diagnostics
+- App Check outcome reporting
 
 ## Target Users
 
-- Procurement and tendering teams
-- Bid consultants
-- Anyone reviewing public or private tenders
+Procurement and tendering teams, consultants, and anyone reviewing public or private tenders.
 
 ## Workflow
 
-1. Upload PDF → text extracted locally in browser
-2. Choose processing mode (on-device / cloud / hybrid / demo)
-3. Accept cloud consent if applicable
-4. Run analysis → Firebase AI Logic processes extracted text
-5. Review findings with source evidence linked to original pages
-6. Track compliance status per requirement
-7. Export CSV or JSON
+Upload → Choose processing mode → Analyze → Verify findings → Attach evidence → Compare → Track review → Export
 
-## What Is NOT Implemented (v1)
+## Screens / Navigation
 
-- User accounts
-- Shared workspaces
-- Persistent cloud document storage
-- Production App Check (reCAPTCHA Enterprise not yet configured for deployment)
-- Real scanned-PDF OCR end-to-end test
+Dashboard · Documents · Analysis · Compliance matrix · Risks · Projects · Processing · Settings · Integrations
+
+## What Is NOT Implemented
+
+- User accounts or authentication
+- Shared workspaces / team collaboration
+- Cloud document storage
+- Data encryption
+- MCP bridge to IndexedDB
+- Supabase integration (roadmap only)
+
+## Sample Data
+
+A fictional tender ("NB-2026-114 Smart LED Street Lighting") is bundled as prepared demo data. Loading sample data does NOT call Firebase — it uses pre-built analysis results.
+
+## Build Info
+
+- Version: `v0.4.0`
+- Last hackathon-stable tag: `hackathon-stable` (commit `1d99a29`)
+- Production: https://ai-mind-law.vercel.app/
+- License: Apache 2.0

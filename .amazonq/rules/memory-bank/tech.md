@@ -1,159 +1,154 @@
-# Tech — PocketMind AI
+# PocketMind AI — Technology Stack
 
-## Core Stack
+## Runtime
 
-| Layer           | Technology                        | Version    |
-| --------------- | --------------------------------- | ---------- |
-| Language        | TypeScript                        | ^5.8.3     |
-| Runtime         | React                             | ^19.2.0    |
-| Framework       | TanStack Start                    | 1.168.60   |
-| Router          | TanStack Router                   | 1.170.41   |
-| Build           | Vite                              | 8.1.5      |
-| Server          | Nitro (via TanStack Start)        | 3.0.x-beta |
-| CSS             | Tailwind CSS                      | ^4.2.1     |
-| UI Primitives   | Radix UI + shadcn/ui              | various    |
-| AI              | Firebase AI Logic (`firebase/ai`) | ^13.3.0    |
-| Validation      | Zod                               | ^3.25.76   |
-| PDF             | pdfjs-dist                        | ^6.5.438   |
-| Testing         | Vitest + jsdom                    | ^4.1.10    |
-| Package Manager | npm or Bun                        | —          |
-| Deployment      | Vercel                            | —          |
+| Layer | Technology | Version |
+|-------|-----------|---------|
+| UI framework | React | ^19.2.0 |
+| Language | TypeScript | ^5.8.3 (strict mode) |
+| Router | TanStack Router (file-based) | 1.170.41 |
+| Meta-framework | TanStack Start (Nitro SSR) | 1.168.60 |
+| Build tool | Vite | 8.3.8 |
+| CSS | Tailwind CSS v4 | ^4.2.1 |
+| Package manager | Bun (dev) / npm (Vercel CI) | latest |
 
-## Development Commands
+## AI & Firebase
 
-```sh
-# Install
-npm install        # or: bun install
+| Library | Purpose |
+|---------|---------|
+| `firebase` ^13.3.0 | Firebase AI Logic (Gemini), App Check |
+| `firebase/ai` | `getGenerativeModel`, `InferenceMode`, hybrid inference |
+| `firebase/app-check` | `ReCaptchaEnterpriseProvider`, limited-use tokens |
 
-# Dev server
-npm run dev        # or: bun run dev
+**Gemini model chain:** `gemini-3.8-flash` → `gemini-3.6-flash` → `gemini-3.5-flash-lite`
 
-# Build
-npm run build
+**Inference modes (Firebase `InferenceMode`):**
+- `ONLY_ON_DEVICE` — local preference
+- `ONLY_IN_CLOUD` — cloud preference
+- `PREFER_ON_DEVICE` — hybrid preference
 
-# Preview production build
-npm run preview
+## Document Processing (browser-side)
 
-# Tests
-npm test           # vitest run (single pass)
-npm run test:watch # vitest (watch mode)
+| Library | Format |
+|---------|--------|
+| `pdfjs-dist` ^6.5.438 | PDF text extraction with page numbers |
+| `mammoth` ^1.13.0 | DOCX → plain text |
+| `exceljs` ^4.4.0 | XLSX → text with sheet/row labels |
 
-# Lint
-npm run lint       # eslint .
+## UI Components
 
-# Format
-npm run format     # prettier --write .
-```
+- **shadcn/ui** — full component set in `src/components/ui/` (Radix UI primitives)
+- **Radix UI** — accordion, dialog, dropdown, select, tabs, tooltip, etc.
+- **lucide-react** ^0.575.0 — icons
+- **sonner** ^2.0.7 — toast notifications
+- **recharts** ^2.15.4 — charts
+- **react-resizable-panels** ^4.6.5 — resizable layout panels
+- **embla-carousel-react** ^8.6.0 — carousels
+- **vaul** ^1.1.2 — drawer
+- **cmdk** ^1.1.1 — command palette
+- **react-day-picker** ^9.14.0 — date picker
+
+## Forms & Validation
+
+- `react-hook-form` ^7.71.2 + `@hookform/resolvers` ^5.2.2
+- `zod` ^3.25.76 — schema validation and Firebase response schema
+
+## State & Data
+
+- **React Context** — `analysisRunContext.tsx` for analysis progress
+- **IndexedDB** — all workspace data via `localWorkspace.ts` (no ORM)
+- **localStorage** — preferences (versioned), layout state, BYOK config
+- **TanStack Query** ^5.101.1 — available but used minimally
+- **Supabase JS** ^2.119.2 — client present, integration is roadmap-only
+
+## Routing
+
+TanStack Router with file-based routing. Route tree auto-generated in `src/routeTree.gen.ts` — never edit manually. Uses `useNavigate`, `useLocation`, `Link` from `@tanstack/react-router`.
+
+## Server
+
+- **Nitro** (via TanStack Start) — server functions with `.functions.ts` suffix
+- Server functions: `discoverDocuments.functions.ts`, `legalResearch.functions.ts`, `ocr.functions.ts`, `tourNarration.functions.ts`
+- `FIRECRAWL_API_KEY` must be server-side env var — never `VITE_*`
+
+## Testing
+
+| Tool | Role |
+|------|------|
+| Vitest ^4.1.12 | Test runner |
+| jsdom ^20.0.3 | DOM environment |
+| @testing-library/react ^16.0.0 | Component testing |
+| @testing-library/jest-dom ^7.0.1 | DOM matchers |
+| fake-indexeddb ^6.2.8 | IndexedDB mock |
+
+Test files: `src/test/*.{test,spec}.{ts,tsx}`
+Setup file: `src/test/setup.ts`
+Pool: `vmThreads`
+
+## Linting & Formatting
+
+- ESLint 9 (flat config) with `typescript-eslint`, `react-hooks`, `react-refresh`, `prettier`
+- Prettier ^3.3.3 — formatting enforced via ESLint plugin
+- CI lints a targeted subset of files (not all source files)
+- `@typescript-eslint/no-unused-vars` is OFF
+
+## Build & Deploy
+
+| Target | Tool |
+|--------|------|
+| Local dev | `bun run dev` (Vite dev server) |
+| Production build | `bun run build` / `npm run build` |
+| Deployment | Vercel (framework: TanStack Start) |
+| Edge runtime | Cloudflare Workers (Nitro target) |
+
+**`vercel.json`:** `framework: "tanstack-start"` — do not set `outputDirectory`.
+
+**Build-time defines (vite.config.ts):**
+- `__APP_VERSION__` — `"0.4.0"`
+- `__BUILD_TIME__` — ISO timestamp
+- `__COMMIT_HASH__` — short git SHA (or `VERCEL_GIT_COMMIT_SHA`)
+- `__APPCHECK_DEBUG_TOKEN__` — dev only, never in production bundle
+
+## Environment Variables
+
+| Variable | Side | Purpose |
+|----------|------|---------|
+| `VITE_FIREBASE_API_KEY` | Client | Firebase config |
+| `VITE_FIREBASE_AUTH_DOMAIN` | Client | Firebase config |
+| `VITE_FIREBASE_PROJECT_ID` | Client | Firebase config |
+| `VITE_FIREBASE_APP_ID` | Client | Firebase config |
+| `VITE_FIREBASE_APPCHECK_RECAPTCHA_SITE_KEY` | Client | App Check (prod) |
+| `VITE_FIREBASE_APPCHECK_DEBUG_TOKEN` | Dev only | App Check debug bypass |
+| `FIRECRAWL_API_KEY` | Server only | Firecrawl legal research |
+
+**Never put `FIRECRAWL_API_KEY` in a `VITE_*` variable.**
+**Never commit `.env.local` or debug tokens.**
 
 ## TypeScript Configuration
 
 - Target: `ES2022`
 - Module resolution: `Bundler`
-- Strict mode: enabled
+- Strict mode: ON
+- `noImplicitReturns`, `noFallthroughCasesInSwitch`, `noImplicitOverride`: ON
+- `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`: ON
 - Path alias: `@/*` → `./src/*`
-- Notable strict flags enabled:
-  - `noFallthroughCasesInSwitch`
-  - `noImplicitOverride`
-  - `noImplicitReturns`
-  - `noPropertyAccessFromIndexSignature`
-  - `noUncheckedIndexedAccess`
-  - `exactOptionalPropertyTypes`
-  - `noUncheckedSideEffectImports`
+- `noEmit: true` (Vite handles transpilation)
 
-## Vite Configuration
+## CI Pipeline (GitHub Actions)
 
-Managed via `@lovable.dev/vite-tanstack-config`. Do NOT manually add:
+1. `bun install --frozen-lockfile`
+2. `tsc --noEmit` — mandatory TypeScript gate
+3. `bun run test` — full Vitest suite
+4. `bunx eslint [targeted files]` — targeted lint
+5. `bun run build` — production build
 
-- TanStack devtools, `tanstackStart`, `viteReact`, `tailwindcss`, `tsConfigPaths`
-- Nitro (build-only, cloudflare default target)
-- `VITE_*` env injection, `@` path alias, React/TanStack dedupe
+## Pre-push Gate (`scripts/pre-push-check.mjs`)
 
-Custom additions in `vite.config.ts`:
+Triggered by `git-exe` command. Checks: branch=main, remote sync, secret scan, whitespace, lint, TypeScript, tests, npm audit (baseline: 10 high / 0 critical), production build. Blocks on any failure. Never runs `npm audit fix --force` or `git push --force`.
 
-- `__APP_VERSION__` → `"0.4.0"`
-- `__BUILD_TIME__` → ISO timestamp at build
-- `__COMMIT_HASH__` → short git hash via `execSync`
+## Key Constraints
 
-## Environment Variables
-
-### Client-side (`VITE_*` — safe to expose)
-
-| Variable                                    | Purpose                                        |
-| ------------------------------------------- | ---------------------------------------------- |
-| `VITE_FIREBASE_API_KEY`                     | Firebase web app config                        |
-| `VITE_FIREBASE_AUTH_DOMAIN`                 | Firebase web app config                        |
-| `VITE_FIREBASE_APP_ID`                      | Firebase web app config                        |
-| `VITE_FIREBASE_PROJECT_ID`                  | Firebase web app config                        |
-| `VITE_FIREBASE_APPCHECK_RECAPTCHA_SITE_KEY` | App Check (production only)                    |
-| `VITE_FIREBASE_APPCHECK_DEBUG_TOKEN`        | App Check debug token (dev only, never commit) |
-
-### Server-side only (never `VITE_*`)
-
-| Variable             | Purpose                           |
-| -------------------- | --------------------------------- |
-| `FIRECRAWL_API_KEY`  | Optional Firecrawl legal research |
-| `ELEVENLABS_API_KEY` | Optional tour narration TTS       |
-
-## Firebase AI Logic
-
-- SDK: `firebase/ai` (part of `firebase` ^13.3.0)
-- Backend: `GoogleAIBackend`
-- Inference modes: `ONLY_ON_DEVICE`, `ONLY_IN_CLOUD`, `PREFER_ON_DEVICE`
-- On-device: Chrome's Prompt API (desktop Chrome only, hardware-dependent)
-- App Check: `ReCaptchaV3Provider` (dev debug) / `ReCaptchaEnterpriseProvider` (production)
-- Firebase runtime cached on `window.__pocketMindFirebaseRuntime` (singleton)
-
-### Model Fallback Chain
-
-```
-gemini-3.8-flash (attempt 1, delay 0ms)
-gemini-3.8-flash (attempt 2, delay 3s + jitter)
-gemini-3.7-flash (attempt 3, delay 6s + jitter)
-gemini-3.6-flash (attempt 4, delay 10s + jitter)
-gemini-3.5-flash-lite (attempt 5, delay 15s + jitter)
-```
-
-- Retryable HTTP codes: 429, 500, 502, 503
-- Generation timeout: 60,000 ms per attempt
-- Total budget: 180,000 ms
-
-## Testing
-
-- Framework: Vitest with jsdom environment
-- Setup file: `src/test/setup.ts`
-- Test files: `src/test/*.test.{ts,tsx}`
-- Globals enabled (no explicit `import { describe, it, expect }` needed)
-- Path alias `@` resolved in `vitest.config.ts`
-
-Test files:
-
-- `app-routing.test.tsx` — route rendering
-- `csv.test.ts` — CSV export
-- `document-qa-panel.test.tsx` — Q&A panel component
-- `document-qa.test.ts` — Q&A service logic
-- `model-fallback.test.ts` — Firebase AI retry/fallback logic
-- `ocr-normalize.test.ts` — OCR normalization
-- `ocr-review.test.ts` — OCR evidence review
-- `tender-analysis.test.ts` — tender analysis parsing
-
-## Deployment
-
-- Platform: Vercel
-- Framework: `tanstack-start` (set in `vercel.json`)
-- Live URL: https://ai-mind-law.vercel.app/
-- Env sync script: `scripts/set-vercel-vars.ps1` (reads `.env`, syncs via Vercel CLI)
-
-## Key Dependencies
-
-| Package                                                | Role                                            |
-| ------------------------------------------------------ | ----------------------------------------------- |
-| `@tanstack/react-query`                                | Server state / async data fetching              |
-| `lucide-react`                                         | Icon library                                    |
-| `sonner`                                               | Toast notifications                             |
-| `react-resizable-panels`                               | Resizable panel layout                          |
-| `class-variance-authority` + `clsx` + `tailwind-merge` | Conditional class utilities                     |
-| `date-fns`                                             | Date formatting                                 |
-| `recharts`                                             | Charts (if used)                                |
-| `zod`                                                  | Runtime schema validation                       |
-| `pdfjs-dist`                                           | In-browser PDF text extraction                  |
-| `@ai-sdk/openai` + `ai`                                | AI SDK (Vercel AI SDK, used alongside Firebase) |
+- `pdfjs-dist`, `@tanstack/router-core`, `seroval` excluded from Vite `optimizeDeps`
+- No `ssr.external` or `resolve.external` — Worker has no runtime module resolution
+- No compression plugins — hosting compresses at the edge
+- `rolldown` overridden to `1.2.1`, `js-yaml` to `4.3.2`, `seroval` to `1.8.2`
