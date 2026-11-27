@@ -7,6 +7,10 @@ Format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed — frozen Bun CI install (`09bfffb`)
+
+- Regenerated `bun.lock` to include the declared `dotenv` dependency and the `vitest` range from `package.json`; pinned GitHub Actions to Bun 1.4.5.
+
 The application identifies itself as `v0.4.0`. Current `main` HEAD is `a7d27bb`; last verified-stable commit is `1d99a29` (tag `hackathon-stable`). Commits `8d56b4f`, `b500ae3`, `21f4e6c`, and `a7d27bb` fix document-identity, OCR-decision routing, and workspace hydration after that tag.
 
 ### Fixed — workspace hydration race (`a7d27bb`)
