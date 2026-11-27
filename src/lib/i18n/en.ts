@@ -33,6 +33,7 @@
   monitor_response_local: "Firebase reported an on-device inference response",
   monitor_output_validated: "Structured response validated for section {{section}} of {{total}}",
   monitor_checking_evidence: "Checking findings against source references",
+  monitor_rechunk: "Switching to cloud-sized sections ({{newTotal}} total); section count updated.",
   monitor_findings: "{{count}} findings returned",
   monitor_requirements: "requirements",
   monitor_deadlines: "deadlines",
