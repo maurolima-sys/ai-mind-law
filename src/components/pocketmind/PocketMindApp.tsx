@@ -487,6 +487,12 @@ export function PocketMindApp({
   const selectedDocumentIdRef = useRef(selectedDocumentId);
   screenRef.current = screen;
   selectedDocumentIdRef.current = selectedDocumentId;
+
+  useEffect(() => {
+    if (typeof contentRef.current?.scrollTo === "function") {
+      contentRef.current.scrollTo({ top: 0 });
+    }
+  }, [location.pathname]);
   // Legacy monitor state kept for ProcessingScreen prop compatibility
   const monitor: MonitorState | null = analysisRun
     ? {
@@ -799,7 +805,7 @@ export function PocketMindApp({
     setExternalOcrAvailability("checking");
     setErrorMessage("");
     setScreen("processing");
-    contentRef.current?.scrollTo({ top: 0 });
+    if (typeof contentRef.current?.scrollTo === "function") contentRef.current.scrollTo({ top: 0 });
     recordActivity("document-added", id);
     return true;
   }
@@ -835,7 +841,8 @@ export function PocketMindApp({
       setActiveExcerpt(null);
       setActivePage(1);
       setScreen("processing");
-      contentRef.current?.scrollTo({ top: 0 });
+      if (typeof contentRef.current?.scrollTo === "function")
+        contentRef.current.scrollTo({ top: 0 });
       return;
     }
     if (!workspaceReady || workspaceError) {
@@ -890,7 +897,7 @@ export function PocketMindApp({
     setScannedDocumentId(null);
     setExternalOcrAvailability("checking");
     setScreen("processing");
-    contentRef.current?.scrollTo({ top: 0 });
+    if (typeof contentRef.current?.scrollTo === "function") contentRef.current.scrollTo({ top: 0 });
     recordActivity("document-added", resolvedId);
   }
 
