@@ -57,7 +57,8 @@ export type AnalysisProgressEvent =
   | { type: "local-retry" }
   | { type: "response"; source: InferenceSource }
   | { type: "output-validated"; section: number; total: number }
-  | { type: "checking-evidence" };
+  | { type: "checking-evidence" }
+  | { type: "rechunk"; newTotal: number };
 
 export const MAX_CHUNK_CHARACTERS = 16_000;
 export const ON_DEVICE_CHUNK_CHARACTERS = 4_000;
@@ -741,6 +742,10 @@ export async function analyzeTender(
         // Replace ALL remaining on-device chunks with the cloud-sized ones in one
         // splice so the total section count stabilises immediately.
         chunks.splice(index, chunks.length - index, ...largeChunks);
+        // Notify the monitor that the section count changed due to re-chunking
+        // for cloud inference. Without this, the monitor shows inconsistent
+        // totals (e.g. "1 of 4" then "1 of 3" then "2 of 4").
+        options.onEvent?.({ type: "rechunk", newTotal: chunks.length });
       }
       options.onEvent?.({ type: "cloud-retry" });
       onProgress({

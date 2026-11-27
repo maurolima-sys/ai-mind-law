@@ -36,6 +36,8 @@ export const pt: Translations = {
   monitor_response_local: "Firebase informou uma resposta de inferência no dispositivo",
   monitor_output_validated: "Resposta estruturada validada para a seção {{section}} de {{total}}",
   monitor_checking_evidence: "Verificando resultados contra as referências da fonte",
+  monitor_rechunk:
+    "A mudar para secções de tamanho cloud ({{newTotal}} no total); total de secções atualizado.",
   monitor_findings: "{{count}} resultados retornados",
   monitor_requirements: "requisitos",
   monitor_deadlines: "prazos",

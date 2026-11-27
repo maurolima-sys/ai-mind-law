@@ -57,6 +57,7 @@ function eventTone(event: MonitorEvent): EventTone {
     case "cloud-retry":
     case "local-retry":
     case "model-unavailable":
+    case "rechunk":
       return "warning";
     case "request-started":
     case "initializing":
@@ -115,6 +116,8 @@ function eventMessage(event: MonitorEvent, t: ReturnType<typeof useT>) {
       return t("monitor_output_validated", event);
     case "checking-evidence":
       return t("monitor_checking_evidence");
+    case "rechunk":
+      return t("monitor_rechunk", { newTotal: event.newTotal });
   }
 }
 

@@ -37,6 +37,8 @@ export const es: Translations = {
   monitor_output_validated:
     "Respuesta estructurada validada para la sección {{section}} de {{total}}",
   monitor_checking_evidence: "Verificando resultados contra las referencias de origen",
+  monitor_rechunk:
+    "Cambiando a secciones de tamaño cloud ({{newTotal}} en total); total de secciones actualizado.",
   monitor_findings: "{{count}} resultados devueltos",
   monitor_requirements: "requisitos",
   monitor_deadlines: "plazos",
