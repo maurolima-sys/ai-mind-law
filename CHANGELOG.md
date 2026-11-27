@@ -7,11 +7,17 @@ Format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-The application identifies itself as `v0.4.0`. Current `main` HEAD is `9d2910c`; last verified-stable commit is `1d99a29` (tag `hackathon-stable`).
+The application identifies itself as `v0.4.0`. Current `main` HEAD is `21f4e6c`; last verified-stable commit is `1d99a29` (tag `hackathon-stable`). Commits `8d56b4f`, `b500ae3`, and `21f4e6c` fix document-identity and OCR-decision routing after that tag.
 
-### Added
+### Fixed — document identity and OCR routing (`8d56b4f`, `b500ae3`, `21f4e6c`)
 
-- `src/lib/companyProfile.ts` — Company Profile data model: `CompanyIdentity` (name, primaryCountry), `CompanyRegistration` (country), `BusinessActivities` (activityCodes with kind `registered | capability | interest` and label). `loadCompanyProfile()` / `saveCompanyProfile()` backed by `localStorage`.
+- `8d56b4f` — sync `selectedDocumentIdRef` before `setScreen` in `addDocument` and `addDocumentFromUrl`; prevents the Riverside demo from being silently substituted when a real document is added.
+- `b500ae3` — pass `?doc=<id>` search param to `/processing` and sync the ref in all document-select handlers (`OverviewScreen`, `LocalWorkspaceLibrary`, `ProjectsScreen`, `RiskScreen`); fixes document identity when navigating to Processing from any screen.
+- `21f4e6c` — stay on `/processing` when a scanned PDF is detected; navigate to `/monitor` only after the OCR decision is made, so the user can consent or decline before analysis starts.
+
+The upload and OCR flow has not been re-verified in production after these fixes.
+
+ — Company Profile data model: `CompanyIdentity` (name, primaryCountry), `CompanyRegistration` (country), `BusinessActivities` (activityCodes with kind `registered | capability | interest` and label). `loadCompanyProfile()` / `saveCompanyProfile()` backed by `localStorage`.
 - `src/components/pocketmind/SmartDiscoveryPanel.tsx` — Smart Document Discovery panel: Firecrawl-powered tender search with country and jurisdiction filters. On mount, pre-fills country and jurisdiction from Company Profile and derives up to 10 activity codes (kind `registered` or `capability`) to enrich the search query. Shows a profile-missing notice when no profile is saved.
 - `src/lib/services/discoverDocuments.functions.ts` — server function for Firecrawl document discovery. Accepts optional `activityCodes` (system / code / description, max 10) and appends their descriptions to the search query. SSRF protection, PDF validation, and Firecrawl pipeline preserved. Only `{ system, code, description }` sent — no registration numbers, addresses, or partner data.
 - `discovery_profile_missing` i18n key added in EN, PT, and ES.
@@ -171,7 +177,7 @@ Core product — all four screens, Firebase AI Logic hybrid inference, complianc
 
 ---
 
-[Unreleased]: https://github.com/maurolima-sys/ai-mind-law/compare/9d2910c...HEAD
+[Unreleased]: https://github.com/maurolima-sys/ai-mind-law/compare/21f4e6c...HEAD
 [0.4.0]: https://github.com/maurolima-sys/ai-mind-law/commit/ed19ed4b694d3efeb7934ded026ad3b37540e882
 [0.3.0]: https://github.com/maurofranklima/ai-mind-law/commit/7657c0a
 [0.2.0]: https://github.com/maurofranklima/ai-mind-law/commit/0b6945d
