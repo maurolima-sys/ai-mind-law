@@ -805,7 +805,7 @@ export function PocketMindApp({
     setExternalOcrAvailability("checking");
     setErrorMessage("");
     setScreen("processing");
-    if (typeof contentRef.current?.scrollTo === "function") contentRef.current.scrollTo({ top: 0 });
+    requestAnimationFrame(() => contentRef.current?.scrollTo({ top: 0 }));
     recordActivity("document-added", id);
     return true;
   }
@@ -841,8 +841,7 @@ export function PocketMindApp({
       setActiveExcerpt(null);
       setActivePage(1);
       setScreen("processing");
-      if (typeof contentRef.current?.scrollTo === "function")
-        contentRef.current.scrollTo({ top: 0 });
+      requestAnimationFrame(() => contentRef.current?.scrollTo({ top: 0 }));
       return;
     }
     if (!workspaceReady || workspaceError) {
@@ -897,7 +896,7 @@ export function PocketMindApp({
     setScannedDocumentId(null);
     setExternalOcrAvailability("checking");
     setScreen("processing");
-    if (typeof contentRef.current?.scrollTo === "function") contentRef.current.scrollTo({ top: 0 });
+    requestAnimationFrame(() => contentRef.current?.scrollTo({ top: 0 }));
     recordActivity("document-added", resolvedId);
   }
 
