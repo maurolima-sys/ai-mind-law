@@ -7,12 +7,13 @@
 
 | Campo | Valor |
 |-------|-------|
-| Commit | `c9ccde7` (merge PR #2) |
+| Commit | `539961a` (merge PR #3) |
 | Branch | `main` |
 | Data | 2025-01-24 |
 | Testes | 190 passing, 0 failures |
 | TypeScript | clean (`tsc --noEmit` exit 0) |
-| CI checks | 3/3 passed (PR #2) |
+| CI checks | Passed (PR #3) |
+| Vercel Preview | Ready (PR #3) |
 | Deploy | https://ai-mind-law.vercel.app/ |
 
 ## Fases PACT
@@ -20,7 +21,7 @@
 | Fase | Nome | Estado | Commit/PR |
 |------|------|--------|-----------|
 | PACT-00 | Phase 0 Audit | ✅ Concluído | baseline `5305ca9` |
-| PACT-01 | Restore CI Integrity | ✅ Concluído | PR #2 · `c9ccde7` |
+| PACT-01 | Restore CI Integrity | ✅ Concluído | PR #2 + PR #3 · `539961a` |
 | PACT-02 | Document Identity Contract | 🔲 Pendente | — |
 | PACT-03 | Routes & Navigation | 🔲 Pendente | — |
 | PACT-04 | Processing Pipeline | 🔲 Pendente | — |
@@ -37,28 +38,23 @@
 - Correções de identidade documental B1/B2/B3 em `PocketMindApp.tsx`
 - Chave `analysis_saved_result` adicionada em EN/PT/ES
 - Documentação de governança PACT criada em `docs/`
+- `STATUS.md` criado na raiz como documento de baseline oficial
+- Fix do tsc gate: `npx tsc` → `node node_modules/typescript/bin/tsc`
 
 ### O que foi confirmado
-- 190 testes passaram localmente
-- PR #2 integrado com 3 checks aprovados no GitHub
-- Merge commit `c9ccde7` é o novo baseline de `main`
+- 190 testes passaram localmente e no CI
+- PR #2 integrado com checks aprovados no GitHub
+- PR #3 integrado: GitHub Actions CI passed, Vercel Preview ready
+- Merge commit `539961a` é o baseline final de `main` para o PACT-01
 
 ### O que ainda não foi verificado
 - Branch protection rules de `main` (acesso negado anteriormente)
-- Verificação independente dos 3 checks do GitHub (nomes dos checks não capturados)
 
-## Trabalho em curso (não commitado)
+## Trabalho em curso
 
-Os seguintes ficheiros têm alterações locais na branch `fix/pact-01-ci-integrity`
-que ainda não foram commitadas nem fazem parte do baseline:
+Nenhum. Todas as alterações do PACT-01 estão integradas em `main` (`539961a`).
 
-- `.amazonq/rules/memory-bank/git-exe.md`
-- `src/components/pocketmind/PocketMindApp.tsx`
-- `src/lib/i18n/en.ts`
-- `src/lib/i18n/es.ts`
-- `src/lib/i18n/pt.ts`
-
-Estas alterações devem ser avaliadas antes do próximo commit.
+Branch `fix/pact-01-ci-integrity` pode ser eliminada — foi integrada via PR #3.
 
 ## Gaps de governança conhecidos
 
