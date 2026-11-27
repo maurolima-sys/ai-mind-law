@@ -543,6 +543,9 @@ export async function analyzeTender(
   ]);
   const cloudModels = new Map<GeminiModelName, ReturnType<typeof createTenderModel>["model"]>();
   let localFallbackModel: ReturnType<typeof createTenderModel>["model"] | undefined;
+  // Persists across iterations: once on-device fails and cloud fallback is
+  // triggered, all subsequent sections must also use cloud-sized chunks.
+  let forcedCloudFallback = preference === "hybrid" && !deviceModelReady;
   for (let index = 0; index < chunks.length; index++) {
     const chunk = chunks[index];
     if (!chunk) throw new Error(`Missing analysis section ${index + 1}`);
@@ -559,7 +562,6 @@ export async function analyzeTender(
     let sectionTimedOut = false;
     let sectionError: string | undefined;
     const sectionStartMs = Date.now();
-    let forcedCloudFallback = preference === "hybrid" && !deviceModelReady;
     const generateSection = (candidate: GeminiModelName, signal?: AbortSignal) => {
       const cache = forcedCloudFallback ? cloudModels : models;
       let currentModel = cache.get(candidate);

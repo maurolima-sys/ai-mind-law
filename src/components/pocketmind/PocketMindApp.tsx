@@ -510,6 +510,7 @@ export function PocketMindApp({
   const [tourRequestedByUser, setTourRequestedByUser] = useState(false);
   const tourButtonRef = useRef<HTMLButtonElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const contentRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     try {
@@ -798,6 +799,7 @@ export function PocketMindApp({
     setExternalOcrAvailability("checking");
     setErrorMessage("");
     setScreen("processing");
+    contentRef.current?.scrollTo({ top: 0 });
     recordActivity("document-added", id);
     return true;
   }
@@ -833,6 +835,7 @@ export function PocketMindApp({
       setActiveExcerpt(null);
       setActivePage(1);
       setScreen("processing");
+      contentRef.current?.scrollTo({ top: 0 });
       return;
     }
     if (!workspaceReady || workspaceError) {
@@ -887,6 +890,7 @@ export function PocketMindApp({
     setScannedDocumentId(null);
     setExternalOcrAvailability("checking");
     setScreen("processing");
+    contentRef.current?.scrollTo({ top: 0 });
     recordActivity("document-added", resolvedId);
   }
 
@@ -1962,7 +1966,7 @@ export function PocketMindApp({
           </div>
         </header>
 
-        <main className="pm-content">
+        <main ref={contentRef} className="pm-content">
           {screen !== "processing" && (
             <div className="pm-page-heading">
               <div>
