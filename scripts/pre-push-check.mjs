@@ -66,19 +66,39 @@ function stagedFiles() {
 }
 
 // ── 1. Branch ─────────────────────────────────────────────────────────────────
+// Feature Branch → PR → Merge workflow:
+//   - main / master: blocked — never commit or push directly.
+//   - Any other branch: allowed; upstream sync is verified below.
 const branch = execSync("git branch --show-current").toString().trim();
-if (branch !== "main") abort(`not on main (current: ${branch})`);
-console.log(`✅ Branch: ${branch}`);
+if (branch === "main" || branch === "master") {
+  abort(
+    `direct push to '${branch}' is not allowed.\n  Use a feature branch → Pull Request → Vercel Preview → Merge workflow.`,
+  );
+}
+console.log(`✅ Branch: ${branch} (feature branch — OK)`);
 
 // ── 2. Remote sync ────────────────────────────────────────────────────────────
 // git fetch updates remote-tracking refs locally; it does not modify working files.
 try {
   execSync("git fetch origin", { stdio: "pipe" });
-  const status = execSync("git status -sb").toString();
-  if (status.includes("behind")) abort("local branch is behind origin/main — pull first");
-  if (status.includes("diverged"))
-    abort("branch has diverged from origin/main — resolve before pushing");
-  console.log("✅ Remote sync: up to date");
+
+  // Check whether this branch has a configured upstream.
+  let hasUpstream = true;
+  try {
+    execSync(`git rev-parse --abbrev-ref ${branch}@{upstream}`, { stdio: "pipe" });
+  } catch {
+    hasUpstream = false;
+  }
+
+  if (hasUpstream) {
+    const status = execSync("git status -sb").toString();
+    if (status.includes("behind")) abort(`local branch is behind origin/${branch} — pull first`);
+    if (status.includes("diverged"))
+      abort(`branch has diverged from origin/${branch} — resolve before pushing`);
+    console.log(`✅ Remote sync: up to date with origin/${branch}`);
+  } else {
+    console.log(`✅ Remote sync: no upstream configured yet — will be set on first push (-u)`);
+  }
 } catch (e) {
   if (String(e.message).includes("Gate aborted")) throw e;
   console.warn("⚠️  Could not fetch origin — proceeding without remote check");

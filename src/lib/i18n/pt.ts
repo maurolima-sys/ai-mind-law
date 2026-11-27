@@ -1,4 +1,4 @@
-import type { Translations } from "./en";
+﻿import type { Translations } from "./en";
 
 export const pt: Translations = {
   monitor_title: "Monitor inteligente de processamento",
@@ -504,6 +504,12 @@ export const pt: Translations = {
   ocr_sparse_desc:
     "Pode enviar este PDF ao LlamaParse para aplicar OCR às páginas assinaladas. O ficheiro PDF completo é transferido; o Firebase AI Logic analisará o texto combinado em seguida.",
   ocr_sparse_pages: "Páginas assinaladas para OCR: {{pages}}",
+  analysis_incomplete_title:
+    "{{count}} páginas tinham pouco ou nenhum texto selecionável e foram analisadas sem OCR.",
+  analysis_incomplete_desc:
+    "Os resultados podem estar incompletos porque estas páginas foram analisadas como estão.",
+  analysis_incomplete_pages: "Páginas afetadas: {{pages}}",
+  analysis_incomplete_ocr_action: "Ver opções de OCR",
   ocr_analyze_extracted: "Analisar o texto disponível neste browser",
   ocr_checking: "A verificar se o OCR externo está ativado...",
   ocr_disabled_title: "O OCR externo não está ativado.",
@@ -620,7 +626,6 @@ export const pt: Translations = {
   runtime_demo_data_label: "Dados de demonstração",
   open_processing_aria: "Abrir opções de processamento",
   ocr_analyze_browser: "Analisar o texto disponível neste browser",
-
   qa_title: "Pergunte a este documento",
   qa_subtitle: "Faça perguntas de acompanhamento e reveja cada resposta face às suas fontes.",
   qa_document_grounded: "Baseado no documento",
