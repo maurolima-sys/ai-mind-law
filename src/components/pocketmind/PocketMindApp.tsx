@@ -489,9 +489,7 @@ export function PocketMindApp({
   selectedDocumentIdRef.current = selectedDocumentId;
 
   useEffect(() => {
-    const el = contentRef.current;
-    if (typeof el?.scrollTo !== "function") return;
-    const id = setTimeout(() => el.scrollTo({ top: 0 }), 0);
+    const id = setTimeout(() => window.scrollTo({ top: 0 }), 0);
     return () => clearTimeout(id);
   }, [location.pathname, location.search]);
   // Legacy monitor state kept for ProcessingScreen prop compatibility
@@ -517,7 +515,6 @@ export function PocketMindApp({
   const [tourRequestedByUser, setTourRequestedByUser] = useState(false);
   const tourButtonRef = useRef<HTMLButtonElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const contentRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     try {
@@ -1970,7 +1967,7 @@ export function PocketMindApp({
           </div>
         </header>
 
-        <main ref={contentRef} className="pm-content">
+        <main className="pm-content">
           {screen !== "processing" && (
             <div className="pm-page-heading">
               <div>
