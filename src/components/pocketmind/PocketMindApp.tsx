@@ -79,6 +79,7 @@ import { EvidenceComparisonPanel } from "@/components/pocketmind/EvidenceCompari
 import { GuidedTour, hasSeenTour } from "@/components/pocketmind/GuidedTour";
 import { GuidePointer } from "@/components/pocketmind/GuidePointer";
 import { UploadDocumentModal } from "@/components/pocketmind/UploadDocumentModal";
+import { AnalysisCompletenessWarning } from "@/components/pocketmind/AnalysisCompletenessWarning";
 import { SmartDiscoveryPanel } from "@/components/pocketmind/SmartDiscoveryPanel";
 import { IntegrationsScreen } from "@/components/pocketmind/IntegrationsScreen";
 import { LanguageSelector } from "@/components/pocketmind/LanguageSelector";
@@ -150,7 +151,11 @@ import {
   isAppCheckThrottledError,
 } from "@/lib/services/firebaseAi";
 import { markUnpaginatedEvidenceUnverified } from "@/lib/services/ocrEvidence";
-import { mergeOcrPageText, pagesNeedingExternalOcr } from "@/lib/services/ocrNormalize";
+import {
+  mergeOcrPageText,
+  pagesAnalysedWithoutOcr,
+  pagesNeedingExternalOcr,
+} from "@/lib/services/ocrNormalize";
 import { analyzeTender } from "@/lib/services/tenderAnalysis";
 import {
   defaultPreferences,
@@ -1009,6 +1014,33 @@ export function PocketMindApp({
     setScreen("analysis");
   }
 
+  function requestOcrForIncompletePages() {
+    if (
+      !selectedDocument ||
+      (selectedDocument.format ?? getDocumentFormat(selectedDocument.name)) !== "pdf"
+    ) {
+      return;
+    }
+    const affectedPages = pagesAnalysedWithoutOcr(
+      selectedDocument.pages,
+      selectedDocument.pageExtractionMethods,
+    );
+    if (affectedPages.length === 0) return;
+
+    setScannedDocumentId(selectedDocument.id);
+    setSparsePageNumbersByDocumentId((current) => ({
+      ...current,
+      [selectedDocument.id]: affectedPages,
+    }));
+    setScannedTextByDocumentId((current) => ({
+      ...current,
+      [selectedDocument.id]: selectedDocument.pages,
+    }));
+    setExternalOcrConsentDocumentId(null);
+    void checkExternalOcrStatus();
+    setScreen("processing");
+  }
+
   function updateReview(id: string, patch: Partial<Review>) {
     const previous = reviews[id];
     setReviews((current) => ({
@@ -1346,14 +1378,23 @@ export function PocketMindApp({
       setAnalysisAttempts((current) => ({ ...current, [documentId]: "failed" }));
       throw error;
     }
-    const analysis =
+    const baseAnalysis =
       format === "pdf" && !paginated ? markUnpaginatedEvidenceUnverified(result) : result;
+    const resolvedPageExtractionMethods =
+      pageExtractionMethods ?? extractionMethodsFor(textSource, pages.length);
+    const insufficientTextPages =
+      format === "pdf" && textSource === "pdfjs"
+        ? pagesAnalysedWithoutOcr(pages, resolvedPageExtractionMethods)
+        : [];
+    const analysis: Analysis = {
+      ...baseAnalysis,
+      ...(insufficientTextPages.length > 0 ? { limitations: { insufficientTextPages } } : {}),
+    };
     const updatedDocument: DocumentRecord = {
       ...selectedDocument,
       pages,
       sourceLocations: locations,
-      pageExtractionMethods:
-        pageExtractionMethods ?? extractionMethodsFor(textSource, pages.length),
+      pageExtractionMethods: resolvedPageExtractionMethods,
       textSource,
       paginationVerified: paginated,
       analysis,
@@ -1477,7 +1518,9 @@ export function PocketMindApp({
         appendMonitor(selectedDocument.id, { type: "ocr-waiting" });
         setMonitorStatus(selectedDocument.id, "waiting");
         void checkExternalOcrStatus();
-        // Return to Processing so the user can see the OCR prompt and choose how to proceed
+        // Return to Processing so the user can see the OCR prompt and choose how to proceed.
+        // Show a toast so the user understands why the flow paused — without this, the button
+        // appears to do nothing when sparse pages are detected on the first click.
         void navigate({ to: "/processing", search: { doc: selectedDocument.id } });
         return;
       }
@@ -2113,6 +2156,7 @@ export function PocketMindApp({
               }
               onEvidenceCloudConsentChange={(checked) => setEvidenceCloudConsent(checked)}
               onOpenProcessing={() => setScreen("processing")}
+              onRequestOcr={requestOcrForIncompletePages}
               onModelResponse={recordInferenceResponse}
               voiceInputEnabled={preferences.voiceInputEnabled}
               answerSpeechEnabled={preferences.answerSpeechEnabled}
@@ -2711,6 +2755,7 @@ function AnalysisScreen({
   onCompareEvidence,
   onEvidenceCloudConsentChange,
   onOpenProcessing,
+  onRequestOcr,
   onModelResponse,
   voiceInputEnabled,
   answerSpeechEnabled,
@@ -2755,6 +2800,7 @@ function AnalysisScreen({
   onCompareEvidence: (requirementId: string, evidenceDocumentId: string) => void;
   onEvidenceCloudConsentChange: (checked: boolean) => void;
   onOpenProcessing: () => void;
+  onRequestOcr: () => void;
   onModelResponse: (source: InferenceSource) => void;
   voiceInputEnabled: boolean;
   answerSpeechEnabled: boolean;
@@ -2952,6 +2998,11 @@ function AnalysisScreen({
           <span>{t("warning_llamaparse_no_pages")}</span>
         </div>
       )}
+
+      <AnalysisCompletenessWarning
+        pages={analysis.limitations?.insufficientTextPages ?? []}
+        onReviewOcr={onRequestOcr}
+      />
 
       {/* Summary strip — collapsible */}
       <section className="pm-summary-strip">

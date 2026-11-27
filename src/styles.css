@@ -1956,6 +1956,17 @@
   flex: 0 0 auto;
   color: #a96a12;
 }
+.pm-completeness-warning {
+  align-items: flex-start;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+.pm-completeness-warning p {
+  margin: 3px 0 0;
+}
+.pm-completeness-warning .pm-button {
+  margin-top: 8px;
+}
 .pm-inference-report {
   padding: 12px 14px;
   border: 1px solid var(--pm-line);

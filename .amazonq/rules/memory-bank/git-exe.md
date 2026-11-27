@@ -1,89 +1,252 @@
-# git-exe — Quality & Security Gate
+# git-exe — Quality Gate & Feature Branch Workflow
 
-Sempre que o utilizador digitar **git-exe**, executar automaticamente a sequência abaixo, sem pedir confirmação.
+## Trigger and aliases
 
-## Sequência de execução
+- `git-exe` or `@git-exe` — execute the complete quality, staging, commit, and feature-branch push workflow described below.
+- `git-check` or `@git-check` — run verification only; never modify the repository.
+- Mentioning these strings inside ordinary conversation does **not** trigger execution. They must be explicitly invoked as commands.
 
-1. **Verificações sem staging** — branch, remote sync, lint, TypeScript, testes, auditoria, build
+Whenever the user invokes **git-exe** (or **@git-exe**), automatically execute the sequence below without requesting confirmation.
 
-   ```
-   node scripts/pre-push-check.mjs
-   ```
+## Objective
 
-   Se o script terminar com código de saída diferente de zero, **parar imediatamente** — não fazer staging, commit nem push.
+Run the complete quality and security gate, create a selective commit, and push to the current feature branch.
 
-2. **Estado do repositório**
+**Fundamental rule:** Never commit or push directly to `main` or `master`. The standard workflow is Feature Branch → Pull Request → Vercel Preview → Merge.
 
-   ```
-   git status
-   git diff --stat
-   git log --oneline -5
-   ```
+## Execution Sequence
 
-3. **Staging seletivo**
+### 1. Identify the current branch and initial repository state
 
-   ```
-   git add -A
-   git reset HEAD -- "Avaliação independente*.md" pocketmind-compliance.csv
-   ```
+Run:
 
-4. **Secret scan sobre o staging final** — corre _depois_ do `git add` para inspeccionar exactamente o que vai entrar no commit
+```
+git branch --show-current
+git status --short
+git remote -v
+git log --oneline -5
+```
 
-   ```
-   node scripts/pre-push-check.mjs --staged
-   ```
+Rules:
 
-   Se detectar ficheiros `.env*`, ficheiros bloqueados ou padrões de segredos no staging, **parar imediatamente**.
+- Identify and preserve the current branch.
+- Never switch branches automatically.
+- If the current branch is `main` or `master`, stop before staging, committing, or pushing.
+- Inform the user that a feature branch is required.
+- Preserve all existing workspace changes.
 
-5. **Commit**
+### 2. Run quality and security checks
 
-   ```
-   git commit -m "<mensagem gerada automaticamente>"
-   ```
-
-   Se não houver nada para commitar, reportar o estado e parar.
-
-6. **Push**
-   ```
-   git push origin main
-   ```
-
----
-
-## O que o gate verifica (scripts/pre-push-check.mjs)
-
-| Passo                     | Comando                                                                                                   | Bloqueia                  |
-| ------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------- |
-| Branch                    | `git branch --show-current` → deve ser `main`                                                             | ✅                        |
-| Sincronização remota      | `git fetch origin` + `git status -sb` (actualiza refs remotas locais, não modifica ficheiros de trabalho) | ✅                        |
-| Scan de segredos          | Inspeciona o staging final após `git add` — nomes e conteúdo                                              | ✅                        |
-| Whitespace                | `git diff --check`                                                                                        | ✅                        |
-| Lint                      | `npm run lint`                                                                                            | ✅                        |
-| TypeScript                | `npx tsc --noEmit`                                                                                        | ✅                        |
-| Testes                    | `npm run test -- --run`                                                                                   | ✅                        |
-| Auditoria de dependências | `npm audit --omit=dev` — compara CVE IDs contra baseline explícita, não apenas contagens                  | ✅ se CVE novo não aceite |
-| Build de produção         | `npm run build`                                                                                           | ✅                        |
-
----
-
-## Regras adicionais
-
-- Se qualquer verificação obrigatória falhar, **não fazer commit nem push**.
-- A mensagem de commit é gerada automaticamente com prefixo `fix:`, `feat:`, `docs:` ou `chore:` conforme os ficheiros alterados.
-- Os ficheiros `Avaliação independente*.md` e `pocketmind-compliance.csv` nunca são adicionados ao staging.
-- Ficheiros `.env`, `.env.local` e variantes nunca são commitados — o gate aborta se detetados.
-- Nunca executar `npm audit fix --force` automaticamente — atualizações de dependências são operações separadas.
-- Nunca executar `git push --force`.
-- A auditoria usa uma baseline (10 high, 0 critical) para não bloquear vulnerabilidades já conhecidas; bloqueia apenas novas ocorrências acima da baseline.
-
----
-
-## Atalho de verificação sem commit
-
-Sempre que o utilizador digitar **git-check**, executar apenas:
+Execute:
 
 ```
 node scripts/pre-push-check.mjs
 ```
 
-Não modifica ficheiros de trabalho, não faz staging, não faz commit, não faz push. `git fetch origin` actualiza as refs remotas locais (não os ficheiros de trabalho) — é necessário para detectar divergências. Útil para verificar o projeto antes de decidir publicar.
+The script accepts feature branches, verifies synchronization with their upstream, and blocks `main`/`master`.
+
+If any mandatory check fails, stop immediately.
+
+### 3. Inspect all changes
+
+Run:
+
+```
+git status
+git diff --stat
+git diff
+git log --oneline -5
+```
+
+Identify:
+
+- Modified files.
+- New files.
+- Deleted files.
+- Changes unrelated to the current task.
+- Local or sensitive files.
+
+Do not include unrelated workspace changes simply because they are present.
+
+### 4. Selective staging
+
+Do **not** run `git add -A` blindly. Stage only the files that belong to the current task.
+
+For each file identified in step 3:
+
+- If it is part of the current task → stage it explicitly: `git add <file>`
+- If it is unrelated to the current task → leave it unstaged; note it in the final report.
+- If its relevance is uncertain → do not stage it; ask the user.
+
+After staging task files, always run:
+
+```
+git reset HEAD -- "Avaliação independente*.md" pocketmind-compliance.csv
+```
+
+to ensure those files are never included regardless of how staging was performed.
+
+Additional rules:
+
+- Never stage test PDFs or local documents.
+- Never stage `.env`, `.env.local`, or any variants.
+- Never stage credentials, tokens, backups, or personal data.
+- When the working tree contains changes that belong to a different logical task (e.g. a documentation file unrelated to a bug fix), leave them unstaged and note them in the final report. Create a separate commit for them only if the user explicitly requests it.
+
+### 5. Inspect staged changes and run the secret scan
+
+Execute:
+
+```
+git diff --cached --stat
+git diff --cached
+node scripts/pre-push-check.mjs --staged
+```
+
+The scan must inspect exactly the content staged for the commit.
+
+If it detects secrets, credentials, `.env*` files, blocked files, or unintended PDFs, stop immediately without committing or pushing.
+
+### 6. Create the commit
+
+If there are no staged changes, report the repository state and stop.
+
+Generate the commit message automatically according to the type of changes:
+
+| Prefix   | Usage                         |
+| -------- | ----------------------------- |
+| `fix:`   | Bug fixes                     |
+| `feat:`  | New functionality             |
+| `docs:`  | Documentation                 |
+| `chore:` | Maintenance and configuration |
+| `test:`  | Tests                         |
+
+Execute:
+
+```
+git commit -m "<automatically generated message>"
+```
+
+Do not mix independent documentation changes with functional fixes when doing so would compromise traceability. Create separate commits when appropriate.
+
+### 7. Push to the current feature branch
+
+Identify the current branch again:
+
+```
+git branch --show-current
+```
+
+Push exclusively to that branch:
+
+```
+git push -u origin <current-branch>
+```
+
+Rules:
+
+- Never automatically execute `git push origin main`.
+- Never execute `git push --force`.
+- Never push to a branch other than the current working branch.
+- If the remote branch has diverged, stop and investigate before attempting integration.
+- Never merge automatically.
+
+### 8. Final report
+
+Report:
+
+1. Branch used.
+2. Result of every quality gate.
+3. Files included in the commit.
+4. Files excluded from staging.
+5. Commit hash and message.
+6. Push result.
+7. Pull Request link, if it was actually created or is available.
+8. Next steps for validating the Vercel Preview.
+
+Never claim that a PR or Preview was created without confirmation.
+
+---
+
+## What the gate checks (scripts/pre-push-check.mjs)
+
+| Step                    | Command                                                                                              | Blocks                     |
+| ----------------------- | ---------------------------------------------------------------------------------------------------- | -------------------------- |
+| Branch                  | `git branch --show-current` → must NOT be `main` or `master`                                        | ✅                         |
+| Remote sync             | `git fetch origin` + upstream check (skipped gracefully if no upstream yet)                         | ✅                         |
+| Secret scan             | Inspects staged content after `git add` — filenames and content                                     | ✅                         |
+| Whitespace              | `git diff --cached --check`                                                                          | ✅                         |
+| Lint                    | `npm run lint`                                                                                       | ✅                         |
+| TypeScript              | `npx tsc --noEmit`                                                                                   | ✅                         |
+| Tests                   | `npm run test -- --run`                                                                              | ✅                         |
+| Dependency audit        | `npm audit --omit=dev` — compares CVE IDs against explicit baseline, not just counts                | ✅ if new CVE not accepted |
+| Production build        | `npm run build`                                                                                      | ✅                         |
+
+---
+
+## Permanent Safety Rules
+
+- Never commit or push directly to `main` or `master`.
+- Never execute `git push --force`.
+- Never execute `npm audit fix --force`.
+- Never bypass failed quality checks.
+- Never delete local changes to clean the workspace.
+- Never automatically stage private documents or test files.
+- Never bypass the secret scan.
+- Preserve changes unrelated to the current task.
+- Never merge automatically.
+
+The dependency audit baseline remains 10 high / 0 critical, comparing CVE IDs and blocking new, unaccepted vulnerabilities.
+
+---
+
+## Shortcut: git-check / @git-check
+
+Whenever the user invokes **git-check** or **@git-check**, execute only:
+
+```
+node scripts/pre-push-check.mjs
+```
+
+Do not modify files, stage changes, commit, or push.
+
+The command accepts the current feature branch and verifies synchronization with its upstream.
+
+If the branch has no configured upstream, report this without creating commits or pushing changes.
+
+---
+
+## Official Release Workflow
+
+```
+Feature Branch
+      |
+      v
+  git-check
+      |
+      v
+   git-exe
+      |
+      v
+ Quality Gate
+      |
+      v
+ Selective Commit
+      |
+      v
+ Push Feature Branch
+      |
+      v
+ Pull Request
+      |
+      v
+ Vercel Preview
+      |
+      v
+ Manual Validation
+      |
+      v
+ Merge into main
+```
+
+Merging remains a separate decision and must never be performed automatically by git-exe.

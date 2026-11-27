@@ -520,6 +520,12 @@
   ocr_sparse_desc:
     "You can send this PDF to LlamaParse for OCR of the flagged pages. The full PDF file is transferred; Firebase AI Logic analyzes the merged text afterward.",
   ocr_sparse_pages: "Pages flagged for OCR: {{pages}}",
+  analysis_incomplete_title:
+    "{{count}} pages had little or no selectable text and were analysed without OCR.",
+  analysis_incomplete_desc:
+    "Findings may be incomplete because these pages were analysed as they are.",
+  analysis_incomplete_pages: "Affected pages: {{pages}}",
+  analysis_incomplete_ocr_action: "Review OCR options",
   ocr_analyze_extracted: "Analyze the text available in this browser",
   ocr_checking: "Checking whether external OCR is enabled...",
   ocr_disabled_title: "External OCR is not enabled.",

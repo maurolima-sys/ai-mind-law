@@ -134,6 +134,10 @@ export interface Analysis {
   inconsistencies: string[];
   generatedAt: string;
   executionReport?: ExecutionReport;
+  limitations?: {
+    /** 1-based PDF pages analysed without OCR despite insufficient selectable text. */
+    insufficientTextPages: number[];
+  };
 }
 
 export interface DocumentRecord {
