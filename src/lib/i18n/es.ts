@@ -617,6 +617,9 @@ export const es: Translations = {
   finding_inconsistency_title: "Posible inconsistencia",
   evidence_page_badge: "Página {{page}}",
   review_status_sr: "Estado de revisión para {{description}}",
+  workspace_loading: "Cargando espacio de trabajo…",
+  workspace_document_not_found:
+    "Documento no encontrado en este navegador. Puede haber sido eliminado o abierto en otro navegador.",
   workspace_no_document:
     "El espacio de trabajo no tiene documento seleccionado. Recarga la página para restaurar el espacio de trabajo de muestra.",
   runtime_demo_data_label: "Datos de demostración",

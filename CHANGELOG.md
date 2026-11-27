@@ -7,7 +7,11 @@ Format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-The application identifies itself as `v0.4.0`. Current `main` HEAD is `21f4e6c`; last verified-stable commit is `1d99a29` (tag `hackathon-stable`). Commits `8d56b4f`, `b500ae3`, and `21f4e6c` fix document-identity and OCR-decision routing after that tag.
+The application identifies itself as `v0.4.0`. Current `main` HEAD is `a7d27bb`; last verified-stable commit is `1d99a29` (tag `hackathon-stable`). Commits `8d56b4f`, `b500ae3`, `21f4e6c`, and `a7d27bb` fix document-identity, OCR-decision routing, and workspace hydration after that tag.
+
+### Fixed — workspace hydration race (`a7d27bb`)
+
+- `selectedDocument` fell back to `documents[0]` (Riverside demo) before IndexedDB finished loading, so `/processing?doc=<upload-id>` silently showed the demo instead of the real upload. Fixed by deferring the `?? documents[0]` fallback until `workspaceReady` is `true`; before that point `selectedDocument` is `undefined`, which is already handled by all downstream consumers.
 
 ### Fixed — document identity and OCR routing (`8d56b4f`, `b500ae3`, `21f4e6c`)
 
@@ -177,7 +181,7 @@ Core product — all four screens, Firebase AI Logic hybrid inference, complianc
 
 ---
 
-[Unreleased]: https://github.com/maurolima-sys/ai-mind-law/compare/21f4e6c...HEAD
+[Unreleased]: https://github.com/maurolima-sys/ai-mind-law/compare/a7d27bb...HEAD
 [0.4.0]: https://github.com/maurolima-sys/ai-mind-law/commit/ed19ed4b694d3efeb7934ded026ad3b37540e882
 [0.3.0]: https://github.com/maurofranklima/ai-mind-law/commit/7657c0a
 [0.2.0]: https://github.com/maurofranklima/ai-mind-law/commit/0b6945d

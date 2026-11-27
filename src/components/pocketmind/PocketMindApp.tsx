@@ -607,10 +607,13 @@ export function PocketMindApp({
   // Before the workspace loads, documents only contains the demo record.
   // Do not fall back to documents[0] (Riverside) while IndexedDB is still
   // loading — that would silently replace a real upload with the demo.
-  // After workspaceReady the fallback is safe: the id genuinely does not exist.
+  // After workspaceReady: if the id is the demo or no upload id was requested,
+  // fall back to documents[0]. If a specific upload id was requested but is
+  // genuinely absent, return undefined so the UI can show an explicit message.
+  const isExternalId = selectedDocumentId !== DEMO_DOC_ID;
   const selectedDocument =
     documents.find((document) => document.id === selectedDocumentId) ??
-    (workspaceReady ? documents[0] : undefined);
+    (workspaceReady && !isExternalId ? documents[0] : undefined);
   const file = filesByDocumentId[selectedDocumentId] ?? null;
 
   // Guided action pointer: highlight the next button in the document flow.
@@ -1633,7 +1636,13 @@ export function PocketMindApp({
   }
 
   if (!selectedDocument) {
-    return <main className="pm-empty-analysis">{t("workspace_no_document")}</main>;
+    if (!workspaceReady) {
+      return <main className="pm-empty-analysis">{t("workspace_loading")}</main>;
+    }
+    // workspaceReady but id not found — explicit message instead of silent demo substitution.
+    return (
+      <main className="pm-empty-analysis">{t("workspace_document_not_found")}</main>
+    );
   }
 
   return (

@@ -631,6 +631,9 @@
   finding_inconsistency_title: "Potential inconsistency",
   evidence_page_badge: "Page {{page}}",
   review_status_sr: "Review status for {{description}}",
+  workspace_loading: "Loading workspace…",
+  workspace_document_not_found:
+    "Document not found in this browser. It may have been removed or opened in a different browser.",
   workspace_no_document:
     "The workspace has no selected document. Refresh the page to restore the sample workspace.",
   runtime_demo_data_label: "Demo data",
