@@ -54,11 +54,8 @@ describe("IntegrationsScreen", () => {
     const runButton = screen.getByRole("button", { name: "Run real inference test" });
     expect(runButton).toBeDisabled();
 
-    fireEvent.click(
-      screen.getByLabelText(
-        "I explicitly allow this fixed diagnostic text to be sent to the cloud for this test.",
-      ),
-    );
+    // The consent label contains a <small> sub-note; target the checkbox by role.
+    fireEvent.click(screen.getByRole("checkbox"));
     fireEvent.click(runButton);
 
     await waitFor(() => expect(runFirebaseInferenceDiagnostic).toHaveBeenCalledWith("cloud"));

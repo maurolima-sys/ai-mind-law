@@ -19,7 +19,7 @@ const FIREBASE_DIAGNOSTIC_TEXT =
 const FIREBASE_DIAGNOSTIC_QUESTION = "What delivery deadline is stated?";
 
 export type DiagnosticService = "firebase-ai" | "llamaparse" | "elevenlabs";
-export type DiagnosticOutcome = "success" | "failure" | "configured" | "not-configured";
+export type DiagnosticOutcome = "success" | "failure" | "timeout" | "configured" | "not-configured";
 export type AppCheckObservation = "accepted" | "rejected" | "unknown" | "not-applicable";
 export type DiagnosticSource = "on-device" | "cloud";
 
@@ -67,6 +67,8 @@ function record(
   };
 }
 
+const DIAGNOSTIC_TIMEOUT_MS = 90_000;
+
 export async function runFirebaseInferenceDiagnostic(
   mode: InferencePreference,
 ): Promise<DiagnosticRecord> {
@@ -82,17 +84,26 @@ export async function runFirebaseInferenceDiagnostic(
     );
   }
 
+  // Promise.race provides a UI-level timeout. The underlying Firebase call
+  // cannot be cancelled (answerDocumentQuestion has no AbortSignal path), so
+  // it continues in the background after the timeout resolves. The diagnostic
+  // result is recorded as "timeout" and the UI unblocks immediately.
+  const timeoutPromise = new Promise<never>((_, reject) =>
+    setTimeout(
+      () => reject(Object.assign(new Error("diagnostic timeout"), { code: "DIAG_TIMEOUT" })),
+      DIAGNOSTIC_TIMEOUT_MS,
+    ),
+  );
+
   try {
-    const answer = await answerDocumentQuestion(
-      FIREBASE_DIAGNOSTIC_QUESTION,
-      [FIREBASE_DIAGNOSTIC_TEXT],
-      mode,
-      {
+    const answer = await Promise.race([
+      answerDocumentQuestion(FIREBASE_DIAGNOSTIC_QUESTION, [FIREBASE_DIAGNOSTIC_TEXT], mode, {
         format: "pdf",
         sourceLocations: ["Prepared public demo text"],
         paginationVerified: false,
-      },
-    );
+      }),
+      timeoutPromise,
+    ]);
     const source = answer.inferenceSource === "ON_DEVICE" ? "on-device" : "cloud";
     return record(
       "firebase-ai",
@@ -108,22 +119,42 @@ export async function runFirebaseInferenceDiagnostic(
       },
     );
   } catch (error) {
+    const isTimeout =
+      error instanceof Error && (error as Error & { code?: string }).code === "DIAG_TIMEOUT";
+    if (isTimeout) {
+      return record(
+        "firebase-ai",
+        "inference",
+        "timeout",
+        startedAt,
+        `No response received within ${DIAGNOSTIC_TIMEOUT_MS / 1000} seconds. The underlying call may still be running.`,
+        { mode, appCheck: mode === "local" ? "not-applicable" : "unknown" },
+      );
+    }
     const appCheckRejected = isInvalidFirebaseAppCheckTokenError(error);
     const httpStatus = getFirebaseAiHttpStatus(error);
-    return record(
-      "firebase-ai",
-      "inference",
-      "failure",
-      startedAt,
-      appCheckRejected
-        ? "Firebase rejected the App Check token; no model response was observed."
-        : errorMessage(error),
-      {
-        mode,
-        ...(httpStatus === undefined ? {} : { httpStatus }),
-        appCheck: mode === "local" ? "not-applicable" : appCheckRejected ? "rejected" : "unknown",
-      },
-    );
+    const isDailyQuota =
+      !appCheckRejected &&
+      httpStatus === 429 &&
+      error instanceof Error &&
+      error.message.toLowerCase().includes("daily");
+    const isNetworkError =
+      !appCheckRejected &&
+      !httpStatus &&
+      error instanceof Error &&
+      (error.message.includes("fetch") || error.message.includes("network"));
+    const msg = appCheckRejected
+      ? "Firebase rejected the App Check token; no model response was observed."
+      : isDailyQuota
+        ? "Daily quota exhausted for all models in the fallback chain."
+        : isNetworkError
+          ? "Network error — the request did not reach Firebase AI Logic."
+          : errorMessage(error);
+    return record("firebase-ai", "inference", "failure", startedAt, msg, {
+      mode,
+      ...(httpStatus === undefined ? {} : { httpStatus }),
+      appCheck: mode === "local" ? "not-applicable" : appCheckRejected ? "rejected" : "unknown",
+    });
   }
 }
 
@@ -206,6 +237,7 @@ function isDiagnosticRecord(value: unknown): value is DiagnosticRecord {
       item.service === "elevenlabs") &&
     (item.outcome === "success" ||
       item.outcome === "failure" ||
+      item.outcome === "timeout" ||
       item.outcome === "configured" ||
       item.outcome === "not-configured") &&
     typeof item.observedAt === "string" &&
