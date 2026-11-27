@@ -928,9 +928,14 @@ export const es: Translations = {
   integrations_checking: "Verificando la configuración del servidor…",
   integrations_status_success: "Respuesta operativa",
   integrations_status_failure: "Llamada fallida",
+  integrations_status_timeout: "Tiempo agotado (90 s)",
   integrations_status_configured: "Solo configurado",
   integrations_status_not_configured: "No configurado",
   integrations_status_not_tested: "No probado",
+  integrations_consent_single_use:
+    "Válido para una prueba únicamente. Se borra automáticamente tras cada ejecución.",
+  integrations_running_elapsed: "Ejecutando · {{secs}} s transcurridos",
+  integrations_timeout_hint: "límite 90 s",
   integrations_mcp_title: "Preparación para MCP",
   integrations_mcp_detail:
     "Auditoría arquitectónica de la integración propuesta. No se afirma que exista un servidor o conexión MCP.",

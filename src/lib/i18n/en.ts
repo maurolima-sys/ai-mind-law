@@ -941,9 +941,13 @@
   integrations_checking: "Checking server configuration…",
   integrations_status_success: "Operational response",
   integrations_status_failure: "Call failed",
+  integrations_status_timeout: "Timed out (90 s)",
   integrations_status_configured: "Configured only",
   integrations_status_not_configured: "Not configured",
   integrations_status_not_tested: "Not tested",
+  integrations_consent_single_use: "Valid for one test only. Cleared automatically after each run.",
+  integrations_running_elapsed: "Running · {{secs}} s elapsed",
+  integrations_timeout_hint: "limit 90 s",
   integrations_mcp_title: "MCP readiness",
   integrations_mcp_detail:
     "Architecture audit of the proposed model-connector integration. No MCP server or connection is claimed.",

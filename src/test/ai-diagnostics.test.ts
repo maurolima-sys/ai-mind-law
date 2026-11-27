@@ -59,6 +59,7 @@ function diagnostic(id: string): DiagnosticRecord {
 describe("AI diagnostics", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.useRealTimers();
     localStorage.clear();
   });
 
@@ -99,6 +100,38 @@ describe("AI diagnostics", () => {
       appCheck: "rejected",
       httpStatus: 401,
     });
+  });
+
+  it("returns timeout outcome when the call exceeds 90 seconds", async () => {
+    vi.useFakeTimers();
+    vi.mocked(answerDocumentQuestion).mockImplementation(
+      () => new Promise(() => undefined), // never resolves
+    );
+
+    const request = runFirebaseInferenceDiagnostic("cloud");
+    await vi.advanceTimersByTimeAsync(91_000);
+    const result = await request;
+
+    expect(result).toMatchObject({
+      outcome: "timeout",
+      mode: "cloud",
+      appCheck: "unknown",
+    });
+    expect(result.message).toContain("90 seconds");
+  });
+
+  it("classifies a network error without an HTTP status", async () => {
+    vi.mocked(answerDocumentQuestion).mockRejectedValue(new Error("fetch failed: network error"));
+
+    const result = await runFirebaseInferenceDiagnostic("cloud");
+
+    expect(result).toMatchObject({
+      outcome: "failure",
+      mode: "cloud",
+      appCheck: "unknown",
+    });
+    expect(result.httpStatus).toBeUndefined();
+    expect(result.message).toContain("Network error");
   });
 
   it("stores only a bounded local diagnostic history", () => {

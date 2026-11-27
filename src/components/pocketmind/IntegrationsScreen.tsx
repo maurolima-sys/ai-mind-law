@@ -1,6 +1,7 @@
 import {
   AlertCircle,
   CheckCircle2,
+  Clock,
   Cloud,
   Database,
   FileSearch,
@@ -10,9 +11,11 @@ import {
   PlugZap,
   RefreshCw,
   ShieldCheck,
+  ShieldX,
+  Timer,
   Trash2,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useLocale } from "@/lib/i18n";
 import type { InferenceSource } from "@/lib/services/inferenceSource";
@@ -45,6 +48,8 @@ export function IntegrationsScreen({
   const [mode, setMode] = useState<InferencePreference>(defaultMode);
   const [cloudConsent, setCloudConsent] = useState(false);
   const [running, setRunning] = useState<RunningService>(null);
+  const [elapsedSecs, setElapsedSecs] = useState(0);
+  const elapsedRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [history, setHistory] = useState<DiagnosticRecord[]>([]);
   const [historyError, setHistoryError] = useState("");
   const [latestFirebase, setLatestFirebase] = useState<DiagnosticRecord | null>(null);
@@ -94,12 +99,16 @@ export function IntegrationsScreen({
     if (!firebaseConfigured || (needsCloudConsent && !cloudConsent)) return;
     setRunning("firebase-ai");
     setLatestFirebase(null);
+    setElapsedSecs(0);
+    elapsedRef.current = setInterval(() => setElapsedSecs((s) => s + 1), 1000);
     try {
       const result = await runFirebaseInferenceDiagnostic(mode);
       setLatestFirebase(result);
       storeResult(result);
+      // Consent is cleared after each test — it is valid for one execution only.
       setCloudConsent(false);
     } finally {
+      if (elapsedRef.current) clearInterval(elapsedRef.current);
       setRunning(null);
     }
   }
@@ -142,11 +151,13 @@ export function IntegrationsScreen({
       ? t("integrations_status_success")
       : outcome === "failure"
         ? t("integrations_status_failure")
-        : outcome === "configured"
-          ? t("integrations_status_configured")
-          : outcome === "not-configured"
-            ? t("integrations_status_not_configured")
-            : t("integrations_status_not_tested");
+        : outcome === "timeout"
+          ? t("integrations_status_timeout")
+          : outcome === "configured"
+            ? t("integrations_status_configured")
+            : outcome === "not-configured"
+              ? t("integrations_status_not_configured")
+              : t("integrations_status_not_tested");
 
   const serviceLabels = useMemo(
     () => ({
@@ -239,7 +250,12 @@ export function IntegrationsScreen({
                 onChange={(event) => setCloudConsent(event.currentTarget.checked)}
                 disabled={running === "firebase-ai"}
               />
-              <span>{t("integrations_firebase_consent")}</span>
+              <span>
+                {t("integrations_firebase_consent")}
+                <small style={{ display: "block", marginTop: 2, opacity: 0.75 }}>
+                  {t("integrations_consent_single_use")}
+                </small>
+              </span>
             </label>
           )}
 
@@ -249,19 +265,31 @@ export function IntegrationsScreen({
           </p>
 
           {latestFirebase && (
-            <p
+            <div
               className={`pm-integration-result is-${latestFirebase.outcome}`}
-              role={latestFirebase.outcome === "failure" ? "alert" : "status"}
+              role={
+                latestFirebase.outcome === "failure" || latestFirebase.outcome === "timeout"
+                  ? "alert"
+                  : "status"
+              }
             >
               {latestFirebase.outcome === "success" ? (
                 <CheckCircle2 size={15} aria-hidden="true" />
+              ) : latestFirebase.outcome === "timeout" ? (
+                <Timer size={15} aria-hidden="true" />
+              ) : latestFirebase.outcome === "failure" && latestFirebase.appCheck === "rejected" ? (
+                <ShieldX size={15} aria-hidden="true" />
               ) : (
                 <AlertCircle size={15} aria-hidden="true" />
               )}
               <span>
-                {latestFirebase.message} {latestFirebase.latencyMs} ms
+                {latestFirebase.message}
+                {latestFirebase.httpStatus !== undefined && (
+                  <> · HTTP {latestFirebase.httpStatus}</>
+                )}
+                {latestFirebase.outcome !== "timeout" && <> · {latestFirebase.latencyMs} ms</>}
               </span>
-            </p>
+            </div>
           )}
 
           <button
@@ -282,10 +310,17 @@ export function IntegrationsScreen({
             {t("integrations_firebase_run")}
           </button>
           {running === "firebase-ai" && (
-            <progress
-              className="pm-integration-progress"
-              aria-label={t("integrations_firebase_run")}
-            />
+            <div className="pm-integration-running" role="status" aria-live="polite">
+              <Clock size={13} aria-hidden="true" />
+              <span>
+                {t("integrations_running_elapsed", { secs: elapsedSecs })}
+                {needsCloudConsent && <> · {t("integrations_timeout_hint")}</>}
+              </span>
+              <progress
+                className="pm-integration-progress"
+                aria-label={t("integrations_firebase_run")}
+              />
+            </div>
           )}
         </article>
 
