@@ -1049,6 +1049,10 @@
   projects_delete_confirm:
     "Delete this project organization now? Local documents will not be deleted.",
 
+  // ── Analysis — saved result provenance ─────────────────────────────────────
+  analysis_saved_result:
+    "Saved analysis · generated {{date}} · {{mode}}. Run a new analysis from Processing to update.",
+
   // ── Hero CTA ──────────────────────────────────────────────────────────────────
   hero_rfp_title: "Try a live document analysis",
   hero_rfp_subtitle:
