@@ -492,7 +492,7 @@ export function PocketMindApp({
     if (typeof contentRef.current?.scrollTo === "function") {
       contentRef.current.scrollTo({ top: 0 });
     }
-  }, [location.pathname]);
+  }, [location.pathname, location.search]);
   // Legacy monitor state kept for ProcessingScreen prop compatibility
   const monitor: MonitorState | null = analysisRun
     ? {
@@ -805,7 +805,6 @@ export function PocketMindApp({
     setExternalOcrAvailability("checking");
     setErrorMessage("");
     setScreen("processing");
-    requestAnimationFrame(() => contentRef.current?.scrollTo({ top: 0 }));
     recordActivity("document-added", id);
     return true;
   }
@@ -841,7 +840,6 @@ export function PocketMindApp({
       setActiveExcerpt(null);
       setActivePage(1);
       setScreen("processing");
-      requestAnimationFrame(() => contentRef.current?.scrollTo({ top: 0 }));
       return;
     }
     if (!workspaceReady || workspaceError) {
@@ -896,7 +894,6 @@ export function PocketMindApp({
     setScannedDocumentId(null);
     setExternalOcrAvailability("checking");
     setScreen("processing");
-    requestAnimationFrame(() => contentRef.current?.scrollTo({ top: 0 }));
     recordActivity("document-added", resolvedId);
   }
 
