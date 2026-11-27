@@ -604,8 +604,13 @@ export function PocketMindApp({
     setTourActive(true);
   }, [workspaceReady]);
 
+  // Before the workspace loads, documents only contains the demo record.
+  // Do not fall back to documents[0] (Riverside) while IndexedDB is still
+  // loading — that would silently replace a real upload with the demo.
+  // After workspaceReady the fallback is safe: the id genuinely does not exist.
   const selectedDocument =
-    documents.find((document) => document.id === selectedDocumentId) ?? documents[0];
+    documents.find((document) => document.id === selectedDocumentId) ??
+    (workspaceReady ? documents[0] : undefined);
   const file = filesByDocumentId[selectedDocumentId] ?? null;
 
   // Guided action pointer: highlight the next button in the document flow.
