@@ -489,9 +489,10 @@ export function PocketMindApp({
   selectedDocumentIdRef.current = selectedDocumentId;
 
   useEffect(() => {
-    if (typeof contentRef.current?.scrollTo === "function") {
-      contentRef.current.scrollTo({ top: 0 });
-    }
+    const el = contentRef.current;
+    if (typeof el?.scrollTo !== "function") return;
+    const id = setTimeout(() => el.scrollTo({ top: 0 }), 0);
+    return () => clearTimeout(id);
   }, [location.pathname, location.search]);
   // Legacy monitor state kept for ProcessingScreen prop compatibility
   const monitor: MonitorState | null = analysisRun
